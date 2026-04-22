@@ -6979,7 +6979,7 @@ var getHostFromRequest = (c3) => {
 var DEFAULT_SETTINGS = {
   site_setting: {
     title: "Zmark",
-    sub_title: "",
+    sub_title: "\u7B80\u6D01\u3001\u6613\u7528\u7684\u5BFC\u822A\u7CFB\u7EDF",
     keywords: "",
     description: "",
     logo: "",
@@ -7396,7 +7396,7 @@ var getUserSetting = async (c3) => {
 // src/api/info.ts
 import { count } from "drizzle-orm";
 var APP_VERSION = "0.1.0";
-var APP_DATE = "2026042203";
+var APP_DATE = "2026042206";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -7425,6 +7425,13 @@ var getAppInfo = async (c3) => {
 // src/api/html.ts
 var HTML_CONTENT = Bun.file("./public/html/index.html").text();
 var index2 = async (c3) => {
+  const normalizedPath = c3.req.path.replace(/\/+$/, "") || "/";
+  if (normalizedPath === "/user/init") {
+    const existingUser = db.select({ id: users.id }).from(users).limit(1).get();
+    if (existingUser) {
+      return c3.redirect("/", 302);
+    }
+  }
   let site_setting = getSettingValue("site_setting");
   const path = c3.req.path;
   if (path.startsWith("/dashboard") || path === "/user/login") {
