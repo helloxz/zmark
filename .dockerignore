@@ -1,0 +1,13 @@
+.opencode
+.git
+.vscode
+.env
+.gitignore
+data
+frontend
+node_modules
+src
+AGENTS.md
+build_frontend.sh
+compose.yaml
+dev.md

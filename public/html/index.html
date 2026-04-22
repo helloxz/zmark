@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="{{ logo }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>${site_setting.title || "Zmark"}</title>
+    <meta name="keywords" content="${site_setting.keywords || ""}" />
+    <meta name="description" content="${site_setting.description || ""}" />
+    <script type="module" crossorigin src="/static/assets/index.2026042103.js"></script>
+    <link rel="stylesheet" href="/static/assets/index.2026042103.css">
+    <!--自定义header-->
+    ${site_setting.custom_header || ""}
+    <!--自定义header end-->
+    <!-- ✅ 加载动画样式 -->
+    <style>
+      #app-loading {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        z-index: 9999;
+        transition: opacity 0.3s;
+      }
+
+      .spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid #f0f0f0;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      .loading-text {
+        margin-top: 12px;
+        font-size: 14px;
+        color: #999;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* ✅ 关键：当 #app 有内容时自动隐藏 loading */
+      #app:not(:empty) + #app-loading,
+      #app:not(:empty) ~ #app-loading {
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- ✅ 加载动画 -->
+    <div id="app-loading">
+      <div class="spinner"></div>
+      <div class="loading-text">加载中...</div>
+    </div>
+
+  </body>
+</html>

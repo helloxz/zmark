@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "hono/jsx",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"] // 将 @/ 映射到 src/ 目录下
+        }
+    }
+}

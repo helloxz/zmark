@@ -1,0 +1,19 @@
+{
+  "name": "zmark",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "output": "bun build ./src/index.ts --outdir ./dist --target bun --bundle --external drizzle-orm --external drizzle-kit"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.15",
+    "drizzle-orm": "^0.45.2",
+    "drizzle-kit": "^0.31.10"
+  },
+  "devDependencies": {
+    "hono": "^4.12.9",
+    "cheerio": "^1.2.0",
+    "zod": "^4.3.6",
+    "lru-cache": "^11.2.7",
+    "@types/bun": "latest"
+  }
+}
