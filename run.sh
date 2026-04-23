@@ -1,6 +1,6 @@
 #!/bin/bash
 # 脚本入口，设置遇到错误立即退出
-set -e
+# set -e
 
 # 确保 SQLite 数据库文件存在（首次启动自动初始化）
 ensure_db_file() {

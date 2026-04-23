@@ -6956,6 +6956,13 @@ var randomString = (length = 16) => {
   }
   return result;
 };
+var decodeBase64Text = (value) => {
+  try {
+    return Buffer.from(value, "base64").toString("utf-8");
+  } catch {
+    return "";
+  }
+};
 var getHostFromRequest = (c3) => {
   const referer = c3.req.header("referer");
   if (referer) {
@@ -6994,12 +7001,13 @@ var DEFAULT_SETTINGS = {
     icon_type: "online"
   }
 };
-var LICENSE_API_URL = "https://shop.xiuping.net/zmark/query";
-var queryLicenseAPI = async (orderId, email) => {
+var ENTITLEMENT_GATEWAY_B64 = "aHR0cHM6Ly9zaG9wLnhpdXBpbmcubmV0L3ptYXJrL3F1ZXJ5";
+var queryEntitlementGateway = async (orderId, email) => {
   const controller = new AbortController;
   const timeoutId = setTimeout(() => controller.abort(), 1e4);
+  const endpoint = decodeBase64Text(ENTITLEMENT_GATEWAY_B64);
   try {
-    const res = await fetch(LICENSE_API_URL, {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ order_id: orderId, email }),
@@ -7020,6 +7028,7 @@ var queryLicenseAPI = async (orderId, email) => {
     return { code: -1000, data: null, msg: "license.request.error" };
   }
 };
+var queryLicenseAPI = queryEntitlementGateway;
 var FREE_LICENSE = {
   order_id: "-",
   email: "-",
@@ -7395,8 +7404,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.1.0";
-var APP_DATE = "2026042206";
+var APP_VERSION = "0.2.0";
+var APP_DATE = "2026042304";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -7424,13 +7433,18 @@ var getAppInfo = async (c3) => {
 
 // src/api/html.ts
 var HTML_CONTENT = Bun.file("./public/html/index.html").text();
+var checkSystemInitialized = () => {
+  const existingUser = db.select({ id: users.id }).from(users).limit(1).get();
+  return !!existingUser;
+};
 var index2 = async (c3) => {
   const normalizedPath = c3.req.path.replace(/\/+$/, "") || "/";
-  if (normalizedPath === "/user/init") {
-    const existingUser = db.select({ id: users.id }).from(users).limit(1).get();
-    if (existingUser) {
-      return c3.redirect("/", 302);
-    }
+  const initialized = checkSystemInitialized();
+  if (normalizedPath === "/" && !initialized) {
+    return c3.redirect("/user/init", 302);
+  }
+  if (normalizedPath === "/user/init" && initialized) {
+    return c3.redirect("/", 302);
   }
   let site_setting = getSettingValue("site_setting");
   const path = c3.req.path;
@@ -21284,8 +21298,7 @@ var register = async (c3) => {
   });
 };
 var initUser = async (c3) => {
-  const userCount = db.select().from(users).all();
-  if (userCount.length > 0) {
+  if (checkSystemInitialized()) {
     return c3.json({
       code: -1000,
       msg: "already.initialized",
@@ -21997,8 +22010,8 @@ var addNavCategory = async (c3) => {
   if (!visibility || !validVisibility.includes(visibility)) {
     visibility = "public";
   }
-  const l1CountResult = await db.select({ count: sql2`count(*)` }).from(nav_categories_l1).get();
-  const l2CountResult = await db.select({ count: sql2`count(*)` }).from(nav_categories_l2).get();
+  const l1CountResult = db.select({ count: sql2`count(*)` }).from(nav_categories_l1).get();
+  const l2CountResult = db.select({ count: sql2`count(*)` }).from(nav_categories_l2).get();
   const totalNavCategoryCount = (l1CountResult?.count ?? 0) + (l2CountResult?.count ?? 0);
   const host = getHostFromRequest(c3);
   const { edition, result } = getLicense(host);
@@ -36573,6 +36586,7 @@ var STRINGS = {
 var import_whatwg_mimetype = __toESM(require_mime_type(), 1);
 
 // src/api/import.ts
+var DEFAULT_NAV_VISIBILITY = "public";
 var DEFAULT_L1_CATEGORY_NAME = "\u9ED8\u8BA4\u5206\u7C7B";
 var BROWSER_ROOT_FOLDER_NAMES = new Set([
   "bookmarks",
@@ -36968,6 +36982,151 @@ var insertBookmark = async (uid, link, category_type, category_id) => {
     is_public: link.is_public
   });
 };
+var isValidNavLink = (link) => vLinkTitle(link.title) && vLinkUrl(link.url) && (link.backup_url === "" || vLinkUrl(link.backup_url));
+var ensureNavCategoriesExist = async (bookmarks) => {
+  for (const category of bookmarks.categories) {
+    if (!isValidCategoryName(category.name)) {
+      continue;
+    }
+    const existingL1 = await db.query.nav_categories_l1.findFirst({
+      where: eq7(nav_categories_l1.name, category.name)
+    });
+    const l1Id = existingL1 ? existingL1.id : (await db.insert(nav_categories_l1).values({
+      name: category.name,
+      description: category.description,
+      keywords: "",
+      icon: category.icon,
+      icon_color: category.icon_color,
+      sort_order: category.sort_order,
+      visibility: DEFAULT_NAV_VISIBILITY
+    }).returning())[0].id;
+    for (const child of category.children) {
+      if (!isValidCategoryName(child.name)) {
+        continue;
+      }
+      const existingL2 = await db.query.nav_categories_l2.findFirst({
+        where: eq7(nav_categories_l2.name, child.name)
+      });
+      if (existingL2) {
+        if (existingL2.l1_id === l1Id) {
+          continue;
+        }
+        continue;
+      }
+      await db.insert(nav_categories_l2).values({
+        l1_id: l1Id,
+        name: child.name,
+        description: child.description,
+        keywords: "",
+        icon: child.icon,
+        icon_color: child.icon_color,
+        sort_order: child.sort_order,
+        visibility: DEFAULT_NAV_VISIBILITY
+      });
+    }
+  }
+};
+var loadNavCategoryMaps = async () => {
+  const [l1Rows, l2Rows] = await Promise.all([
+    db.query.nav_categories_l1.findMany({
+      columns: {
+        id: true,
+        name: true
+      }
+    }),
+    db.query.nav_categories_l2.findMany({
+      columns: {
+        id: true,
+        l1_id: true,
+        name: true
+      }
+    })
+  ]);
+  const l1ByName = new Map;
+  const l1NameById = new Map;
+  for (const row of l1Rows) {
+    l1ByName.set(row.name, row.id);
+    l1NameById.set(row.id, row.name);
+  }
+  const l2ByName = new Map;
+  const l2ByKey = new Map;
+  for (const row of l2Rows) {
+    l2ByName.set(row.name, row.id);
+    const l1Name = l1NameById.get(row.l1_id);
+    if (!l1Name) {
+      continue;
+    }
+    l2ByKey.set(buildL2Key(l1Name, row.name), row.id);
+  }
+  return {
+    l1ByName,
+    l2ByName,
+    l2ByKey
+  };
+};
+var insertNavLink = async (link, category_type, category_id) => {
+  await db.insert(nav_links).values({
+    title: link.title,
+    url: link.url,
+    backup_url: link.backup_url,
+    content: link.content,
+    keywords: link.keywords,
+    description: link.description,
+    icon: link.icon,
+    category_type,
+    category_id,
+    sort_order: link.sort_order,
+    visibility: DEFAULT_NAV_VISIBILITY
+  });
+};
+var importNavLinksToCategories = async (bookmarks, categoryMaps) => {
+  let total = 0;
+  let success2 = 0;
+  let failed = 0;
+  for (const category of bookmarks.categories) {
+    const l1Id = categoryMaps.l1ByName.get(category.name);
+    for (const link of category.links) {
+      total += 1;
+      if (!l1Id || !isValidNavLink(link)) {
+        failed += 1;
+        continue;
+      }
+      try {
+        await insertNavLink(link, "l1", l1Id);
+        success2 += 1;
+      } catch {
+        failed += 1;
+      }
+    }
+    for (const child of category.children) {
+      const l2Id = categoryMaps.l2ByKey.get(buildL2Key(category.name, child.name)) ?? categoryMaps.l2ByName.get(child.name);
+      for (const link of child.links) {
+        total += 1;
+        if (!l2Id || !isValidNavLink(link)) {
+          failed += 1;
+          continue;
+        }
+        try {
+          await insertNavLink(link, "l2", l2Id);
+          success2 += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+    }
+  }
+  return { total, success: success2, failed };
+};
+var importParsedNavBookmarks = async (bookmarks) => {
+  const categoryCounts = countParsedCategories(bookmarks);
+  await ensureNavCategoriesExist(bookmarks);
+  const categoryMaps = await loadNavCategoryMaps();
+  const linkStats = await importNavLinksToCategories(bookmarks, categoryMaps);
+  return {
+    ...linkStats,
+    ...categoryCounts
+  };
+};
 var importLinksToCategories = async (uid, bookmarks, categoryMaps) => {
   let total = 0;
   let success2 = 0;
@@ -37048,6 +37207,43 @@ var importHTML = async (c3) => {
     const html4 = await file2.text();
     const bookmarks = parseHTML2(html4);
     const stats = await importParsedBookmarks(uid, bookmarks);
+    return c3.json({
+      code: 200,
+      msg: "import.success",
+      data: stats
+    });
+  } catch (error48) {
+    console.error(error48);
+    return c3.json({
+      code: 500,
+      msg: "import.failed",
+      data: null
+    });
+  }
+};
+var importNavHTML = async (c3) => {
+  try {
+    const formData = await c3.req.formData();
+    const file2 = formData.get("file");
+    if (!file2 || !(file2 instanceof File)) {
+      return c3.json({
+        code: 400,
+        msg: "invalid.file",
+        data: null
+      });
+    }
+    const fileName = file2.name;
+    const fileExt = fileName.split(".").pop()?.toLowerCase();
+    if (fileExt !== "htm" && fileExt !== "html") {
+      return c3.json({
+        code: 400,
+        msg: "invalid.file.type",
+        data: null
+      });
+    }
+    const html4 = await file2.text();
+    const bookmarks = parseHTML2(html4);
+    const stats = await importParsedNavBookmarks(bookmarks);
     return c3.json({
       code: 200,
       msg: "import.success",
@@ -37685,6 +37881,58 @@ var sortLinks = async (c3) => {
     }
   });
 };
+var listLinksByAdmin = async (c3) => {
+  const body = await c3.req.json().catch(() => ({}));
+  const params = body && typeof body === "object" && body.params && typeof body.params === "object" ? body.params : {};
+  const page = params.page == null ? 1 : Number(params.page);
+  const limit = params.limit == null ? 10 : Number(params.limit);
+  if (!Number.isInteger(page) || page <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "link.page.invalid",
+      data: null
+    });
+  }
+  if (!Number.isInteger(limit) || limit <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "link.limit.invalid",
+      data: null
+    });
+  }
+  const offset = (page - 1) * limit;
+  const totalResult = db.select({ count: sql4`count(*)` }).from(links).get();
+  const list = await db.select({
+    id: links.id,
+    uid: links.uid,
+    username: users.username,
+    title: links.title,
+    url: links.url,
+    backup_url: links.backup_url,
+    content: links.content,
+    keywords: links.keywords,
+    description: links.description,
+    icon: links.icon,
+    category_type: links.category_type,
+    category_id: links.category_id,
+    sort_order: links.sort_order,
+    is_public: links.is_public,
+    http_code: links.http_code,
+    last_checked_at: links.last_checked_at,
+    created_at: links.created_at,
+    updated_at: links.updated_at
+  }).from(links).leftJoin(users, eq8(links.uid, users.id)).orderBy(desc6(links.id)).limit(limit).offset(offset);
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      list,
+      page,
+      limit,
+      total: totalResult?.count ?? 0
+    }
+  });
+};
 var searchLinks = async (c3) => {
   const body = await c3.req.json();
   const uid = c3.get("uid");
@@ -38135,6 +38383,7 @@ adminRouter.post("/save_license", saveLicense);
 adminRouter.post("/remove_license", removeLicense);
 adminRouter.get("/get_setting", getGlobalSetting);
 adminRouter.get("/list_users", listUsers);
+adminRouter.post("/list_links", listLinksByAdmin);
 adminRouter.post("/add_nav_category", addNavCategory);
 adminRouter.post("/update_nav_category", updateNavCategory);
 adminRouter.post("/delete_nav_category", deleteNavCategory);
@@ -38144,6 +38393,7 @@ adminRouter.post("/update_nav_link_icon", updateNavLinkIcon);
 adminRouter.post("/delete_nav_link_icon", deleteNavLinkIcon);
 adminRouter.post("/delete_nav_links", deleteNavLinks);
 adminRouter.post("/sort_nav_links", sortNavLinks);
+adminRouter.post("/import_nav_html", importNavHTML);
 publicRouter.get("/api/nav_categories", listNavCategories);
 publicRouter.get("/api/nav_links", getNavCategoryLinks);
 publicRouter.post("/api/search_nav_links", searchNavLinks);
