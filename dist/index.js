@@ -7329,7 +7329,8 @@ var getSettingValue = (key) => {
 };
 var DEFAULT_USER_SETTINGS = {
   category_collapsed: true,
-  icon_type: "online"
+  icon_type: "online",
+  home_entry: "bookmark"
 };
 var setUserSetting = async (c3) => {
   const uid = c3.get("uid");
@@ -7404,8 +7405,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.2.0";
-var APP_DATE = "2026042304";
+var APP_VERSION = "0.3.0";
+var APP_DATE = "2026042412";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -21584,7 +21585,9 @@ var listUsers = async (c3) => {
 };
 
 // src/api/category.ts
-import { eq as eq3, and as and2, asc, desc as desc2 } from "drizzle-orm";
+import { rm as rm2 } from "fs/promises";
+import { join as join3 } from "path";
+import { eq as eq3, and as and2, asc, desc as desc2, inArray, or } from "drizzle-orm";
 var existsCategory = async (uid, categoryType, categoryId) => {
   if (!Number.isInteger(uid) || uid <= 0) {
     return false;
@@ -21700,7 +21703,16 @@ var addCategory = async (c3) => {
 };
 var updateCategory = async (c3) => {
   const payload = await c3.req.json();
-  let { id, name, description, icon, icon_color, sort_order, parent_id } = payload;
+  let {
+    id,
+    category_type,
+    name,
+    description,
+    icon,
+    icon_color,
+    sort_order,
+    parent_id
+  } = payload;
   const uid = c3.get("uid");
   const hasIcon = Object.prototype.hasOwnProperty.call(payload, "icon");
   const hasIconColor = Object.prototype.hasOwnProperty.call(payload, "icon_color");
@@ -21708,6 +21720,13 @@ var updateCategory = async (c3) => {
     return c3.json({
       code: -1000,
       msg: "category.id.invalid",
+      data: null
+    });
+  }
+  if (!vCategoryType(category_type)) {
+    return c3.json({
+      code: -1000,
+      msg: "category.type.invalid",
       data: null
     });
   }
@@ -21737,19 +21756,16 @@ var updateCategory = async (c3) => {
   } else {
     sort_order = 0;
   }
-  if (parent_id) {
-    const parentCategory = await db.query.categories_l1.findFirst({
-      where: and2(eq3(categories_l1.id, parent_id), eq3(categories_l1.uid, uid))
-    });
-    if (!parentCategory) {
+  if (category_type === "l1") {
+    if (parent_id != null) {
       return c3.json({
         code: -1000,
-        msg: "category.parent_id.not_found",
+        msg: "category.parent_id.invalid",
         data: null
       });
     }
-    const currentCategory2 = await db.query.categories_l2.findFirst({
-      where: and2(eq3(categories_l2.id, id), eq3(categories_l2.uid, uid))
+    const currentCategory2 = await db.query.categories_l1.findFirst({
+      where: and2(eq3(categories_l1.id, id), eq3(categories_l1.uid, uid))
     });
     if (!currentCategory2) {
       return c3.json({
@@ -21758,8 +21774,8 @@ var updateCategory = async (c3) => {
         data: null
       });
     }
-    const existingCategory2 = await db.query.categories_l2.findFirst({
-      where: and2(eq3(categories_l2.name, name), eq3(categories_l2.uid, uid))
+    const existingCategory2 = await db.query.categories_l1.findFirst({
+      where: and2(eq3(categories_l1.name, name), eq3(categories_l1.uid, uid))
     });
     if (existingCategory2 && existingCategory2.id !== id) {
       return c3.json({
@@ -21768,15 +21784,14 @@ var updateCategory = async (c3) => {
         data: null
       });
     }
-    const [row2] = await db.update(categories_l2).set({
-      l1_id: parent_id,
+    const [row2] = await db.update(categories_l1).set({
       name,
       description,
       ...hasIcon ? { icon } : {},
       ...hasIconColor ? { icon_color } : {},
       sort_order,
       updated_at: new Date
-    }).where(and2(eq3(categories_l2.id, id), eq3(categories_l2.uid, uid))).returning();
+    }).where(and2(eq3(categories_l1.id, id), eq3(categories_l1.uid, uid))).returning();
     return c3.json({
       code: 200,
       msg: "success",
@@ -21786,8 +21801,25 @@ var updateCategory = async (c3) => {
       }
     });
   }
-  const currentCategory = await db.query.categories_l1.findFirst({
-    where: and2(eq3(categories_l1.id, id), eq3(categories_l1.uid, uid))
+  if (parent_id == null || !Number.isInteger(parent_id) || parent_id <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "category.parent_id.invalid",
+      data: null
+    });
+  }
+  const parentCategory = await db.query.categories_l1.findFirst({
+    where: and2(eq3(categories_l1.id, parent_id), eq3(categories_l1.uid, uid))
+  });
+  if (!parentCategory) {
+    return c3.json({
+      code: -1000,
+      msg: "category.parent_id.not_found",
+      data: null
+    });
+  }
+  const currentCategory = await db.query.categories_l2.findFirst({
+    where: and2(eq3(categories_l2.id, id), eq3(categories_l2.uid, uid))
   });
   if (!currentCategory) {
     return c3.json({
@@ -21796,8 +21828,8 @@ var updateCategory = async (c3) => {
       data: null
     });
   }
-  const existingCategory = await db.query.categories_l1.findFirst({
-    where: and2(eq3(categories_l1.name, name), eq3(categories_l1.uid, uid))
+  const existingCategory = await db.query.categories_l2.findFirst({
+    where: and2(eq3(categories_l2.name, name), eq3(categories_l2.uid, uid))
   });
   if (existingCategory && existingCategory.id !== id) {
     return c3.json({
@@ -21806,14 +21838,15 @@ var updateCategory = async (c3) => {
       data: null
     });
   }
-  const [row] = await db.update(categories_l1).set({
+  const [row] = await db.update(categories_l2).set({
+    l1_id: parent_id,
     name,
     description,
     ...hasIcon ? { icon } : {},
     ...hasIconColor ? { icon_color } : {},
     sort_order,
     updated_at: new Date
-  }).where(and2(eq3(categories_l1.id, id), eq3(categories_l1.uid, uid))).returning();
+  }).where(and2(eq3(categories_l2.id, id), eq3(categories_l2.uid, uid))).returning();
   return c3.json({
     code: 200,
     msg: "success",
@@ -21824,7 +21857,7 @@ var updateCategory = async (c3) => {
   });
 };
 var deleteCategory = async (c3) => {
-  const { category_type, category_id } = await c3.req.json();
+  let { category_type, category_id, category_name } = await c3.req.json();
   const uid = c3.get("uid");
   if (!category_type || typeof category_type !== "string") {
     return c3.json({
@@ -21847,47 +21880,89 @@ var deleteCategory = async (c3) => {
       data: null
     });
   }
-  const categoryExists = await existsCategory(uid, category_type, category_id);
-  if (!categoryExists) {
+  if (typeof category_name !== "string") {
+    return c3.json({
+      code: -1000,
+      msg: "category.delete.name_required",
+      data: null
+    });
+  }
+  category_name = category_name.trim();
+  if (!category_name) {
+    return c3.json({
+      code: -1000,
+      msg: "category.delete.name_required",
+      data: null
+    });
+  }
+  const currentCategory = category_type === "l1" ? await db.query.categories_l1.findFirst({
+    where: and2(eq3(categories_l1.id, category_id), eq3(categories_l1.uid, uid)),
+    columns: {
+      id: true,
+      name: true
+    }
+  }) : await db.query.categories_l2.findFirst({
+    where: and2(eq3(categories_l2.id, category_id), eq3(categories_l2.uid, uid)),
+    columns: {
+      id: true,
+      name: true
+    }
+  });
+  if (!currentCategory) {
     return c3.json({
       code: -1000,
       msg: "category.id.not_found",
       data: null
     });
   }
-  if (category_type === "l1") {
-    const childCategory = await db.query.categories_l2.findFirst({
-      where: and2(eq3(categories_l2.uid, uid), eq3(categories_l2.l1_id, category_id))
-    });
-    if (childCategory) {
-      return c3.json({
-        code: -1000,
-        msg: "category.delete.has_children",
-        data: null
-      });
-    }
-  }
-  const categoryLink = await db.query.links.findFirst({
-    where: and2(eq3(links.uid, uid), eq3(links.category_type, category_type), eq3(links.category_id, category_id))
-  });
-  if (categoryLink) {
+  if (category_name !== currentCategory.name) {
     return c3.json({
       code: -1000,
-      msg: "category.delete.has_links",
+      msg: "category.delete.name_mismatch",
       data: null
     });
   }
-  if (category_type === "l1") {
-    await db.delete(categories_l1).where(and2(eq3(categories_l1.id, category_id), eq3(categories_l1.uid, uid)));
-  } else {
-    await db.delete(categories_l2).where(and2(eq3(categories_l2.id, category_id), eq3(categories_l2.uid, uid)));
-  }
+  const childCategories = category_type === "l1" ? await db.query.categories_l2.findMany({
+    where: and2(eq3(categories_l2.uid, uid), eq3(categories_l2.l1_id, category_id)),
+    columns: {
+      id: true
+    }
+  }) : [];
+  const childCategoryIds = childCategories.map((item) => item.id);
+  const links2 = await db.query.links.findMany({
+    where: and2(eq3(links.uid, uid), category_type === "l1" ? childCategoryIds.length > 0 ? or(and2(eq3(links.category_type, "l1"), eq3(links.category_id, category_id)), and2(eq3(links.category_type, "l2"), inArray(links.category_id, childCategoryIds))) : and2(eq3(links.category_type, "l1"), eq3(links.category_id, category_id)) : and2(eq3(links.category_type, "l2"), eq3(links.category_id, category_id))),
+    columns: {
+      id: true,
+      icon: true
+    }
+  });
+  const linkIds = links2.map((item) => item.id);
+  const iconPaths = links2.map((item) => item.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
+  await db.transaction(async (tx) => {
+    if (linkIds.length > 0) {
+      await tx.delete(links).where(and2(eq3(links.uid, uid), inArray(links.id, linkIds)));
+    }
+    if (category_type === "l1") {
+      if (childCategoryIds.length > 0) {
+        await tx.delete(categories_l2).where(and2(eq3(categories_l2.uid, uid), inArray(categories_l2.id, childCategoryIds)));
+      }
+      await tx.delete(categories_l1).where(and2(eq3(categories_l1.id, category_id), eq3(categories_l1.uid, uid)));
+      return;
+    }
+    await tx.delete(categories_l2).where(and2(eq3(categories_l2.id, category_id), eq3(categories_l2.uid, uid)));
+  });
+  await Promise.allSettled(iconPaths.map((iconPath) => {
+    const filePath = join3(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm2(filePath, { force: true });
+  }));
   return c3.json({
     code: 200,
     msg: "success",
     data: {
       id: category_id,
-      category_type
+      category_type,
+      deleted_l2_count: category_type === "l1" ? childCategoryIds.length : 0,
+      deleted_link_count: linkIds.length
     }
   });
 };
@@ -21962,7 +22037,9 @@ var listCategories = async (c3) => {
 };
 
 // src/api/nav_category.ts
-import { eq as eq4, and as and3, asc as asc2, desc as desc3, inArray, sql as sql2 } from "drizzle-orm";
+import { rm as rm3 } from "fs/promises";
+import { join as join4 } from "path";
+import { eq as eq4, and as and3, asc as asc2, desc as desc3, inArray as inArray2, or as or2, sql as sql2 } from "drizzle-orm";
 var existsNavCategory = async (categoryType, categoryId) => {
   if (!Number.isInteger(categoryId) || categoryId <= 0) {
     return false;
@@ -22093,13 +22170,31 @@ var addNavCategory = async (c3) => {
 };
 var updateNavCategory = async (c3) => {
   const payload = await c3.req.json();
-  let { id, name, description, keywords, icon, icon_color, sort_order, visibility, parent_id } = payload;
+  let {
+    id,
+    category_type,
+    name,
+    description,
+    keywords,
+    icon,
+    icon_color,
+    sort_order,
+    visibility,
+    parent_id
+  } = payload;
   const hasIcon = Object.prototype.hasOwnProperty.call(payload, "icon");
   const hasIconColor = Object.prototype.hasOwnProperty.call(payload, "icon_color");
   if (!Number.isInteger(id) || id <= 0) {
     return c3.json({
       code: -1000,
       msg: "nav_category.id.invalid",
+      data: null
+    });
+  }
+  if (!vCategoryType(category_type)) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.type.invalid",
       data: null
     });
   }
@@ -22133,19 +22228,16 @@ var updateNavCategory = async (c3) => {
   if (!visibility || !validVisibility.includes(visibility)) {
     visibility = "public";
   }
-  if (parent_id) {
-    const parentCategory = await db.query.nav_categories_l1.findFirst({
-      where: eq4(nav_categories_l1.id, parent_id)
-    });
-    if (!parentCategory) {
+  if (category_type === "l1") {
+    if (parent_id != null) {
       return c3.json({
         code: -1000,
-        msg: "nav_category.parent_id.not_found",
+        msg: "nav_category.parent_id.invalid",
         data: null
       });
     }
-    const currentCategory2 = await db.query.nav_categories_l2.findFirst({
-      where: eq4(nav_categories_l2.id, id)
+    const currentCategory2 = await db.query.nav_categories_l1.findFirst({
+      where: eq4(nav_categories_l1.id, id)
     });
     if (!currentCategory2) {
       return c3.json({
@@ -22154,8 +22246,8 @@ var updateNavCategory = async (c3) => {
         data: null
       });
     }
-    const existingCategory2 = await db.query.nav_categories_l2.findFirst({
-      where: eq4(nav_categories_l2.name, name)
+    const existingCategory2 = await db.query.nav_categories_l1.findFirst({
+      where: eq4(nav_categories_l1.name, name)
     });
     if (existingCategory2 && existingCategory2.id !== id) {
       return c3.json({
@@ -22164,8 +22256,7 @@ var updateNavCategory = async (c3) => {
         data: null
       });
     }
-    const [row2] = await db.update(nav_categories_l2).set({
-      l1_id: parent_id,
+    const [row2] = await db.update(nav_categories_l1).set({
       name,
       description,
       keywords,
@@ -22174,7 +22265,7 @@ var updateNavCategory = async (c3) => {
       sort_order,
       visibility,
       updated_at: new Date
-    }).where(eq4(nav_categories_l2.id, id)).returning();
+    }).where(eq4(nav_categories_l1.id, id)).returning();
     return c3.json({
       code: 200,
       msg: "success",
@@ -22184,8 +22275,25 @@ var updateNavCategory = async (c3) => {
       }
     });
   }
-  const currentCategory = await db.query.nav_categories_l1.findFirst({
-    where: eq4(nav_categories_l1.id, id)
+  if (parent_id == null || !Number.isInteger(parent_id) || parent_id <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.parent_id.invalid",
+      data: null
+    });
+  }
+  const parentCategory = await db.query.nav_categories_l1.findFirst({
+    where: eq4(nav_categories_l1.id, parent_id)
+  });
+  if (!parentCategory) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.parent_id.not_found",
+      data: null
+    });
+  }
+  const currentCategory = await db.query.nav_categories_l2.findFirst({
+    where: eq4(nav_categories_l2.id, id)
   });
   if (!currentCategory) {
     return c3.json({
@@ -22194,8 +22302,8 @@ var updateNavCategory = async (c3) => {
       data: null
     });
   }
-  const existingCategory = await db.query.nav_categories_l1.findFirst({
-    where: eq4(nav_categories_l1.name, name)
+  const existingCategory = await db.query.nav_categories_l2.findFirst({
+    where: eq4(nav_categories_l2.name, name)
   });
   if (existingCategory && existingCategory.id !== id) {
     return c3.json({
@@ -22204,7 +22312,8 @@ var updateNavCategory = async (c3) => {
       data: null
     });
   }
-  const [row] = await db.update(nav_categories_l1).set({
+  const [row] = await db.update(nav_categories_l2).set({
+    l1_id: parent_id,
     name,
     description,
     keywords,
@@ -22213,7 +22322,7 @@ var updateNavCategory = async (c3) => {
     sort_order,
     visibility,
     updated_at: new Date
-  }).where(eq4(nav_categories_l1.id, id)).returning();
+  }).where(eq4(nav_categories_l2.id, id)).returning();
   return c3.json({
     code: 200,
     msg: "success",
@@ -22224,7 +22333,7 @@ var updateNavCategory = async (c3) => {
   });
 };
 var deleteNavCategory = async (c3) => {
-  const { category_type, category_id } = await c3.req.json();
+  let { category_type, category_id, category_name } = await c3.req.json();
   if (!category_type || typeof category_type !== "string") {
     return c3.json({
       code: -1000,
@@ -22246,47 +22355,170 @@ var deleteNavCategory = async (c3) => {
       data: null
     });
   }
-  const categoryExists = await existsNavCategory(category_type, category_id);
-  if (!categoryExists) {
+  if (typeof category_name !== "string") {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.delete.name_required",
+      data: null
+    });
+  }
+  category_name = category_name.trim();
+  if (!category_name) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.delete.name_required",
+      data: null
+    });
+  }
+  const currentCategory = category_type === "l1" ? await db.query.nav_categories_l1.findFirst({
+    where: eq4(nav_categories_l1.id, category_id),
+    columns: {
+      id: true,
+      name: true
+    }
+  }) : await db.query.nav_categories_l2.findFirst({
+    where: eq4(nav_categories_l2.id, category_id),
+    columns: {
+      id: true,
+      name: true
+    }
+  });
+  if (!currentCategory) {
     return c3.json({
       code: -1000,
       msg: "nav_category.id.not_found",
       data: null
     });
   }
-  if (category_type === "l1") {
-    const childCategory = await db.query.nav_categories_l2.findFirst({
-      where: eq4(nav_categories_l2.l1_id, category_id)
-    });
-    if (childCategory) {
-      return c3.json({
-        code: -1000,
-        msg: "nav_category.delete.has_children",
-        data: null
-      });
-    }
-  }
-  const categoryLink = await db.query.nav_links.findFirst({
-    where: and3(eq4(nav_links.category_type, category_type), eq4(nav_links.category_id, category_id))
-  });
-  if (categoryLink) {
+  if (category_name !== currentCategory.name) {
     return c3.json({
       code: -1000,
-      msg: "nav_category.delete.has_links",
+      msg: "nav_category.delete.name_mismatch",
       data: null
     });
   }
+  const childCategories = category_type === "l1" ? await db.query.nav_categories_l2.findMany({
+    where: eq4(nav_categories_l2.l1_id, category_id),
+    columns: {
+      id: true
+    }
+  }) : [];
+  const childCategoryIds = childCategories.map((item) => item.id);
+  const links2 = await db.query.nav_links.findMany({
+    where: category_type === "l1" ? childCategoryIds.length > 0 ? or2(and3(eq4(nav_links.category_type, "l1"), eq4(nav_links.category_id, category_id)), and3(eq4(nav_links.category_type, "l2"), inArray2(nav_links.category_id, childCategoryIds))) : and3(eq4(nav_links.category_type, "l1"), eq4(nav_links.category_id, category_id)) : and3(eq4(nav_links.category_type, "l2"), eq4(nav_links.category_id, category_id)),
+    columns: {
+      id: true,
+      icon: true
+    }
+  });
+  const linkIds = links2.map((item) => item.id);
+  const iconPaths = links2.map((item) => item.icon?.trim() || "").filter((icon) => icon.startsWith("/images/nav/"));
+  await db.transaction(async (tx) => {
+    if (linkIds.length > 0) {
+      await tx.delete(nav_links).where(inArray2(nav_links.id, linkIds));
+    }
+    if (category_type === "l1") {
+      if (childCategoryIds.length > 0) {
+        await tx.delete(nav_categories_l2).where(inArray2(nav_categories_l2.id, childCategoryIds));
+      }
+      await tx.delete(nav_categories_l1).where(eq4(nav_categories_l1.id, category_id));
+      return;
+    }
+    await tx.delete(nav_categories_l2).where(eq4(nav_categories_l2.id, category_id));
+  });
+  await Promise.allSettled(iconPaths.map((iconPath) => {
+    const filePath = join4(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm3(filePath, { force: true });
+  }));
   if (category_type === "l1") {
-    await db.delete(nav_categories_l1).where(eq4(nav_categories_l1.id, category_id));
-  } else {
-    await db.delete(nav_categories_l2).where(eq4(nav_categories_l2.id, category_id));
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        id: category_id,
+        category_type,
+        deleted_l2_count: childCategoryIds.length,
+        deleted_link_count: linkIds.length
+      }
+    });
   }
   return c3.json({
     code: 200,
     msg: "success",
     data: {
       id: category_id,
-      category_type
+      category_type,
+      deleted_l2_count: 0,
+      deleted_link_count: linkIds.length
+    }
+  });
+};
+var moveNavData = async (c3) => {
+  const payload = await c3.req.json();
+  const {
+    source_category_type,
+    source_category_id,
+    target_category_type,
+    target_category_id
+  } = payload;
+  if (!vCategoryType(source_category_type) || !vCategoryType(target_category_type)) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.type.invalid",
+      data: null
+    });
+  }
+  if (!Number.isInteger(source_category_id) || source_category_id <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.id.invalid",
+      data: null
+    });
+  }
+  if (!Number.isInteger(target_category_id) || target_category_id <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.move.target_id.invalid",
+      data: null
+    });
+  }
+  if (source_category_type === target_category_type && source_category_id === target_category_id) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.move.same_target",
+      data: null
+    });
+  }
+  const sourceExists = await existsNavCategory(source_category_type, source_category_id);
+  if (!sourceExists) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.move.source_not_found",
+      data: null
+    });
+  }
+  const targetExists = await existsNavCategory(target_category_type, target_category_id);
+  if (!targetExists) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.move.target_not_found",
+      data: null
+    });
+  }
+  const movedRows = await db.update(nav_links).set({
+    category_type: target_category_type,
+    category_id: target_category_id,
+    updated_at: new Date
+  }).where(and3(eq4(nav_links.category_type, source_category_type), eq4(nav_links.category_id, source_category_id))).returning({ id: nav_links.id });
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      moved_count: movedRows.length,
+      source_category_type,
+      source_category_id,
+      target_category_type,
+      target_category_id
     }
   });
 };
@@ -22305,7 +22537,7 @@ var listNavCategories = async (c3) => {
       visibility: true,
       created_at: true
     },
-    where: inArray(nav_categories_l1.visibility, allowedVisibility),
+    where: inArray2(nav_categories_l1.visibility, allowedVisibility),
     orderBy: [
       asc2(nav_categories_l1.sort_order),
       desc3(nav_categories_l1.created_at)
@@ -22324,7 +22556,7 @@ var listNavCategories = async (c3) => {
       visibility: true,
       created_at: true
     },
-    where: inArray(nav_categories_l2.visibility, allowedVisibility),
+    where: inArray2(nav_categories_l2.visibility, allowedVisibility),
     orderBy: [
       asc2(nav_categories_l2.sort_order),
       desc3(nav_categories_l2.created_at)
@@ -22366,9 +22598,9 @@ var listNavCategories = async (c3) => {
 };
 
 // src/api/nav_link.ts
-import { mkdir as mkdir2, rm as rm2, writeFile as writeFile2 } from "fs/promises";
-import { dirname as dirname3, join as join3 } from "path";
-import { and as and4, desc as desc4, asc as asc3, eq as eq5, inArray as inArray2, like, or, sql as sql3 } from "drizzle-orm";
+import { mkdir as mkdir2, rm as rm4, writeFile as writeFile2 } from "fs/promises";
+import { dirname as dirname3, join as join5 } from "path";
+import { and as and4, desc as desc4, asc as asc3, eq as eq5, inArray as inArray3, like, or as or3, sql as sql3 } from "drizzle-orm";
 
 // src/utils/icon.ts
 var ALLOWED_ICON_MIME_MAP = {
@@ -22522,7 +22754,7 @@ var validateBatchNavLinkIds = async (ids) => {
     };
   }
   const rows = await db.query.nav_links.findMany({
-    where: inArray2(nav_links.id, uniqueIds),
+    where: inArray3(nav_links.id, uniqueIds),
     columns: {
       id: true,
       icon: true
@@ -22701,7 +22933,7 @@ var getNavCategoryLinks = async (c3) => {
   const role = await getRequestUserRole(c3);
   const allowedVisibility = role === "admin" ? ["public", "user", "admin"] : role === "user" ? ["public", "user"] : ["public"];
   const links2 = await db.query.nav_links.findMany({
-    where: and4(eq5(nav_links.category_type, categoryType), eq5(nav_links.category_id, categoryId), inArray2(nav_links.visibility, allowedVisibility)),
+    where: and4(eq5(nav_links.category_type, categoryType), eq5(nav_links.category_id, categoryId), inArray3(nav_links.visibility, allowedVisibility)),
     orderBy: [
       asc3(nav_links.sort_order),
       desc4(nav_links.created_at)
@@ -22725,10 +22957,10 @@ var deleteNavLinks = async (c3) => {
     });
   }
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/nav/"));
-  await db.delete(nav_links).where(inArray2(nav_links.id, validatedIds.ids));
+  await db.delete(nav_links).where(inArray3(nav_links.id, validatedIds.ids));
   await Promise.allSettled(iconPaths.map((iconPath) => {
-    const filePath = join3(process.cwd(), "data", iconPath.replace(/^\//, ""));
-    return rm2(filePath, { force: true });
+    const filePath = join5(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm4(filePath, { force: true });
   }));
   return c3.json({
     code: 200,
@@ -22773,8 +23005,8 @@ var updateNavLinkIcon = async (c3) => {
   }
   const previousIcon = currentLink.icon?.trim() || "";
   if (previousIcon.startsWith("/images/nav/")) {
-    const previousIconPath = join3(process.cwd(), "data", previousIcon.replace(/^\//, ""));
-    await rm2(previousIconPath, { force: true });
+    const previousIconPath = join5(process.cwd(), "data", previousIcon.replace(/^\//, ""));
+    await rm4(previousIconPath, { force: true });
   }
   if (file2.size > MAX_ICON_SIZE) {
     return c3.json({
@@ -22794,7 +23026,7 @@ var updateNavLinkIcon = async (c3) => {
   const now = new Date;
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
   const relativeIconPath = `/images/nav/${yearMonth}/${id}.${ext}`;
-  const savePath = join3(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
+  const savePath = join5(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
   await mkdir2(dirname3(savePath), { recursive: true });
   await writeFile2(savePath, Buffer.from(await file2.arrayBuffer()));
   const [row] = await db.update(nav_links).set({
@@ -22836,8 +23068,8 @@ var deleteNavLinkIcon = async (c3) => {
   }
   const currentIcon = currentLink.icon?.trim() || "";
   if (currentIcon.startsWith("/images/nav/")) {
-    const iconPath = join3(process.cwd(), "data", currentIcon.replace(/^\//, ""));
-    await rm2(iconPath, { force: true });
+    const iconPath = join5(process.cwd(), "data", currentIcon.replace(/^\//, ""));
+    await rm4(iconPath, { force: true });
   }
   const [row] = await db.update(nav_links).set({
     icon: "",
@@ -22898,7 +23130,7 @@ var sortNavLinks = async (c3) => {
   }
   const ids = items.map((item) => item.id);
   const rows = await db.query.nav_links.findMany({
-    where: inArray2(nav_links.id, ids),
+    where: inArray3(nav_links.id, ids),
     columns: {
       id: true
     }
@@ -22962,8 +23194,8 @@ var searchNavLinks = async (c3) => {
   const keywordPattern = `%${normalizedKeyword}%`;
   const role = await getRequestUserRole(c3);
   const allowedVisibility = role === "admin" ? ["public", "user", "admin"] : role === "user" ? ["public", "user"] : ["public"];
-  const navLinksSubquery = db.select().from(nav_links).where(inArray2(nav_links.visibility, allowedVisibility)).as("allowed_nav_links");
-  const links2 = await db.select().from(navLinksSubquery).where(or(like(navLinksSubquery.title, keywordPattern), like(navLinksSubquery.url, keywordPattern), like(navLinksSubquery.backup_url, keywordPattern), like(navLinksSubquery.description, keywordPattern), like(navLinksSubquery.keywords, keywordPattern), like(navLinksSubquery.content, keywordPattern))).orderBy(desc4(navLinksSubquery.updated_at), desc4(navLinksSubquery.created_at), desc4(sql3`${navLinksSubquery.id}`)).limit(20);
+  const navLinksSubquery = db.select().from(nav_links).where(inArray3(nav_links.visibility, allowedVisibility)).as("allowed_nav_links");
+  const links2 = await db.select().from(navLinksSubquery).where(or3(like(navLinksSubquery.title, keywordPattern), like(navLinksSubquery.url, keywordPattern), like(navLinksSubquery.backup_url, keywordPattern), like(navLinksSubquery.description, keywordPattern), like(navLinksSubquery.keywords, keywordPattern), like(navLinksSubquery.content, keywordPattern))).orderBy(desc4(navLinksSubquery.updated_at), desc4(navLinksSubquery.created_at), desc4(sql3`${navLinksSubquery.id}`)).limit(20);
   return c3.json({
     code: 200,
     msg: "success",
@@ -37282,10 +37514,72 @@ var exportHTML = async (c3) => {
 };
 
 // src/api/link.ts
-import { mkdir as mkdir3, rm as rm3, writeFile as writeFile3 } from "fs/promises";
-import { dirname as dirname4, join as join4 } from "path";
-import { and as and6, asc as asc5, desc as desc6, eq as eq8, inArray as inArray3, like as like2, or as or2, sql as sql4 } from "drizzle-orm";
+import { mkdir as mkdir3, rm as rm5, writeFile as writeFile3 } from "fs/promises";
+import { dirname as dirname4, join as join6 } from "path";
+import { and as and6, asc as asc5, desc as desc6, eq as eq8, inArray as inArray4, like as like2, or as or4, sql as sql4 } from "drizzle-orm";
 var MAX_LINK_ICON_SIZE = 100 * 1024;
+var HTML_CHARSET_SNIFF_BYTES = 8 * 1024;
+var normalizeHtmlCharset = (charset) => {
+  if (!charset) {
+    return "utf-8";
+  }
+  const normalized = charset.trim().toLowerCase();
+  if (!normalized) {
+    return "utf-8";
+  }
+  if (normalized === "utf8") {
+    return "utf-8";
+  }
+  if (normalized === "gb2312" || normalized === "gbk" || normalized === "x-gbk") {
+    return "gbk";
+  }
+  if (normalized === "gb18030") {
+    return "gb18030";
+  }
+  if (normalized === "utf-8") {
+    return "utf-8";
+  }
+  return "utf-8";
+};
+var extractCharset = (value) => {
+  if (!value) {
+    return null;
+  }
+  const matched = value.match(/charset\s*=\s*["']?([^\s;"'>]+)/i);
+  return matched?.[1] ?? null;
+};
+var detectHtmlCharset = (contentType, bytes) => {
+  if (bytes.length >= 3 && bytes[0] === 239 && bytes[1] === 187 && bytes[2] === 191) {
+    return "utf-8";
+  }
+  const headerCharset = normalizeHtmlCharset(extractCharset(contentType));
+  const sniffLength = Math.min(bytes.length, HTML_CHARSET_SNIFF_BYTES);
+  let sniffText = "";
+  for (let i = 0;i < sniffLength; i += 1) {
+    sniffText += String.fromCharCode(bytes[i]);
+  }
+  const metaCharset = sniffText.match(/<meta[^>]*charset\s*=\s*["']?([^\s"'>/]+)/i)?.[1];
+  const httpEquivCharset = sniffText.match(/<meta[^>]*http-equiv\s*=\s*["']content-type["'][^>]*content\s*=\s*["'][^"']*charset\s*=\s*([^\s;"'>]+)/i)?.[1];
+  const detectedMetaCharset = normalizeHtmlCharset(metaCharset || httpEquivCharset);
+  if (extractCharset(contentType)) {
+    return headerCharset;
+  }
+  return detectedMetaCharset;
+};
+var decodeHtmlBytes = (contentType, bytes) => {
+  const preferredCharset = detectHtmlCharset(contentType, bytes);
+  const fallbackCharsets = ["utf-8", "gbk", "gb18030"];
+  const candidates = [
+    preferredCharset,
+    ...fallbackCharsets.filter((charset) => charset !== preferredCharset)
+  ];
+  for (const charset of candidates) {
+    try {
+      return new TextDecoder(charset).decode(bytes);
+    } catch {}
+  }
+  return new TextDecoder().decode(bytes);
+};
 var ALLOWED_LINK_ICON_MIME_MAP = {
   "image/jpeg": "jpg",
   "image/jpg": "jpg",
@@ -37320,7 +37614,7 @@ var validateBatchLinkIds = async (uid, ids) => {
     };
   }
   const rows = await db.query.links.findMany({
-    where: inArray3(links.id, uniqueIds),
+    where: inArray4(links.id, uniqueIds),
     columns: {
       id: true,
       uid: true,
@@ -37610,8 +37904,8 @@ var updateLinkIcon = async (c3) => {
   }
   const previousIcon = currentLink.icon?.trim() || "";
   if (previousIcon.startsWith("/images/")) {
-    const previousIconPath = join4(process.cwd(), "data", previousIcon.replace(/^\//, ""));
-    await rm3(previousIconPath, { force: true });
+    const previousIconPath = join6(process.cwd(), "data", previousIcon.replace(/^\//, ""));
+    await rm5(previousIconPath, { force: true });
   }
   if (file2.size > MAX_LINK_ICON_SIZE) {
     return c3.json({
@@ -37631,7 +37925,7 @@ var updateLinkIcon = async (c3) => {
   const now = new Date;
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
   const relativeIconPath = `/images/${uid}/${yearMonth}/${id}.${ext}`;
-  const savePath = join4(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
+  const savePath = join6(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
   await mkdir3(dirname4(savePath), { recursive: true });
   await writeFile3(savePath, Buffer.from(await file2.arrayBuffer()));
   const [row] = await db.update(links).set({
@@ -37682,8 +37976,8 @@ var deleteLinkIcon = async (c3) => {
   }
   const currentIcon = currentLink.icon?.trim() || "";
   if (currentIcon.startsWith("/images/")) {
-    const iconPath = join4(process.cwd(), "data", currentIcon.replace(/^\//, ""));
-    await rm3(iconPath, { force: true });
+    const iconPath = join6(process.cwd(), "data", currentIcon.replace(/^\//, ""));
+    await rm5(iconPath, { force: true });
   }
   const [row] = await db.update(links).set({
     icon: "",
@@ -37743,7 +38037,7 @@ var updateLinksCategory = async (c3) => {
     category_type,
     category_id,
     updated_at: new Date
-  }).where(and6(eq8(links.uid, uid), inArray3(links.id, validatedIds.ids)));
+  }).where(and6(eq8(links.uid, uid), inArray4(links.id, validatedIds.ids)));
   return c3.json({
     code: 200,
     msg: "success",
@@ -37768,10 +38062,10 @@ var deleteLinks = async (c3) => {
     });
   }
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
-  await db.delete(links).where(and6(eq8(links.uid, uid), inArray3(links.id, validatedIds.ids)));
+  await db.delete(links).where(and6(eq8(links.uid, uid), inArray4(links.id, validatedIds.ids)));
   await Promise.allSettled(iconPaths.map((iconPath) => {
-    const filePath = join4(process.cwd(), "data", iconPath.replace(/^\//, ""));
-    return rm3(filePath, { force: true });
+    const filePath = join6(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm5(filePath, { force: true });
   }));
   return c3.json({
     code: 200,
@@ -37829,7 +38123,7 @@ var sortLinks = async (c3) => {
   }
   const ids = items.map((item) => item.id);
   const rows = await db.query.links.findMany({
-    where: inArray3(links.id, ids),
+    where: inArray4(links.id, ids),
     columns: {
       id: true,
       uid: true
@@ -37954,7 +38248,7 @@ var searchLinks = async (c3) => {
   }
   const keywordPattern = `%${normalizedKeyword}%`;
   const userLinksSubquery = db.select().from(links).where(eq8(links.uid, uid)).as("user_links");
-  const links2 = await db.select().from(userLinksSubquery).where(or2(like2(userLinksSubquery.title, keywordPattern), like2(userLinksSubquery.url, keywordPattern), like2(userLinksSubquery.backup_url, keywordPattern), like2(userLinksSubquery.description, keywordPattern))).orderBy(desc6(userLinksSubquery.updated_at), desc6(userLinksSubquery.created_at), desc6(sql4`${userLinksSubquery.id}`)).limit(20);
+  const links2 = await db.select().from(userLinksSubquery).where(or4(like2(userLinksSubquery.title, keywordPattern), like2(userLinksSubquery.url, keywordPattern), like2(userLinksSubquery.backup_url, keywordPattern), like2(userLinksSubquery.description, keywordPattern))).orderBy(desc6(userLinksSubquery.updated_at), desc6(userLinksSubquery.created_at), desc6(sql4`${userLinksSubquery.id}`)).limit(20);
   return c3.json({
     code: 200,
     msg: "success",
@@ -38054,7 +38348,8 @@ var getLinkInfo = async (c3) => {
         data: { title: "", description: "" }
       });
     }
-    const html4 = await res.text();
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const html4 = decodeHtmlBytes(contentType, bytes);
     const $2 = load(html4);
     title = $2('meta[property="og:title"]').attr("content")?.trim() || $2("title").text()?.trim() || "";
     description = $2('meta[property="og:description"]').attr("content")?.trim() || $2('meta[name="description"]').attr("content")?.trim() || "";
@@ -38064,6 +38359,182 @@ var getLinkInfo = async (c3) => {
     msg: "success",
     data: { title, description }
   });
+};
+
+// src/api/update.ts
+import { writeFile as writeFile4 } from "fs/promises";
+import { tmpdir } from "os";
+import { join as join7 } from "path";
+var UPDATE_MANIFEST_URL = "https://soft.xiaoz.org/source/zmark/latest.json";
+var UPDATE_REQUEST_TIMEOUT = 1e4;
+var UPDATE_DOWNLOAD_TIMEOUT = 60000;
+var README_MAX_SIZE = 1024 * 1024;
+var compareVersions = (currentVersion, latestVersion) => {
+  const currentParts = currentVersion.split(".").map((part) => parseInt(part, 10) || 0);
+  const latestParts = latestVersion.split(".").map((part) => parseInt(part, 10) || 0);
+  const maxLength = Math.max(currentParts.length, latestParts.length);
+  for (let i = 0;i < maxLength; i += 1) {
+    const current = currentParts[i] ?? 0;
+    const latest = latestParts[i] ?? 0;
+    if (latest > current) {
+      return 1;
+    }
+    if (latest < current) {
+      return -1;
+    }
+  }
+  return 0;
+};
+var isValidVersion = (version2) => /^\d+(\.\d+){1,2}$/.test(version2);
+var fetchWithTimeout = async (url2, timeout) => {
+  const controller = new AbortController;
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(url2, {
+      method: "GET",
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+var fetchUpdateManifest = async () => {
+  const res = await fetchWithTimeout(UPDATE_MANIFEST_URL, UPDATE_REQUEST_TIMEOUT);
+  if (!res.ok) {
+    throw new Error("manifest_request_failed");
+  }
+  const json2 = await res.json();
+  if (!json2 || typeof json2.version !== "string" || typeof json2.readme !== "string" || typeof json2.url !== "string" || !isValidVersion(json2.version)) {
+    throw new Error("manifest_invalid");
+  }
+  return {
+    version: json2.version.trim(),
+    readme: json2.readme.trim(),
+    url: json2.url.trim()
+  };
+};
+var fetchReadmeContent = async (url2) => {
+  const res = await fetchWithTimeout(url2, UPDATE_REQUEST_TIMEOUT);
+  if (!res.ok) {
+    return "";
+  }
+  const contentLength = res.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > README_MAX_SIZE) {
+    return "";
+  }
+  const text4 = await res.text();
+  if (Buffer.byteLength(text4, "utf-8") > README_MAX_SIZE) {
+    return "";
+  }
+  return text4;
+};
+var getUpdateErrorMessage = (error48) => {
+  if (error48 instanceof Error && error48.name === "AbortError") {
+    return "update.request.timeout";
+  }
+  if (error48 instanceof Error && error48.message === "manifest_invalid") {
+    return "update.latest.invalid";
+  }
+  return "update.check.failed";
+};
+var checkUpdate = async (c3) => {
+  try {
+    const manifest = await fetchUpdateManifest();
+    const hasUpdate = compareVersions(APP_VERSION, manifest.version) > 0;
+    let readme = "";
+    if (hasUpdate) {
+      try {
+        readme = await fetchReadmeContent(manifest.readme);
+      } catch {
+        readme = "";
+      }
+    }
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        has_update: hasUpdate,
+        current_version: APP_VERSION,
+        latest_version: manifest.version,
+        readme,
+        url: hasUpdate ? manifest.url : ""
+      }
+    });
+  } catch (error48) {
+    return c3.json({
+      code: -1000,
+      msg: getUpdateErrorMessage(error48),
+      data: null
+    });
+  }
+};
+var downloadUpdate = async (c3) => {
+  const host = getHostFromRequest(c3);
+  const { edition, result } = getLicense(host);
+  const isLicenseValid = (edition === "pro" || edition === "team") && result === "success";
+  if (!isLicenseValid) {
+    return c3.json({
+      code: -1000,
+      msg: "license.update.denied",
+      data: null
+    });
+  }
+  let manifest;
+  try {
+    manifest = await fetchUpdateManifest();
+  } catch (error48) {
+    return c3.json({
+      code: -1000,
+      msg: getUpdateErrorMessage(error48),
+      data: null
+    });
+  }
+  const fileName = `zmark-${manifest.version}.tar.gz`;
+  const filePath = join7(tmpdir(), fileName);
+  try {
+    const res = await fetchWithTimeout(manifest.url, UPDATE_DOWNLOAD_TIMEOUT);
+    if (!res.ok) {
+      return c3.json({
+        code: -1000,
+        msg: "update.download.failed",
+        data: null
+      });
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    if (arrayBuffer.byteLength === 0) {
+      return c3.json({
+        code: -1000,
+        msg: "update.download.failed",
+        data: null
+      });
+    }
+    try {
+      await writeFile4(filePath, Buffer.from(arrayBuffer));
+    } catch {
+      return c3.json({
+        code: -1000,
+        msg: "update.download.write_failed",
+        data: null
+      });
+    }
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        version: manifest.version,
+        file_name: fileName,
+        file_path: filePath,
+        url: manifest.url
+      }
+    });
+  } catch (error48) {
+    const message = error48 instanceof Error && error48.name === "AbortError" ? "update.request.timeout" : "update.download.failed";
+    return c3.json({
+      code: -1000,
+      msg: message,
+      data: null
+    });
+  }
 };
 
 // node_modules/hono/dist/utils/crypto.js
@@ -38387,6 +38858,7 @@ adminRouter.post("/list_links", listLinksByAdmin);
 adminRouter.post("/add_nav_category", addNavCategory);
 adminRouter.post("/update_nav_category", updateNavCategory);
 adminRouter.post("/delete_nav_category", deleteNavCategory);
+adminRouter.post("/move_nav_data", moveNavData);
 adminRouter.post("/add_nav_link", addNavLink);
 adminRouter.post("/update_nav_link", updateNavLink);
 adminRouter.post("/update_nav_link_icon", updateNavLinkIcon);
@@ -38399,6 +38871,8 @@ publicRouter.get("/api/nav_links", getNavCategoryLinks);
 publicRouter.post("/api/search_nav_links", searchNavLinks);
 publicRouter.get("/api/public_setting", getPublicSettings);
 adminRouter.get("/app_info", getAppInfo);
+adminRouter.get("/check_update", checkUpdate);
+adminRouter.post("/download_update", downloadUpdate);
 
 // src/index.ts
 var app = new Hono2;
