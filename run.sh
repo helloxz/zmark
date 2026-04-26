@@ -50,8 +50,8 @@ elif [ -z "$1" ]; then
     update
     bunx drizzle-kit migrate
     sleep 1 # 等待数据库迁移完成
-    # bun run ./dist/index.js
-    bun run dev
+    bun run ./dist/index.js
+    # bun run dev
 else
     # 参数不合法时报错并退出
     echo "Error: Invalid argument. Only 'dev' or empty allowed."
