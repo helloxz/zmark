@@ -7406,7 +7406,7 @@ var getUserSetting = async (c3) => {
 // src/api/info.ts
 import { count } from "drizzle-orm";
 var APP_VERSION = "0.4.0";
-var APP_DATE = "2026042609";
+var APP_DATE = "2026042610";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
