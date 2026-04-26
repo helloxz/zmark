@@ -7427,7 +7427,8 @@ var getAppInfo = async (c3) => {
       bookmark_link_count: bookmarkLinkCount[0].count,
       registered_user_count: userCount[0].count,
       total_user_count: userCount[0].count,
-      version: APP_VERSION
+      version: APP_VERSION,
+      date: APP_DATE
     }
   });
 };
@@ -7540,8 +7541,11 @@ function vCategoryName(name) {
   return regex.test(name);
 }
 function vLinkTitle(title) {
-  const regex = /^[^\u0000-\u001F\u007F]{1,200}$/;
-  return regex.test(title);
+  const normalizedTitle = title.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, " ").trim();
+  if (normalizedTitle.length < 1 || normalizedTitle.length > 200) {
+    return false;
+  }
+  return !/[\u0000-\u001F\u007F]/.test(normalizedTitle);
 }
 function vCategoryType(categoryType) {
   return categoryType === "l1" || categoryType === "l2";
@@ -22971,6 +22975,62 @@ var deleteNavLinks = async (c3) => {
     }
   });
 };
+var updateNavLinksCategory = async (c3) => {
+  const body = await c3.req.json();
+  const { ids, category_type, category_id } = body;
+  const validatedIds = await validateBatchNavLinkIds(ids);
+  if (!validatedIds.ok) {
+    return c3.json({
+      code: -1000,
+      msg: validatedIds.msg,
+      data: null
+    });
+  }
+  if (!category_type || typeof category_type !== "string") {
+    return c3.json({
+      code: -1000,
+      msg: "nav_link.category_type.required",
+      data: null
+    });
+  }
+  if (!vCategoryType(category_type)) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_link.category_type.invalid",
+      data: null
+    });
+  }
+  if (!Number.isInteger(category_id) || category_id <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_link.category_id.invalid",
+      data: null
+    });
+  }
+  const categoryExists = await existsNavCategory2(category_type, category_id);
+  if (!categoryExists) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_link.category.not_found",
+      data: null
+    });
+  }
+  await db.update(nav_links).set({
+    category_type,
+    category_id,
+    updated_at: new Date
+  }).where(inArray3(nav_links.id, validatedIds.ids));
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      count: validatedIds.ids.length,
+      ids: validatedIds.ids,
+      category_type,
+      category_id
+    }
+  });
+};
 var updateNavLinkIcon = async (c3) => {
   const formData = await c3.req.formData();
   const id = Number(formData.get("id"));
@@ -37593,7 +37653,7 @@ var ALLOWED_LINK_ICON_MIME_MAP = {
   "image/svg+xml": "svg",
   "image/webp": "webp"
 };
-var validateBatchLinkIds = async (uid, ids) => {
+var validateBatchLinkIds = async (ids, uid) => {
   if (!Array.isArray(ids) || ids.length === 0) {
     return {
       ok: false,
@@ -37627,12 +37687,14 @@ var validateBatchLinkIds = async (uid, ids) => {
       msg: "link.ids.not_found"
     };
   }
-  const hasUnauthorizedLink = rows.some((row) => row.uid !== uid);
-  if (hasUnauthorizedLink) {
-    return {
-      ok: false,
-      msg: "link.permission.denied"
-    };
+  if (uid != null) {
+    const hasUnauthorizedLink = rows.some((row) => row.uid !== uid);
+    if (hasUnauthorizedLink) {
+      return {
+        ok: false,
+        msg: "link.permission.denied"
+      };
+    }
   }
   return {
     ok: true,
@@ -37996,7 +38058,7 @@ var updateLinksCategory = async (c3) => {
   const body = await c3.req.json();
   const uid = c3.get("uid");
   const { ids, category_type, category_id } = body;
-  const validatedIds = await validateBatchLinkIds(uid, ids);
+  const validatedIds = await validateBatchLinkIds(ids, uid);
   if (!validatedIds.ok) {
     return c3.json({
       code: -1000,
@@ -38053,7 +38115,7 @@ var deleteLinks = async (c3) => {
   const body = await c3.req.json();
   const uid = c3.get("uid");
   const { ids } = body;
-  const validatedIds = await validateBatchLinkIds(uid, ids);
+  const validatedIds = await validateBatchLinkIds(ids, uid);
   if (!validatedIds.ok) {
     return c3.json({
       code: -1000,
@@ -38063,6 +38125,32 @@ var deleteLinks = async (c3) => {
   }
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
   await db.delete(links).where(and6(eq8(links.uid, uid), inArray4(links.id, validatedIds.ids)));
+  await Promise.allSettled(iconPaths.map((iconPath) => {
+    const filePath = join6(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm5(filePath, { force: true });
+  }));
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      count: validatedIds.ids.length,
+      ids: validatedIds.ids
+    }
+  });
+};
+var adminDeleteLinks = async (c3) => {
+  const body = await c3.req.json();
+  const { ids } = body;
+  const validatedIds = await validateBatchLinkIds(ids);
+  if (!validatedIds.ok) {
+    return c3.json({
+      code: -1000,
+      msg: validatedIds.msg,
+      data: null
+    });
+  }
+  const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
+  await db.delete(links).where(inArray4(links.id, validatedIds.ids));
   await Promise.allSettled(iconPaths.map((iconPath) => {
     const filePath = join6(process.cwd(), "data", iconPath.replace(/^\//, ""));
     return rm5(filePath, { force: true });
@@ -38362,12 +38450,11 @@ var getLinkInfo = async (c3) => {
 };
 
 // src/api/update.ts
-import { writeFile as writeFile4 } from "fs/promises";
-import { tmpdir } from "os";
-import { join as join7 } from "path";
+import { mkdir as mkdir4, writeFile as writeFile4 } from "fs/promises";
+import { dirname as dirname5, join as join7 } from "path";
 var UPDATE_MANIFEST_URL = "https://soft.xiaoz.org/source/zmark/latest.json";
 var UPDATE_REQUEST_TIMEOUT = 1e4;
-var UPDATE_DOWNLOAD_TIMEOUT = 60000;
+var UPDATE_DOWNLOAD_TIMEOUT = 120000;
 var README_MAX_SIZE = 1024 * 1024;
 var compareVersions = (currentVersion, latestVersion) => {
   const currentParts = currentVersion.split(".").map((part) => parseInt(part, 10) || 0);
@@ -38437,6 +38524,11 @@ var getUpdateErrorMessage = (error48) => {
   }
   return "update.check.failed";
 };
+var scheduleProcessExit = () => {
+  setTimeout(() => {
+    process.exit(0);
+  }, 1000);
+};
 var checkUpdate = async (c3) => {
   try {
     const manifest = await fetchUpdateManifest();
@@ -38489,8 +38581,8 @@ var downloadUpdate = async (c3) => {
       data: null
     });
   }
-  const fileName = `zmark-${manifest.version}.tar.gz`;
-  const filePath = join7(tmpdir(), fileName);
+  const fileName = "update.tar.gz";
+  const filePath = join7(process.cwd(), "data", fileName);
   try {
     const res = await fetchWithTimeout(manifest.url, UPDATE_DOWNLOAD_TIMEOUT);
     if (!res.ok) {
@@ -38509,6 +38601,7 @@ var downloadUpdate = async (c3) => {
       });
     }
     try {
+      await mkdir4(dirname5(filePath), { recursive: true });
       await writeFile4(filePath, Buffer.from(arrayBuffer));
     } catch {
       return c3.json({
@@ -38517,6 +38610,7 @@ var downloadUpdate = async (c3) => {
         data: null
       });
     }
+    scheduleProcessExit();
     return c3.json({
       code: 200,
       msg: "success",
@@ -38535,6 +38629,15 @@ var downloadUpdate = async (c3) => {
       data: null
     });
   }
+};
+var ping = async (c3) => {
+  return c3.json({
+    code: 200,
+    msg: "pong",
+    data: {
+      version: APP_VERSION
+    }
+  });
 };
 
 // node_modules/hono/dist/utils/crypto.js
@@ -38823,6 +38926,7 @@ publicRouter.use("/static/*", serveStatic2({
 publicRouter.get("/dashboard/*", index2);
 publicRouter.get("/user/*", index2);
 publicRouter.get("/", index2);
+publicRouter.get("/nav", index2);
 publicRouter.post("/api/init_user", initUser);
 publicRouter.post("/api/login", login);
 publicRouter.post("/api/register", register);
@@ -38855,6 +38959,7 @@ adminRouter.post("/remove_license", removeLicense);
 adminRouter.get("/get_setting", getGlobalSetting);
 adminRouter.get("/list_users", listUsers);
 adminRouter.post("/list_links", listLinksByAdmin);
+adminRouter.post("/delete_links", adminDeleteLinks);
 adminRouter.post("/add_nav_category", addNavCategory);
 adminRouter.post("/update_nav_category", updateNavCategory);
 adminRouter.post("/delete_nav_category", deleteNavCategory);
@@ -38864,6 +38969,7 @@ adminRouter.post("/update_nav_link", updateNavLink);
 adminRouter.post("/update_nav_link_icon", updateNavLinkIcon);
 adminRouter.post("/delete_nav_link_icon", deleteNavLinkIcon);
 adminRouter.post("/delete_nav_links", deleteNavLinks);
+adminRouter.post("/update_nav_links_category", updateNavLinksCategory);
 adminRouter.post("/sort_nav_links", sortNavLinks);
 adminRouter.post("/import_nav_html", importNavHTML);
 publicRouter.get("/api/nav_categories", listNavCategories);
@@ -38873,6 +38979,7 @@ publicRouter.get("/api/public_setting", getPublicSettings);
 adminRouter.get("/app_info", getAppInfo);
 adminRouter.get("/check_update", checkUpdate);
 adminRouter.post("/download_update", downloadUpdate);
+adminRouter.get("/ping", ping);
 
 // src/index.ts
 var app = new Hono2;
@@ -38883,7 +38990,7 @@ app.route("/", adminRouter);
 var src_default = {
   port: 3080,
   fetch: app.fetch,
-  idleTimeout: 60
+  idleTimeout: 120
 };
 export {
   src_default as default
