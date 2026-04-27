@@ -6982,625 +6982,6 @@ var getHostFromRequest = (c3) => {
   }
 };
 
-// src/api/setting.ts
-var DEFAULT_SETTINGS = {
-  site_setting: {
-    title: "Zmark",
-    sub_title: "\u7B80\u6D01\u3001\u6613\u7528\u7684\u5BFC\u822A\u7CFB\u7EDF",
-    keywords: "",
-    description: "",
-    logo: "",
-    custom_header: "",
-    custom_footer: ""
-  },
-  reg_setting: {
-    allow_register: false,
-    invite_code: ""
-  },
-  nav_setting: {
-    icon_type: "online"
-  }
-};
-var ENTITLEMENT_GATEWAY_B64 = "aHR0cHM6Ly9zaG9wLnhpdXBpbmcubmV0L3ptYXJrL3F1ZXJ5";
-var queryEntitlementGateway = async (orderId, email) => {
-  const controller = new AbortController;
-  const timeoutId = setTimeout(() => controller.abort(), 1e4);
-  const endpoint = decodeBase64Text(ENTITLEMENT_GATEWAY_B64);
-  try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ order_id: orderId, email }),
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    const json = await res.json();
-    return {
-      code: json.code,
-      data: json.data,
-      msg: json.msg
-    };
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err instanceof Error && err.name === "AbortError") {
-      return { code: -1000, data: null, msg: "license.request.timeout" };
-    }
-    return { code: -1000, data: null, msg: "license.request.error" };
-  }
-};
-var queryLicenseAPI = queryEntitlementGateway;
-var FREE_LICENSE = {
-  order_id: "-",
-  email: "-",
-  edition: "free",
-  domains: [],
-  status: "active",
-  expired_at: "-"
-};
-var LICENSE_CACHE_TTL = 1000 * 60 * 60 * 24 * 7;
-var checkLicense = async () => {
-  const setting = getSettingValue("license");
-  if (!setting || !setting.order_id || !setting.email) {
-    Cache.set("license", JSON.stringify(FREE_LICENSE), {
-      ttl: LICENSE_CACHE_TTL
-    });
-    return;
-  }
-  const { order_id, email } = setting;
-  let result = await queryLicenseAPI(order_id, email);
-  if (result.code === 200) {
-    const licenseData = {
-      order_id: result.data.order_id,
-      email: result.data.email,
-      edition: result.data.edition,
-      domains: result.data.domains,
-      status: result.data.status,
-      expired_at: result.data.expired_at
-    };
-    Cache.set("license", JSON.stringify(licenseData), {
-      ttl: LICENSE_CACHE_TTL
-    });
-    return;
-  }
-  await new Promise((resolve) => setTimeout(resolve, 30000));
-  result = await queryLicenseAPI(order_id, email);
-  if (result.code === 200) {
-    const licenseData = {
-      order_id: result.data.order_id,
-      email: result.data.email,
-      edition: result.data.edition,
-      domains: result.data.domains,
-      status: result.data.status,
-      expired_at: result.data.expired_at
-    };
-    Cache.set("license", JSON.stringify(licenseData), {
-      ttl: LICENSE_CACHE_TTL
-    });
-    return;
-  }
-  Cache.set("license", JSON.stringify(FREE_LICENSE), {
-    ttl: LICENSE_CACHE_TTL
-  });
-};
-var getLicense = (domain) => {
-  const cached = Cache.get("license");
-  if (!cached) {
-    return { edition: "free", result: "license.unknown" };
-  }
-  let licenseData;
-  try {
-    licenseData = typeof cached === "string" ? JSON.parse(cached) : cached;
-  } catch {
-    return { edition: "free", result: "license.unknown" };
-  }
-  const { edition, status, domains, expired_at } = licenseData;
-  if (edition === "free") {
-    return { edition: "free", result: "success" };
-  }
-  if (status !== "active") {
-    return { edition: "free", result: "invalid.license.status" };
-  }
-  if (expired_at) {
-    const expiredAt = new Date(expired_at);
-    if (new Date > expiredAt) {
-      return { edition: "free", result: "success" };
-    }
-  }
-  if (!Array.isArray(domains) || domains.length === 0 || !domains.includes(domain)) {
-    console.log(domain);
-    return { edition: "free", result: "invalid.license.domain" };
-  }
-  return { edition, result: "success" };
-};
-var saveLicense = async (c3) => {
-  const body = await c3.req.json();
-  if (!body || typeof body !== "object" || Array.isArray(body)) {
-    return c3.json({
-      code: -1000,
-      msg: "license.field.invalid_type",
-      data: null
-    });
-  }
-  const { order_id, email } = body;
-  if (!order_id || typeof order_id !== "string") {
-    return c3.json({
-      code: -1000,
-      msg: "license.field.required",
-      data: null
-    });
-  }
-  if (!email || typeof email !== "string") {
-    return c3.json({
-      code: -1000,
-      msg: "license.field.required",
-      data: null
-    });
-  }
-  const result = await queryLicenseAPI(order_id, email);
-  if (result.code !== 200) {
-    return c3.json({ code: -1000, msg: result.msg, data: null });
-  }
-  if (result.data.status !== "active") {
-    return c3.json({
-      code: -1000,
-      msg: "license.status.not_active",
-      data: null
-    });
-  }
-  if (result.data.expired_at) {
-    const expiredAt = new Date(result.data.expired_at);
-    if (new Date > expiredAt) {
-      return c3.json({ code: -1000, msg: "license.expired", data: null });
-    }
-  }
-  const licenseData = {
-    order_id: result.data.order_id,
-    email: result.data.email,
-    edition: result.data.edition,
-    domains: result.data.domains,
-    status: result.data.status,
-    expired_at: result.data.expired_at
-  };
-  const valueStr = JSON.stringify(licenseData);
-  const existing = db.select().from(globalSettings).where(eq(globalSettings.key, "license")).get();
-  if (existing) {
-    db.update(globalSettings).set({ value: valueStr, updated_at: new Date }).where(eq(globalSettings.key, "license")).run();
-  } else {
-    db.insert(globalSettings).values({ key: "license", value: valueStr }).run();
-  }
-  Cache.set("license", valueStr, { ttl: LICENSE_CACHE_TTL });
-  return c3.json({ code: 200, msg: "success", data: null });
-};
-var removeLicense = async (c3) => {
-  try {
-    db.delete(globalSettings).where(eq(globalSettings.key, "license")).run();
-    Cache.set("license", JSON.stringify(FREE_LICENSE), {
-      ttl: LICENSE_CACHE_TTL
-    });
-    return c3.json({
-      code: 200,
-      msg: "license.removed.success",
-      data: null
-    });
-  } catch {
-    return c3.json({
-      code: -1000,
-      msg: "license.remove.failed",
-      data: null
-    });
-  }
-};
-var setGlobalSetting = async (c3) => {
-  const { key, value } = await c3.req.json();
-  if (!key || typeof key !== "string") {
-    return c3.json({
-      code: -1000,
-      msg: "setting.key.required",
-      data: null
-    });
-  }
-  if (value === undefined || value === null) {
-    return c3.json({
-      code: -1000,
-      msg: "setting.value.required",
-      data: null
-    });
-  }
-  let valueStr;
-  try {
-    if (typeof value === "string") {
-      JSON.parse(value);
-      valueStr = value;
-    } else {
-      valueStr = JSON.stringify(value);
-    }
-  } catch {
-    return c3.json({
-      code: -1000,
-      msg: "setting.value.invalid_json",
-      data: null
-    });
-  }
-  if (key === "site_setting") {
-    const host = getHostFromRequest(c3);
-    const { edition, result } = getLicense(host);
-    const isLicenseValid = (edition === "pro" || edition === "team") && result === "success";
-    if (!isLicenseValid) {
-      try {
-        const parsed = typeof value === "string" ? JSON.parse(value) : value;
-        parsed.custom_footer = "";
-        valueStr = JSON.stringify(parsed);
-      } catch {}
-    }
-  }
-  const existing = db.select().from(globalSettings).where(eq(globalSettings.key, key)).get();
-  if (existing) {
-    db.update(globalSettings).set({
-      value: valueStr,
-      updated_at: new Date
-    }).where(eq(globalSettings.key, key)).run();
-  } else {
-    db.insert(globalSettings).values({
-      key,
-      value: valueStr
-    }).run();
-  }
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: null
-  });
-};
-var PUBLIC_SETTING_KEYS = ["site_setting", "nav_setting"];
-var getPublicSettings = async (c3) => {
-  const key = c3.req.query("key");
-  if (!key || typeof key !== "string") {
-    return c3.json({
-      code: -1000,
-      msg: "setting.key.required",
-      data: null
-    });
-  }
-  if (!PUBLIC_SETTING_KEYS.includes(key)) {
-    return c3.json({
-      code: -1000,
-      msg: "setting.key.not_allowed",
-      data: null
-    });
-  }
-  const value = getSettingValue(key);
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: value
-  });
-};
-var getGlobalSetting = async (c3) => {
-  const key = c3.req.query("key");
-  if (!key) {
-    return c3.json({
-      code: -1000,
-      msg: "setting.key.required",
-      data: null
-    });
-  }
-  const defaults = DEFAULT_SETTINGS[key] || {};
-  const setting = db.select().from(globalSettings).where(eq(globalSettings.key, key)).get();
-  if (!setting && Object.keys(defaults).length === 0) {
-    return c3.json({
-      code: 404,
-      msg: "setting.not.found",
-      data: null
-    });
-  }
-  let storedValue = {};
-  if (setting) {
-    try {
-      storedValue = JSON.parse(setting.value);
-    } catch {
-      storedValue = {};
-    }
-  }
-  const mergedValue = { ...defaults, ...storedValue };
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: {
-      key,
-      value: mergedValue
-    }
-  });
-};
-var getSettingValue = (key) => {
-  const defaults = DEFAULT_SETTINGS[key] || {};
-  const setting = db.select().from(globalSettings).where(eq(globalSettings.key, key)).get();
-  if (!setting && Object.keys(defaults).length === 0) {
-    return null;
-  }
-  let storedValue = {};
-  if (setting) {
-    try {
-      storedValue = JSON.parse(setting.value);
-    } catch {
-      storedValue = {};
-    }
-  }
-  return { ...defaults, ...storedValue };
-};
-var DEFAULT_USER_SETTINGS = {
-  category_collapsed: true,
-  icon_type: "online",
-  home_entry: "bookmark"
-};
-var setUserSetting = async (c3) => {
-  const uid = c3.get("uid");
-  const body = await c3.req.json();
-  if (!body || typeof body !== "object" || Array.isArray(body)) {
-    return c3.json({
-      code: -1000,
-      msg: "setting.value.invalid",
-      data: null
-    });
-  }
-  const existing = db.select().from(userSettings).where(eq(userSettings.uid, uid)).get();
-  let currentSettings = {};
-  if (existing) {
-    try {
-      currentSettings = JSON.parse(existing.value);
-    } catch {
-      currentSettings = {};
-    }
-  }
-  const mergedSettings = { ...currentSettings, ...body };
-  let valueStr;
-  try {
-    valueStr = JSON.stringify(mergedSettings);
-  } catch {
-    return c3.json({
-      code: -1000,
-      msg: "setting.value.invalid_json",
-      data: null
-    });
-  }
-  if (existing) {
-    db.update(userSettings).set({
-      value: valueStr,
-      updated_at: new Date
-    }).where(eq(userSettings.uid, uid)).run();
-  } else {
-    db.insert(userSettings).values({
-      uid,
-      value: valueStr
-    }).run();
-  }
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: null
-  });
-};
-var getUserSetting = async (c3) => {
-  const uid = c3.get("uid");
-  const setting = db.select().from(userSettings).where(eq(userSettings.uid, uid)).get();
-  if (!setting) {
-    return c3.json({
-      code: 200,
-      msg: "success",
-      data: DEFAULT_USER_SETTINGS
-    });
-  }
-  let storedValue = {};
-  try {
-    storedValue = JSON.parse(setting.value);
-  } catch {
-    storedValue = {};
-  }
-  const mergedValue = { ...DEFAULT_USER_SETTINGS, ...storedValue };
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: mergedValue
-  });
-};
-
-// src/api/info.ts
-import { count } from "drizzle-orm";
-var APP_VERSION = "0.4.1";
-var APP_DATE = "2026042707";
-var getAppInfo = async (c3) => {
-  const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
-  const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
-  const navCategoryCount = navCategoryL1Count[0].count + navCategoryL2Count[0].count;
-  const navLinkCount = await db.select({ count: count() }).from(nav_links);
-  const bookmarkCategoryL1Count = await db.select({ count: count() }).from(categories_l1);
-  const bookmarkCategoryL2Count = await db.select({ count: count() }).from(categories_l2);
-  const bookmarkCategoryCount = bookmarkCategoryL1Count[0].count + bookmarkCategoryL2Count[0].count;
-  const bookmarkLinkCount = await db.select({ count: count() }).from(links);
-  const userCount = await db.select({ count: count() }).from(users);
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: {
-      nav_category_count: navCategoryCount,
-      nav_link_count: navLinkCount[0].count,
-      bookmark_category_count: bookmarkCategoryCount,
-      bookmark_link_count: bookmarkLinkCount[0].count,
-      registered_user_count: userCount[0].count,
-      total_user_count: userCount[0].count,
-      version: APP_VERSION,
-      date: APP_DATE
-    }
-  });
-};
-
-// src/api/html.ts
-var HTML_CONTENT = Bun.file("./public/html/index.html").text();
-var checkSystemInitialized = () => {
-  const existingUser = db.select({ id: users.id }).from(users).limit(1).get();
-  return !!existingUser;
-};
-var index2 = async (c3) => {
-  const normalizedPath = c3.req.path.replace(/\/+$/, "") || "/";
-  const initialized = checkSystemInitialized();
-  if (normalizedPath === "/" && !initialized) {
-    return c3.redirect("/user/init", 302);
-  }
-  if (normalizedPath === "/user/init" && initialized) {
-    return c3.redirect("/", 302);
-  }
-  let site_setting = getSettingValue("site_setting");
-  const path = c3.req.path;
-  if (path.startsWith("/dashboard") || path === "/user/login") {
-    site_setting.custom_header = "";
-  }
-  return c3.html(html`<!DOCTYPE html>
-<html lang="zh">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="icon" href="${site_setting.logo || ""}" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <title>${site_setting.title || "Zmark"}</title>
-        <meta name="keywords" content="${site_setting.keywords || ""}" />
-        <meta name="description" content="${site_setting.description || ""}" />
-        <script type="module" crossorigin src="/static/assets/index.${APP_DATE}.js"></script>
-        <link rel="stylesheet" href="/static/assets/index.${APP_DATE}.css" />
-        <!--\u81EA\u5B9A\u4E49header-->
-        ${raw(site_setting.custom_header) || ""}
-        <!--\u81EA\u5B9A\u4E49header end-->
-        <!-- \u2705 \u52A0\u8F7D\u52A8\u753B\u6837\u5F0F -->
-        <style>
-            #app-loading {
-                position: fixed;
-                inset: 0;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                background: #fff;
-                z-index: 9999;
-                transition: opacity 0.3s;
-            }
-
-            .spinner {
-                width: 36px;
-                height: 36px;
-                border: 3px solid #f0f0f0;
-                border-top-color: #3b82f6;
-                border-radius: 50%;
-                animation: spin 0.8s linear infinite;
-            }
-
-            .loading-text {
-                margin-top: 12px;
-                font-size: 14px;
-                color: #999;
-            }
-
-            @keyframes spin {
-                to {
-                    transform: rotate(360deg);
-                }
-            }
-
-            /* \u2705 \u5173\u952E\uFF1A\u5F53 #app \u6709\u5185\u5BB9\u65F6\u81EA\u52A8\u9690\u85CF loading */
-            #app:not(:empty) + #app-loading,
-            #app:not(:empty) ~ #app-loading {
-                opacity: 0;
-                pointer-events: none;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="app"></div>
-
-        <!-- \u2705 \u52A0\u8F7D\u52A8\u753B -->
-        <div id="app-loading">
-            <div class="spinner"></div>
-            <div class="loading-text">\u52A0\u8F7D\u4E2D...</div>
-        </div>
-    </body>
-</html>
-    `);
-};
-
-// src/api/user.ts
-import { mkdir, rm, writeFile } from "fs/promises";
-import { dirname as dirname2, join as join2 } from "path";
-
-// src/utils/check.ts
-function vUsername(username) {
-  const regex = /^[a-z0-9]{3,16}$/;
-  return regex.test(username);
-}
-function vPassword(password) {
-  const regex = /^[a-zA-Z0-9!@#$%^&*()_+\.]{6,18}$/;
-  return regex.test(password);
-}
-function vCategoryName(name) {
-  const regex = /^[^\u0000-\u001F\u007F]{1,30}$/;
-  return regex.test(name);
-}
-function vLinkTitle(title) {
-  const normalizedTitle = title.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, " ").trim();
-  if (normalizedTitle.length < 1 || normalizedTitle.length > 200) {
-    return false;
-  }
-  return !/[\u0000-\u001F\u007F]/.test(normalizedTitle);
-}
-function vCategoryType(categoryType) {
-  return categoryType === "l1" || categoryType === "l2";
-}
-function vLinkUrl(url) {
-  try {
-    const parsedUrl = new URL(url);
-    const allowedProtocols = ["http:", "https:", "ftp:", "ftps:"];
-    return allowedProtocols.includes(parsedUrl.protocol);
-  } catch {
-    return false;
-  }
-}
-function vFetchUrl(url) {
-  try {
-    if (url.length > 2048)
-      return false;
-    const parsedUrl = new URL(url);
-    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-      return false;
-    }
-    const hostname = parsedUrl.hostname;
-    if (!hostname || hostname.length === 0 || hostname.length > 253) {
-      return false;
-    }
-    if (/[<>"'`\\]/.test(hostname)) {
-      return false;
-    }
-    const isIPv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname);
-    const isIPv6 = /^\[?[0-9a-fA-F:]+\]?$/.test(hostname);
-    const isLocalhost = hostname === "localhost";
-    const isDomain = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/.test(hostname);
-    if (!isIPv4 && !isIPv6 && !isLocalhost && !isDomain) {
-      return false;
-    }
-    if (parsedUrl.port) {
-      const port = parseInt(parsedUrl.port, 10);
-      if (isNaN(port) || port < 1 || port > 65535) {
-        return false;
-      }
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-function vKeyword(keyword) {
-  const regex = /^[A-Za-z0-9\u4E00-\u9FFF._-]{2,100}$/;
-  return regex.test(keyword);
-}
-function vEmail(email) {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
-}
-
 // node_modules/zod/v4/classic/external.js
 var exports_external = {};
 __export(exports_external, {
@@ -10441,11 +9822,11 @@ var $ZodDate = /* @__PURE__ */ $constructor("$ZodDate", (inst, def) => {
     return payload;
   };
 });
-function handleArrayResult(result, final, index3) {
+function handleArrayResult(result, final, index2) {
   if (result.issues.length) {
-    final.issues.push(...prefixIssues(index3, result.issues));
+    final.issues.push(...prefixIssues(index2, result.issues));
   }
-  final.value[index3] = result.value;
+  final.value[index2] = result.value;
 }
 var $ZodArray = /* @__PURE__ */ $constructor("$ZodArray", (inst, def) => {
   $ZodType.init(inst, def);
@@ -10936,14 +10317,14 @@ function mergeValues(a, b) {
       return { valid: false, mergeErrorPath: [] };
     }
     const newArray = [];
-    for (let index3 = 0;index3 < a.length; index3++) {
-      const itemA = a[index3];
-      const itemB = b[index3];
+    for (let index2 = 0;index2 < a.length; index2++) {
+      const itemA = a[index2];
+      const itemB = b[index2];
       const sharedValue = mergeValues(itemA, itemB);
       if (!sharedValue.valid) {
         return {
           valid: false,
-          mergeErrorPath: [index3, ...sharedValue.mergeErrorPath]
+          mergeErrorPath: [index2, ...sharedValue.mergeErrorPath]
         };
       }
       newArray.push(sharedValue.data);
@@ -11059,11 +10440,11 @@ var $ZodTuple = /* @__PURE__ */ $constructor("$ZodTuple", (inst, def) => {
     return payload;
   };
 });
-function handleTupleResult(result, final, index3) {
+function handleTupleResult(result, final, index2) {
   if (result.issues.length) {
-    final.issues.push(...prefixIssues(index3, result.issues));
+    final.issues.push(...prefixIssues(index2, result.issues));
   }
-  final.value[index3] = result.value;
+  final.value[index2] = result.value;
 }
 var $ZodRecord = /* @__PURE__ */ $constructor("$ZodRecord", (inst, def) => {
   $ZodType.init(inst, def);
@@ -12071,8 +11452,8 @@ function az_default() {
   };
 }
 // node_modules/zod/v4/locales/be.js
-function getBelarusianPlural(count2, one, few, many) {
-  const absCount = Math.abs(count2);
+function getBelarusianPlural(count, one, few, many) {
+  const absCount = Math.abs(count);
   const lastDigit = absCount % 10;
   const lastTwoDigits = absCount % 100;
   if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
@@ -13877,8 +13258,8 @@ function hu_default() {
   };
 }
 // node_modules/zod/v4/locales/hy.js
-function getArmenianPlural(count2, one, many) {
-  return Math.abs(count2) === 1 ? one : many;
+function getArmenianPlural(count, one, many) {
+  return Math.abs(count) === 1 ? one : many;
 }
 function withDefiniteArticle(word) {
   if (!word)
@@ -15869,8 +15250,8 @@ function pt_default() {
   };
 }
 // node_modules/zod/v4/locales/ru.js
-function getRussianPlural(count2, one, few, many) {
-  const absCount = Math.abs(count2);
+function getRussianPlural(count, one, few, many) {
+  const absCount = Math.abs(count);
   const lastDigit = absCount % 10;
   const lastTwoDigits = absCount % 100;
   if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
@@ -21133,6 +20514,643 @@ function date4(params) {
 
 // node_modules/zod/v4/classic/external.js
 config(en_default());
+// src/api/setting.ts
+var DEFAULT_SETTINGS = {
+  site_setting: {
+    title: "Zmark",
+    sub_title: "\u7B80\u6D01\u3001\u6613\u7528\u7684\u5BFC\u822A\u7CFB\u7EDF",
+    keywords: "",
+    description: "",
+    logo: "",
+    custom_header: "",
+    custom_footer: ""
+  },
+  reg_setting: {
+    allow_register: false,
+    invite_code: ""
+  },
+  nav_setting: {
+    icon_type: "online"
+  }
+};
+var ENTITLEMENT_GATEWAY_B64 = "aHR0cHM6Ly9zaG9wLnhpdXBpbmcubmV0L3ptYXJrL3F1ZXJ5";
+var LICENSE_ORDER_ID_PATTERN = /^\d{16,32}$/;
+var LICENSE_EMAIL_SCHEMA = exports_external.string().email();
+var queryEntitlementGateway = async (orderId, email3) => {
+  const controller = new AbortController;
+  const timeoutId = setTimeout(() => controller.abort(), 1e4);
+  const endpoint = decodeBase64Text(ENTITLEMENT_GATEWAY_B64);
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_id: orderId, email: email3 }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    const json2 = await res.json();
+    return {
+      code: json2.code,
+      data: json2.data,
+      msg: json2.msg
+    };
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof Error && err.name === "AbortError") {
+      return { code: -1000, data: null, msg: "license.request.timeout" };
+    }
+    return { code: -1000, data: null, msg: "license.request.error" };
+  }
+};
+var queryLicenseAPI = queryEntitlementGateway;
+var FREE_LICENSE = {
+  order_id: "-",
+  email: "-",
+  edition: "free",
+  domains: [],
+  status: "active",
+  expired_at: "-"
+};
+var LICENSE_CACHE_TTL = 1000 * 60 * 60 * 24 * 7;
+var checkLicense = async () => {
+  const setting = getSettingValue("license");
+  if (!setting || !setting.order_id || !setting.email) {
+    Cache.set("license", JSON.stringify(FREE_LICENSE), {
+      ttl: LICENSE_CACHE_TTL
+    });
+    return;
+  }
+  const { order_id, email: email3 } = setting;
+  let result = await queryLicenseAPI(order_id, email3);
+  if (result.code === 200) {
+    const licenseData = {
+      order_id: result.data.order_id,
+      email: result.data.email,
+      edition: result.data.edition,
+      domains: result.data.domains,
+      status: result.data.status,
+      expired_at: result.data.expired_at
+    };
+    Cache.set("license", JSON.stringify(licenseData), {
+      ttl: LICENSE_CACHE_TTL
+    });
+    return;
+  }
+  await new Promise((resolve) => setTimeout(resolve, 30000));
+  result = await queryLicenseAPI(order_id, email3);
+  if (result.code === 200) {
+    const licenseData = {
+      order_id: result.data.order_id,
+      email: result.data.email,
+      edition: result.data.edition,
+      domains: result.data.domains,
+      status: result.data.status,
+      expired_at: result.data.expired_at
+    };
+    Cache.set("license", JSON.stringify(licenseData), {
+      ttl: LICENSE_CACHE_TTL
+    });
+    return;
+  }
+  Cache.set("license", JSON.stringify(FREE_LICENSE), {
+    ttl: LICENSE_CACHE_TTL
+  });
+};
+var getLicense = (domain2) => {
+  const cached2 = Cache.get("license");
+  if (!cached2) {
+    return { edition: "free", result: "license.unknown" };
+  }
+  let licenseData;
+  try {
+    licenseData = typeof cached2 === "string" ? JSON.parse(cached2) : cached2;
+  } catch {
+    return { edition: "free", result: "license.unknown" };
+  }
+  const { edition, status, domains, expired_at } = licenseData;
+  if (edition === "free") {
+    return { edition: "free", result: "success" };
+  }
+  if (status !== "active") {
+    return { edition: "free", result: "invalid.license.status" };
+  }
+  if (expired_at) {
+    const expiredAt = new Date(expired_at);
+    if (new Date > expiredAt) {
+      return { edition: "free", result: "success" };
+    }
+  }
+  if (!Array.isArray(domains) || domains.length === 0 || !domains.includes(domain2)) {
+    console.log(domain2);
+    return { edition: "free", result: "invalid.license.domain" };
+  }
+  return { edition, result: "success" };
+};
+var saveLicense = async (c3) => {
+  const body = await c3.req.json();
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return c3.json({
+      code: -1000,
+      msg: "license.field.invalid_type",
+      data: null
+    });
+  }
+  const { order_id, email: email3 } = body;
+  if (!order_id || typeof order_id !== "string") {
+    return c3.json({
+      code: -1000,
+      msg: "license.field.required",
+      data: null
+    });
+  }
+  if (!email3 || typeof email3 !== "string") {
+    return c3.json({
+      code: -1000,
+      msg: "license.field.required",
+      data: null
+    });
+  }
+  const normalizedOrderId = order_id.trim();
+  const normalizedEmail = email3.trim();
+  if (!LICENSE_ORDER_ID_PATTERN.test(normalizedOrderId)) {
+    return c3.json({
+      code: -1000,
+      msg: "license.order_id.invalid",
+      data: null
+    });
+  }
+  if (!LICENSE_EMAIL_SCHEMA.safeParse(normalizedEmail).success) {
+    return c3.json({
+      code: -1000,
+      msg: "license.email.invalid",
+      data: null
+    });
+  }
+  const result = await queryLicenseAPI(normalizedOrderId, normalizedEmail);
+  if (result.code !== 200) {
+    return c3.json({ code: -1000, msg: result.msg, data: null });
+  }
+  if (result.data.status !== "active") {
+    return c3.json({
+      code: -1000,
+      msg: "license.status.not_active",
+      data: null
+    });
+  }
+  if (result.data.expired_at) {
+    const expiredAt = new Date(result.data.expired_at);
+    if (new Date > expiredAt) {
+      return c3.json({ code: -1000, msg: "license.expired", data: null });
+    }
+  }
+  const licenseData = {
+    order_id: result.data.order_id,
+    email: result.data.email,
+    edition: result.data.edition,
+    domains: result.data.domains,
+    status: result.data.status,
+    expired_at: result.data.expired_at
+  };
+  const valueStr = JSON.stringify(licenseData);
+  const existing = db.select().from(globalSettings).where(eq(globalSettings.key, "license")).get();
+  if (existing) {
+    db.update(globalSettings).set({ value: valueStr, updated_at: new Date }).where(eq(globalSettings.key, "license")).run();
+  } else {
+    db.insert(globalSettings).values({ key: "license", value: valueStr }).run();
+  }
+  Cache.set("license", valueStr, { ttl: LICENSE_CACHE_TTL });
+  return c3.json({ code: 200, msg: "success", data: null });
+};
+var removeLicense = async (c3) => {
+  try {
+    db.delete(globalSettings).where(eq(globalSettings.key, "license")).run();
+    Cache.set("license", JSON.stringify(FREE_LICENSE), {
+      ttl: LICENSE_CACHE_TTL
+    });
+    return c3.json({
+      code: 200,
+      msg: "license.removed.success",
+      data: null
+    });
+  } catch {
+    return c3.json({
+      code: -1000,
+      msg: "license.remove.failed",
+      data: null
+    });
+  }
+};
+var setGlobalSetting = async (c3) => {
+  const { key, value } = await c3.req.json();
+  if (!key || typeof key !== "string") {
+    return c3.json({
+      code: -1000,
+      msg: "setting.key.required",
+      data: null
+    });
+  }
+  if (value === undefined || value === null) {
+    return c3.json({
+      code: -1000,
+      msg: "setting.value.required",
+      data: null
+    });
+  }
+  let valueStr;
+  try {
+    if (typeof value === "string") {
+      JSON.parse(value);
+      valueStr = value;
+    } else {
+      valueStr = JSON.stringify(value);
+    }
+  } catch {
+    return c3.json({
+      code: -1000,
+      msg: "setting.value.invalid_json",
+      data: null
+    });
+  }
+  if (key === "site_setting") {
+    const host = getHostFromRequest(c3);
+    const { edition, result } = getLicense(host);
+    const isLicenseValid = (edition === "pro" || edition === "team") && result === "success";
+    if (!isLicenseValid) {
+      try {
+        const parsed = typeof value === "string" ? JSON.parse(value) : value;
+        parsed.custom_footer = "";
+        valueStr = JSON.stringify(parsed);
+      } catch {}
+    }
+  }
+  const existing = db.select().from(globalSettings).where(eq(globalSettings.key, key)).get();
+  if (existing) {
+    db.update(globalSettings).set({
+      value: valueStr,
+      updated_at: new Date
+    }).where(eq(globalSettings.key, key)).run();
+  } else {
+    db.insert(globalSettings).values({
+      key,
+      value: valueStr
+    }).run();
+  }
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: null
+  });
+};
+var PUBLIC_SETTING_KEYS = ["site_setting", "nav_setting"];
+var getPublicSettings = async (c3) => {
+  const key = c3.req.query("key");
+  if (!key || typeof key !== "string") {
+    return c3.json({
+      code: -1000,
+      msg: "setting.key.required",
+      data: null
+    });
+  }
+  if (!PUBLIC_SETTING_KEYS.includes(key)) {
+    return c3.json({
+      code: -1000,
+      msg: "setting.key.not_allowed",
+      data: null
+    });
+  }
+  const value = getSettingValue(key);
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: value
+  });
+};
+var getGlobalSetting = async (c3) => {
+  const key = c3.req.query("key");
+  if (!key) {
+    return c3.json({
+      code: -1000,
+      msg: "setting.key.required",
+      data: null
+    });
+  }
+  const defaults = DEFAULT_SETTINGS[key] || {};
+  const setting = db.select().from(globalSettings).where(eq(globalSettings.key, key)).get();
+  if (!setting && Object.keys(defaults).length === 0) {
+    return c3.json({
+      code: 404,
+      msg: "setting.not.found",
+      data: null
+    });
+  }
+  let storedValue = {};
+  if (setting) {
+    try {
+      storedValue = JSON.parse(setting.value);
+    } catch {
+      storedValue = {};
+    }
+  }
+  const mergedValue = { ...defaults, ...storedValue };
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      key,
+      value: mergedValue
+    }
+  });
+};
+var getSettingValue = (key) => {
+  const defaults = DEFAULT_SETTINGS[key] || {};
+  const setting = db.select().from(globalSettings).where(eq(globalSettings.key, key)).get();
+  if (!setting && Object.keys(defaults).length === 0) {
+    return null;
+  }
+  let storedValue = {};
+  if (setting) {
+    try {
+      storedValue = JSON.parse(setting.value);
+    } catch {
+      storedValue = {};
+    }
+  }
+  return { ...defaults, ...storedValue };
+};
+var DEFAULT_USER_SETTINGS = {
+  category_collapsed: true,
+  icon_type: "online",
+  home_entry: "bookmark"
+};
+var setUserSetting = async (c3) => {
+  const uid = c3.get("uid");
+  const body = await c3.req.json();
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return c3.json({
+      code: -1000,
+      msg: "setting.value.invalid",
+      data: null
+    });
+  }
+  const existing = db.select().from(userSettings).where(eq(userSettings.uid, uid)).get();
+  let currentSettings = {};
+  if (existing) {
+    try {
+      currentSettings = JSON.parse(existing.value);
+    } catch {
+      currentSettings = {};
+    }
+  }
+  const mergedSettings = { ...currentSettings, ...body };
+  let valueStr;
+  try {
+    valueStr = JSON.stringify(mergedSettings);
+  } catch {
+    return c3.json({
+      code: -1000,
+      msg: "setting.value.invalid_json",
+      data: null
+    });
+  }
+  if (existing) {
+    db.update(userSettings).set({
+      value: valueStr,
+      updated_at: new Date
+    }).where(eq(userSettings.uid, uid)).run();
+  } else {
+    db.insert(userSettings).values({
+      uid,
+      value: valueStr
+    }).run();
+  }
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: null
+  });
+};
+var getUserSetting = async (c3) => {
+  const uid = c3.get("uid");
+  const setting = db.select().from(userSettings).where(eq(userSettings.uid, uid)).get();
+  if (!setting) {
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: DEFAULT_USER_SETTINGS
+    });
+  }
+  let storedValue = {};
+  try {
+    storedValue = JSON.parse(setting.value);
+  } catch {
+    storedValue = {};
+  }
+  const mergedValue = { ...DEFAULT_USER_SETTINGS, ...storedValue };
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: mergedValue
+  });
+};
+
+// src/api/info.ts
+import { count } from "drizzle-orm";
+var APP_VERSION = "0.4.2";
+var APP_DATE = "2026042709";
+var getAppInfo = async (c3) => {
+  const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
+  const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
+  const navCategoryCount = navCategoryL1Count[0].count + navCategoryL2Count[0].count;
+  const navLinkCount = await db.select({ count: count() }).from(nav_links);
+  const bookmarkCategoryL1Count = await db.select({ count: count() }).from(categories_l1);
+  const bookmarkCategoryL2Count = await db.select({ count: count() }).from(categories_l2);
+  const bookmarkCategoryCount = bookmarkCategoryL1Count[0].count + bookmarkCategoryL2Count[0].count;
+  const bookmarkLinkCount = await db.select({ count: count() }).from(links);
+  const userCount = await db.select({ count: count() }).from(users);
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      nav_category_count: navCategoryCount,
+      nav_link_count: navLinkCount[0].count,
+      bookmark_category_count: bookmarkCategoryCount,
+      bookmark_link_count: bookmarkLinkCount[0].count,
+      registered_user_count: userCount[0].count,
+      total_user_count: userCount[0].count,
+      version: APP_VERSION,
+      date: APP_DATE
+    }
+  });
+};
+
+// src/api/html.ts
+var HTML_CONTENT = Bun.file("./public/html/index.html").text();
+var checkSystemInitialized = () => {
+  const existingUser = db.select({ id: users.id }).from(users).limit(1).get();
+  return !!existingUser;
+};
+var index2 = async (c3) => {
+  const normalizedPath = c3.req.path.replace(/\/+$/, "") || "/";
+  const initialized = checkSystemInitialized();
+  if (normalizedPath === "/" && !initialized) {
+    return c3.redirect("/user/init", 302);
+  }
+  if (normalizedPath === "/user/init" && initialized) {
+    return c3.redirect("/", 302);
+  }
+  let site_setting = getSettingValue("site_setting");
+  const path = c3.req.path;
+  if (path.startsWith("/dashboard") || path === "/user/login") {
+    site_setting.custom_header = "";
+  }
+  return c3.html(html`<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" href="${site_setting.logo || ""}" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <title>${site_setting.title || "Zmark"}</title>
+        <meta name="keywords" content="${site_setting.keywords || ""}" />
+        <meta name="description" content="${site_setting.description || ""}" />
+        <script type="module" crossorigin src="/static/assets/index.${APP_DATE}.js"></script>
+        <link rel="stylesheet" href="/static/assets/index.${APP_DATE}.css" />
+        <!--\u81EA\u5B9A\u4E49header-->
+        ${raw(site_setting.custom_header) || ""}
+        <!--\u81EA\u5B9A\u4E49header end-->
+        <!-- \u2705 \u52A0\u8F7D\u52A8\u753B\u6837\u5F0F -->
+        <style>
+            #app-loading {
+                position: fixed;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background: #fff;
+                z-index: 9999;
+                transition: opacity 0.3s;
+            }
+
+            .spinner {
+                width: 36px;
+                height: 36px;
+                border: 3px solid #f0f0f0;
+                border-top-color: #3b82f6;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+
+            .loading-text {
+                margin-top: 12px;
+                font-size: 14px;
+                color: #999;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* \u2705 \u5173\u952E\uFF1A\u5F53 #app \u6709\u5185\u5BB9\u65F6\u81EA\u52A8\u9690\u85CF loading */
+            #app:not(:empty) + #app-loading,
+            #app:not(:empty) ~ #app-loading {
+                opacity: 0;
+                pointer-events: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app"></div>
+
+        <!-- \u2705 \u52A0\u8F7D\u52A8\u753B -->
+        <div id="app-loading">
+            <div class="spinner"></div>
+            <div class="loading-text">\u52A0\u8F7D\u4E2D...</div>
+        </div>
+    </body>
+</html>
+    `);
+};
+
+// src/api/user.ts
+import { mkdir, rm, writeFile } from "fs/promises";
+import { dirname as dirname2, join as join2 } from "path";
+
+// src/utils/check.ts
+function vUsername(username) {
+  const regex = /^[a-z0-9]{3,16}$/;
+  return regex.test(username);
+}
+function vPassword(password) {
+  const regex = /^[a-zA-Z0-9!@#$%^&*()_+\.]{6,18}$/;
+  return regex.test(password);
+}
+function vCategoryName(name) {
+  const regex = /^[^\u0000-\u001F\u007F]{1,30}$/;
+  return regex.test(name);
+}
+function vLinkTitle(title) {
+  const normalizedTitle = title.replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/\s+/g, " ").trim();
+  if (normalizedTitle.length < 1 || normalizedTitle.length > 200) {
+    return false;
+  }
+  return !/[\u0000-\u001F\u007F]/.test(normalizedTitle);
+}
+function vCategoryType(categoryType) {
+  return categoryType === "l1" || categoryType === "l2";
+}
+function vLinkUrl(url2) {
+  try {
+    const parsedUrl = new URL(url2);
+    const allowedProtocols = ["http:", "https:", "ftp:", "ftps:"];
+    return allowedProtocols.includes(parsedUrl.protocol);
+  } catch {
+    return false;
+  }
+}
+function vFetchUrl(url2) {
+  try {
+    if (url2.length > 2048)
+      return false;
+    const parsedUrl = new URL(url2);
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      return false;
+    }
+    const hostname3 = parsedUrl.hostname;
+    if (!hostname3 || hostname3.length === 0 || hostname3.length > 253) {
+      return false;
+    }
+    if (/[<>"'`\\]/.test(hostname3)) {
+      return false;
+    }
+    const isIPv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname3);
+    const isIPv6 = /^\[?[0-9a-fA-F:]+\]?$/.test(hostname3);
+    const isLocalhost = hostname3 === "localhost";
+    const isDomain = /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/.test(hostname3);
+    if (!isIPv4 && !isIPv6 && !isLocalhost && !isDomain) {
+      return false;
+    }
+    if (parsedUrl.port) {
+      const port = parseInt(parsedUrl.port, 10);
+      if (isNaN(port) || port < 1 || port > 65535) {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+function vKeyword(keyword) {
+  const regex = /^[A-Za-z0-9\u4E00-\u9FFF._-]{2,100}$/;
+  return regex.test(keyword);
+}
+function vEmail(email3) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email3);
+}
+
 // src/api/user.ts
 import { eq as eq2, and, desc, sql } from "drizzle-orm";
 var MAX_AVATAR_SIZE = 100 * 1024;
