@@ -1,0 +1,38 @@
+name: Release Assets
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout tag source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Build release archives
+        run: |
+          set -euo pipefail
+
+          # 直接从 tag 对应的 git tree 打包，避免 GitHub 默认源码包额外包一层项目目录。
+          mkdir -p dist
+          archive_base="${{ github.event.repository.name }}-${{ github.event.release.tag_name }}"
+
+          git archive --format=zip --output "dist/${archive_base}.zip" "${{ github.event.release.tag_name }}"
+          git archive --format=tar.gz --output "dist/${archive_base}.tar.gz" "${{ github.event.release.tag_name }}"
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.zip
+            dist/*.tar.gz
+          overwrite_files: true
