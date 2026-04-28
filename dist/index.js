@@ -6145,7 +6145,7 @@ __export(exports_schema, {
   categories_l2: () => categories_l2,
   categories_l1: () => categories_l1
 });
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 var users = sqliteTable("zm_users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull().unique(),
@@ -6186,7 +6186,7 @@ var nav_links = sqliteTable("zm_nav_links", {
 var categories_l1 = sqliteTable("zm_categories_l1", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   uid: integer("uid").notNull(),
-  name: text("name").notNull().unique(),
+  name: text("name").notNull(),
   description: text("description").default(""),
   icon: text("icon").default(""),
   icon_color: text("icon_color").default(""),
@@ -6194,12 +6194,14 @@ var categories_l1 = sqliteTable("zm_categories_l1", {
   is_public: integer("is_public").default(0).notNull(),
   created_at: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date),
   updated_at: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date)
-});
+}, (table) => ({
+  uidNameUniqueIdx: uniqueIndex("uid_name_unique_idx").on(table.uid, table.name)
+}));
 var categories_l2 = sqliteTable("zm_categories_l2", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   l1_id: integer("l1_id").notNull(),
   uid: integer("uid").notNull(),
-  name: text("name").notNull().unique(),
+  name: text("name").notNull(),
   description: text("description").default(""),
   icon: text("icon").default(""),
   icon_color: text("icon_color").default(""),
@@ -6207,7 +6209,9 @@ var categories_l2 = sqliteTable("zm_categories_l2", {
   is_public: integer("is_public").default(0).notNull(),
   created_at: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date),
   updated_at: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date)
-});
+}, (table) => ({
+  uidL1NameUniqueIdx: uniqueIndex("uid_l1_name_unique_idx").on(table.uid, table.l1_id, table.name)
+}));
 var links = sqliteTable("zm_links", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   uid: integer("uid").notNull(),
@@ -20703,11 +20707,21 @@ var saveLicense = async (c3) => {
       return c3.json({ code: -1000, msg: "license.expired", data: null });
     }
   }
+  const currentHost = getHostFromRequest(c3).trim().toLowerCase();
+  const licenseDomains = Array.isArray(result.data.domains) ? result.data.domains.filter((domain2) => typeof domain2 === "string") : [];
+  const isDomainMatched = licenseDomains.some((domain2) => domain2.trim().toLowerCase() === currentHost);
+  if (!isDomainMatched) {
+    return c3.json({
+      code: -1000,
+      msg: "license.save.domain_mismatch",
+      data: null
+    });
+  }
   const licenseData = {
     order_id: result.data.order_id,
     email: result.data.email,
     edition: result.data.edition,
-    domains: result.data.domains,
+    domains: licenseDomains,
     status: result.data.status,
     expired_at: result.data.expired_at
   };
@@ -20955,8 +20969,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.4.2";
-var APP_DATE = "2026042709";
+var APP_VERSION = "0.4.3";
+var APP_DATE = "2026042803";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -22116,6 +22130,13 @@ var addNavCategory = async (c3) => {
   const { edition, result } = getLicense(host);
   const isLicenseValid = (edition === "pro" || edition === "team") && result === "success";
   if (!isLicenseValid) {
+    if (edition !== "free") {
+      return c3.json({
+        code: -1000,
+        msg: result,
+        data: null
+      });
+    }
     return c3.json({
       code: -1000,
       msg: "license.nav_category_limit.reached",
@@ -22641,6 +22662,64 @@ var ALLOWED_ICON_MIME_MAP = {
 var MAX_ICON_SIZE = 100 * 1024;
 
 // src/api/nav_link.ts
+var getAllowedVisibilityByRole = (role) => role === "admin" ? ["public", "user", "admin"] : role === "user" ? ["public", "user"] : ["public"];
+var isNavVisibilityAllowed = (visibility, role) => getAllowedVisibilityByRole(role).includes(visibility);
+var getAccessibleNavCategoryIds = async (role) => {
+  const allowedVisibility = getAllowedVisibilityByRole(role);
+  const l1Categories = await db.query.nav_categories_l1.findMany({
+    columns: {
+      id: true
+    },
+    where: inArray3(nav_categories_l1.visibility, allowedVisibility)
+  });
+  const accessibleL1Ids = l1Categories.map((category) => category.id);
+  if (accessibleL1Ids.length === 0) {
+    return {
+      accessibleL1Ids,
+      accessibleL2Ids: [],
+      allowedVisibility
+    };
+  }
+  const l2Categories = await db.query.nav_categories_l2.findMany({
+    columns: {
+      id: true
+    },
+    where: and4(inArray3(nav_categories_l2.visibility, allowedVisibility), inArray3(nav_categories_l2.l1_id, accessibleL1Ids))
+  });
+  return {
+    accessibleL1Ids,
+    accessibleL2Ids: l2Categories.map((category) => category.id),
+    allowedVisibility
+  };
+};
+var canAccessNavCategory = async (categoryType, categoryId, role) => {
+  if (categoryType === "l1") {
+    const category2 = await db.query.nav_categories_l1.findFirst({
+      columns: {
+        visibility: true
+      },
+      where: eq5(nav_categories_l1.id, categoryId)
+    });
+    return !!category2 && isNavVisibilityAllowed(category2.visibility, role);
+  }
+  const category = await db.query.nav_categories_l2.findFirst({
+    columns: {
+      l1_id: true,
+      visibility: true
+    },
+    where: eq5(nav_categories_l2.id, categoryId)
+  });
+  if (!category || !isNavVisibilityAllowed(category.visibility, role)) {
+    return false;
+  }
+  const parentCategory = await db.query.nav_categories_l1.findFirst({
+    columns: {
+      visibility: true
+    },
+    where: eq5(nav_categories_l1.id, category.l1_id)
+  });
+  return !!parentCategory && isNavVisibilityAllowed(parentCategory.visibility, role);
+};
 var existsNavCategory2 = async (categoryType, categoryId) => {
   if (!Number.isInteger(categoryId) || categoryId <= 0) {
     return false;
@@ -22953,7 +23032,15 @@ var getNavCategoryLinks = async (c3) => {
     });
   }
   const role = await getRequestUserRole(c3);
-  const allowedVisibility = role === "admin" ? ["public", "user", "admin"] : role === "user" ? ["public", "user"] : ["public"];
+  const canAccessCategory = await canAccessNavCategory(categoryType, categoryId, role);
+  const allowedVisibility = getAllowedVisibilityByRole(role);
+  if (!canAccessCategory) {
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: []
+    });
+  }
   const links2 = await db.query.nav_links.findMany({
     where: and4(eq5(nav_links.category_type, categoryType), eq5(nav_links.category_id, categoryId), inArray3(nav_links.visibility, allowedVisibility)),
     orderBy: [
@@ -23271,9 +23358,30 @@ var searchNavLinks = async (c3) => {
   }
   const keywordPattern = `%${normalizedKeyword}%`;
   const role = await getRequestUserRole(c3);
-  const allowedVisibility = role === "admin" ? ["public", "user", "admin"] : role === "user" ? ["public", "user"] : ["public"];
-  const navLinksSubquery = db.select().from(nav_links).where(inArray3(nav_links.visibility, allowedVisibility)).as("allowed_nav_links");
-  const links2 = await db.select().from(navLinksSubquery).where(or3(like(navLinksSubquery.title, keywordPattern), like(navLinksSubquery.url, keywordPattern), like(navLinksSubquery.backup_url, keywordPattern), like(navLinksSubquery.description, keywordPattern), like(navLinksSubquery.keywords, keywordPattern), like(navLinksSubquery.content, keywordPattern))).orderBy(desc4(navLinksSubquery.updated_at), desc4(navLinksSubquery.created_at), desc4(sql3`${navLinksSubquery.id}`)).limit(20);
+  const { accessibleL1Ids, accessibleL2Ids, allowedVisibility } = await getAccessibleNavCategoryIds(role);
+  let categoryScope;
+  if (accessibleL1Ids.length > 0 && accessibleL2Ids.length > 0) {
+    categoryScope = or3(and4(eq5(nav_links.category_type, "l1"), inArray3(nav_links.category_id, accessibleL1Ids)), and4(eq5(nav_links.category_type, "l2"), inArray3(nav_links.category_id, accessibleL2Ids)));
+  } else if (accessibleL1Ids.length > 0) {
+    categoryScope = and4(eq5(nav_links.category_type, "l1"), inArray3(nav_links.category_id, accessibleL1Ids));
+  } else if (accessibleL2Ids.length > 0) {
+    categoryScope = and4(eq5(nav_links.category_type, "l2"), inArray3(nav_links.category_id, accessibleL2Ids));
+  } else {
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: []
+    });
+  }
+  const links2 = await db.query.nav_links.findMany({
+    where: and4(inArray3(nav_links.visibility, allowedVisibility), categoryScope, or3(like(nav_links.title, keywordPattern), like(nav_links.url, keywordPattern), like(nav_links.backup_url, keywordPattern), like(nav_links.description, keywordPattern), like(nav_links.keywords, keywordPattern), like(nav_links.content, keywordPattern))),
+    orderBy: [
+      desc4(nav_links.updated_at),
+      desc4(nav_links.created_at),
+      desc4(nav_links.id)
+    ],
+    limit: 20
+  });
   return c3.json({
     code: 200,
     msg: "success",

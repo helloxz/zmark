@@ -8,6 +8,13 @@
       "when": 1776828022358,
       "tag": "0000_optimal_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1777348600447,
+      "tag": "0001_stale_jackpot",
+      "breakpoints": true
     }
   ]
 }
