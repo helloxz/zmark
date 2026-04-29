@@ -6298,6 +6298,8 @@ sqlite.run("PRAGMA journal_mode = WAL;");
 var db = drizzle(sqlite, { schema: exports_schema });
 
 // src/api/setting.ts
+import { mkdir, rm, writeFile } from "fs/promises";
+import { dirname as dirname2, join as join2 } from "path";
 import { eq } from "drizzle-orm";
 
 // node_modules/lru-cache/dist/esm/index.min.js
@@ -20519,6 +20521,13 @@ function date4(params) {
 // node_modules/zod/v4/classic/external.js
 config(en_default());
 // src/api/setting.ts
+var MAX_LOGO_SIZE = 200 * 1024;
+var ALLOWED_LOGO_MIME_MAP = {
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+  "image/gif": "gif"
+};
 var DEFAULT_SETTINGS = {
   site_setting: {
     title: "Zmark",
@@ -20754,6 +20763,45 @@ var removeLicense = async (c3) => {
     });
   }
 };
+var uploadLogo = async (c3) => {
+  const formData = await c3.req.formData();
+  const file2 = formData.get("file");
+  if (!file2 || !(file2 instanceof File)) {
+    return c3.json({
+      code: -1000,
+      msg: "setting.logo.required",
+      data: null
+    });
+  }
+  if (file2.size > MAX_LOGO_SIZE) {
+    return c3.json({
+      code: -1000,
+      msg: "setting.logo.too_large",
+      data: null
+    });
+  }
+  const ext = ALLOWED_LOGO_MIME_MAP[file2.type.toLowerCase()];
+  if (!ext) {
+    return c3.json({
+      code: -1000,
+      msg: "setting.logo.invalid_type",
+      data: null
+    });
+  }
+  const logoDir = join2(process.cwd(), "data", "images");
+  await Promise.all(["jpg", "png", "gif"].map((oldExt) => rm(join2(logoDir, `logo.${oldExt}`), { force: true })));
+  const relativeLogoPath = `/images/logo.${ext}`;
+  const savePath = join2(process.cwd(), "data", relativeLogoPath.replace(/^\//, ""));
+  await mkdir(dirname2(savePath), { recursive: true });
+  await writeFile(savePath, Buffer.from(await file2.arrayBuffer()));
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      logo: relativeLogoPath
+    }
+  });
+};
 var setGlobalSetting = async (c3) => {
   const { key, value } = await c3.req.json();
   if (!key || typeof key !== "string") {
@@ -20969,8 +21017,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.4.3";
-var APP_DATE = "2026042803";
+var APP_VERSION = "0.5.0";
+var APP_DATE = "2026042902";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -21088,8 +21136,8 @@ var index2 = async (c3) => {
 };
 
 // src/api/user.ts
-import { mkdir, rm, writeFile } from "fs/promises";
-import { dirname as dirname2, join as join2 } from "path";
+import { mkdir as mkdir2, rm as rm2, writeFile as writeFile2 } from "fs/promises";
+import { dirname as dirname3, join as join3 } from "path";
 
 // src/utils/check.ts
 function vUsername(username) {
@@ -21574,13 +21622,13 @@ var updateAvatar = async (c3) => {
   });
   const previousAvatar = currentUser?.avatar?.trim() || "";
   if (previousAvatar.startsWith("/images/")) {
-    const previousAvatarPath = join2(process.cwd(), "data", previousAvatar.replace(/^\//, ""));
-    await rm(previousAvatarPath, { force: true });
+    const previousAvatarPath = join3(process.cwd(), "data", previousAvatar.replace(/^\//, ""));
+    await rm2(previousAvatarPath, { force: true });
   }
   const relativeAvatarPath = `/images/${uid}/avatar.${ext}`;
-  const savePath = join2(process.cwd(), "data", relativeAvatarPath.replace(/^\//, ""));
-  await mkdir(dirname2(savePath), { recursive: true });
-  await writeFile(savePath, Buffer.from(await file2.arrayBuffer()));
+  const savePath = join3(process.cwd(), "data", relativeAvatarPath.replace(/^\//, ""));
+  await mkdir2(dirname3(savePath), { recursive: true });
+  await writeFile2(savePath, Buffer.from(await file2.arrayBuffer()));
   const [row] = await db.update(users).set({
     avatar: relativeAvatarPath,
     updated_at: new Date
@@ -21621,8 +21669,8 @@ var listUsers = async (c3) => {
 };
 
 // src/api/category.ts
-import { rm as rm2 } from "fs/promises";
-import { join as join3 } from "path";
+import { rm as rm3 } from "fs/promises";
+import { join as join4 } from "path";
 import { eq as eq3, and as and2, asc, desc as desc2, inArray, or } from "drizzle-orm";
 var existsCategory = async (uid, categoryType, categoryId) => {
   if (!Number.isInteger(uid) || uid <= 0) {
@@ -21988,8 +22036,8 @@ var deleteCategory = async (c3) => {
     await tx.delete(categories_l2).where(and2(eq3(categories_l2.id, category_id), eq3(categories_l2.uid, uid)));
   });
   await Promise.allSettled(iconPaths.map((iconPath) => {
-    const filePath = join3(process.cwd(), "data", iconPath.replace(/^\//, ""));
-    return rm2(filePath, { force: true });
+    const filePath = join4(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm3(filePath, { force: true });
   }));
   return c3.json({
     code: 200,
@@ -22073,8 +22121,8 @@ var listCategories = async (c3) => {
 };
 
 // src/api/nav_category.ts
-import { rm as rm3 } from "fs/promises";
-import { join as join4 } from "path";
+import { rm as rm4 } from "fs/promises";
+import { join as join5 } from "path";
 import { eq as eq4, and as and3, asc as asc2, desc as desc3, inArray as inArray2, or as or2, sql as sql2 } from "drizzle-orm";
 var existsNavCategory = async (categoryType, categoryId) => {
   if (!Number.isInteger(categoryId) || categoryId <= 0) {
@@ -22470,8 +22518,8 @@ var deleteNavCategory = async (c3) => {
     await tx.delete(nav_categories_l2).where(eq4(nav_categories_l2.id, category_id));
   });
   await Promise.allSettled(iconPaths.map((iconPath) => {
-    const filePath = join4(process.cwd(), "data", iconPath.replace(/^\//, ""));
-    return rm3(filePath, { force: true });
+    const filePath = join5(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm4(filePath, { force: true });
   }));
   if (category_type === "l1") {
     return c3.json({
@@ -22605,6 +22653,16 @@ var listNavCategories = async (c3) => {
       desc3(nav_categories_l2.created_at)
     ]
   });
+  const l1LinkCountRows = await db.select({
+    category_id: nav_links.category_id,
+    count: sql2`count(*)`
+  }).from(nav_links).where(and3(eq4(nav_links.category_type, "l1"), inArray2(nav_links.visibility, allowedVisibility))).groupBy(nav_links.category_id);
+  const l2LinkCountRows = await db.select({
+    category_id: nav_links.category_id,
+    count: sql2`count(*)`
+  }).from(nav_links).where(and3(eq4(nav_links.category_type, "l2"), inArray2(nav_links.visibility, allowedVisibility))).groupBy(nav_links.category_id);
+  const l1DirectLinkCountMap = new Map(l1LinkCountRows.map((row) => [row.category_id, Number(row.count) || 0]));
+  const l2LinkCountMap = new Map(l2LinkCountRows.map((row) => [row.category_id, Number(row.count) || 0]));
   const childrenMap = new Map;
   for (const category of l2Categories) {
     const children = childrenMap.get(category.l1_id) ?? [];
@@ -22617,22 +22675,27 @@ var listNavCategories = async (c3) => {
       icon_color: category.icon_color,
       sort_order: category.sort_order,
       visibility: category.visibility,
-      created_at: category.created_at
+      created_at: category.created_at,
+      count: l2LinkCountMap.get(category.id) ?? 0
     });
     childrenMap.set(category.l1_id, children);
   }
-  const data = l1Categories.map((category) => ({
-    id: category.id,
-    name: category.name,
-    description: category.description,
-    keywords: category.keywords,
-    icon: category.icon,
-    icon_color: category.icon_color,
-    sort_order: category.sort_order,
-    visibility: category.visibility,
-    created_at: category.created_at,
-    children: childrenMap.get(category.id) ?? []
-  }));
+  const data = l1Categories.map((category) => {
+    const children = childrenMap.get(category.id) ?? [];
+    return {
+      id: category.id,
+      name: category.name,
+      description: category.description,
+      keywords: category.keywords,
+      icon: category.icon,
+      icon_color: category.icon_color,
+      sort_order: category.sort_order,
+      visibility: category.visibility,
+      created_at: category.created_at,
+      count: children.length + (l1DirectLinkCountMap.get(category.id) ?? 0),
+      children
+    };
+  });
   return c3.json({
     code: 200,
     msg: "success",
@@ -22641,9 +22704,9 @@ var listNavCategories = async (c3) => {
 };
 
 // src/api/nav_link.ts
-import { mkdir as mkdir2, rm as rm4, writeFile as writeFile2 } from "fs/promises";
-import { dirname as dirname3, join as join5 } from "path";
-import { and as and4, desc as desc4, asc as asc3, eq as eq5, inArray as inArray3, like, or as or3, sql as sql3 } from "drizzle-orm";
+import { mkdir as mkdir3, rm as rm5, writeFile as writeFile3 } from "fs/promises";
+import { dirname as dirname4, join as join6 } from "path";
+import { and as and4, desc as desc4, asc as asc3, eq as eq5, inArray as inArray3, like, ne, or as or3, sql as sql3 } from "drizzle-orm";
 
 // src/utils/icon.ts
 var ALLOWED_ICON_MIME_MAP = {
@@ -22662,6 +22725,14 @@ var ALLOWED_ICON_MIME_MAP = {
 var MAX_ICON_SIZE = 100 * 1024;
 
 // src/api/nav_link.ts
+var findDuplicateNavLinkByUrl = async (url2, excludeId) => {
+  return db.query.nav_links.findFirst({
+    columns: {
+      id: true
+    },
+    where: typeof excludeId === "number" ? and4(eq5(nav_links.url, url2), ne(nav_links.id, excludeId)) : eq5(nav_links.url, url2)
+  });
+};
 var getAllowedVisibilityByRole = (role) => role === "admin" ? ["public", "user", "admin"] : role === "user" ? ["public", "user"] : ["public"];
 var isNavVisibilityAllowed = (visibility, role) => getAllowedVisibilityByRole(role).includes(visibility);
 var getAccessibleNavCategoryIds = async (role) => {
@@ -22899,6 +22970,14 @@ var addNavLink = async (c3) => {
       data: null
     });
   }
+  const duplicateLink = await findDuplicateNavLinkByUrl(validated.data.url);
+  if (duplicateLink) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_link.url.duplicate",
+      data: null
+    });
+  }
   const insertData = {
     title: validated.data.title,
     url: validated.data.url,
@@ -22953,6 +23032,14 @@ var updateNavLink = async (c3) => {
     return c3.json({
       code: -1000,
       msg: validated.msg,
+      data: null
+    });
+  }
+  const duplicateLink = await findDuplicateNavLinkByUrl(validated.data.url, id);
+  if (duplicateLink) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_link.url.duplicate",
       data: null
     });
   }
@@ -23068,8 +23155,8 @@ var deleteNavLinks = async (c3) => {
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/nav/"));
   await db.delete(nav_links).where(inArray3(nav_links.id, validatedIds.ids));
   await Promise.allSettled(iconPaths.map((iconPath) => {
-    const filePath = join5(process.cwd(), "data", iconPath.replace(/^\//, ""));
-    return rm4(filePath, { force: true });
+    const filePath = join6(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm5(filePath, { force: true });
   }));
   return c3.json({
     code: 200,
@@ -23077,6 +23164,39 @@ var deleteNavLinks = async (c3) => {
     data: {
       count: validatedIds.ids.length,
       ids: validatedIds.ids
+    }
+  });
+};
+var removeDuplicateNavLinks = async (_c) => {
+  const rows = await db.query.nav_links.findMany({
+    columns: {
+      id: true,
+      url: true
+    },
+    orderBy: asc3(nav_links.id)
+  });
+  const firstIdByUrl = new Map;
+  const duplicateIds = [];
+  const keptIds = [];
+  for (const row of rows) {
+    const existingId = firstIdByUrl.get(row.url);
+    if (existingId == null) {
+      firstIdByUrl.set(row.url, row.id);
+      keptIds.push(row.id);
+      continue;
+    }
+    duplicateIds.push(row.id);
+  }
+  if (duplicateIds.length > 0) {
+    await db.delete(nav_links).where(inArray3(nav_links.id, duplicateIds));
+  }
+  return _c.json({
+    code: 200,
+    msg: "success",
+    data: {
+      deleted_count: duplicateIds.length,
+      deleted_ids: duplicateIds,
+      kept_ids: keptIds
     }
   });
 };
@@ -23170,8 +23290,8 @@ var updateNavLinkIcon = async (c3) => {
   }
   const previousIcon = currentLink.icon?.trim() || "";
   if (previousIcon.startsWith("/images/nav/")) {
-    const previousIconPath = join5(process.cwd(), "data", previousIcon.replace(/^\//, ""));
-    await rm4(previousIconPath, { force: true });
+    const previousIconPath = join6(process.cwd(), "data", previousIcon.replace(/^\//, ""));
+    await rm5(previousIconPath, { force: true });
   }
   if (file2.size > MAX_ICON_SIZE) {
     return c3.json({
@@ -23191,9 +23311,9 @@ var updateNavLinkIcon = async (c3) => {
   const now = new Date;
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
   const relativeIconPath = `/images/nav/${yearMonth}/${id}.${ext}`;
-  const savePath = join5(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
-  await mkdir2(dirname3(savePath), { recursive: true });
-  await writeFile2(savePath, Buffer.from(await file2.arrayBuffer()));
+  const savePath = join6(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
+  await mkdir3(dirname4(savePath), { recursive: true });
+  await writeFile3(savePath, Buffer.from(await file2.arrayBuffer()));
   const [row] = await db.update(nav_links).set({
     icon: relativeIconPath,
     updated_at: new Date
@@ -23233,8 +23353,8 @@ var deleteNavLinkIcon = async (c3) => {
   }
   const currentIcon = currentLink.icon?.trim() || "";
   if (currentIcon.startsWith("/images/nav/")) {
-    const iconPath = join5(process.cwd(), "data", currentIcon.replace(/^\//, ""));
-    await rm4(iconPath, { force: true });
+    const iconPath = join6(process.cwd(), "data", currentIcon.replace(/^\//, ""));
+    await rm5(iconPath, { force: true });
   }
   const [row] = await db.update(nav_links).set({
     icon: "",
@@ -23390,7 +23510,7 @@ var searchNavLinks = async (c3) => {
 };
 
 // src/api/import.ts
-import { and as and5, asc as asc4, desc as desc5, eq as eq7 } from "drizzle-orm";
+import { asc as asc4, desc as desc5, eq as eq7 } from "drizzle-orm";
 
 // node_modules/cheerio/dist/esm/options.js
 var defaultOpts = {
@@ -37005,6 +37125,7 @@ var import_whatwg_mimetype = __toESM(require_mime_type(), 1);
 
 // src/api/import.ts
 var DEFAULT_NAV_VISIBILITY = "public";
+var BOOKMARK_INSERT_BATCH_SIZE = 10;
 var DEFAULT_L1_CATEGORY_NAME = "\u9ED8\u8BA4\u5206\u7C7B";
 var BROWSER_ROOT_FOLDER_NAMES = new Set([
   "bookmarks",
@@ -37305,33 +37426,64 @@ var countParsedCategories = (bookmarks) => {
   return { l1_count, l2_count };
 };
 var ensureCategoriesExist = async (uid, bookmarks) => {
+  const [l1Rows, l2Rows] = await Promise.all([
+    db.query.categories_l1.findMany({
+      where: eq7(categories_l1.uid, uid),
+      columns: {
+        id: true,
+        name: true
+      }
+    }),
+    db.query.categories_l2.findMany({
+      where: eq7(categories_l2.uid, uid),
+      columns: {
+        id: true,
+        l1_id: true,
+        name: true
+      }
+    })
+  ]);
+  const l1ByName = new Map;
+  const l1NameById = new Map;
+  for (const row of l1Rows) {
+    l1ByName.set(row.name, row.id);
+    l1NameById.set(row.id, row.name);
+  }
+  const l2ByKey = new Map;
+  for (const row of l2Rows) {
+    const l1Name = l1NameById.get(row.l1_id);
+    if (!l1Name) {
+      continue;
+    }
+    l2ByKey.set(buildL2Key(l1Name, row.name), row.id);
+  }
   for (const category of bookmarks.categories) {
     if (!isValidCategoryName(category.name)) {
       continue;
     }
-    const existingL1 = await db.query.categories_l1.findFirst({
-      where: and5(eq7(categories_l1.uid, uid), eq7(categories_l1.name, category.name))
-    });
-    const l1Id = existingL1 ? existingL1.id : (await db.insert(categories_l1).values({
-      uid,
-      name: category.name,
-      description: category.description,
-      icon: category.icon,
-      icon_color: category.icon_color,
-      sort_order: category.sort_order,
-      is_public: category.is_public
-    }).returning())[0].id;
+    let l1Id = l1ByName.get(category.name);
+    if (!l1Id) {
+      l1Id = (await db.insert(categories_l1).values({
+        uid,
+        name: category.name,
+        description: category.description,
+        icon: category.icon,
+        icon_color: category.icon_color,
+        sort_order: category.sort_order,
+        is_public: category.is_public
+      }).returning())[0].id;
+      l1ByName.set(category.name, l1Id);
+      l1NameById.set(l1Id, category.name);
+    }
     for (const child of category.children) {
       if (!isValidCategoryName(child.name)) {
         continue;
       }
-      const existingL2 = await db.query.categories_l2.findFirst({
-        where: and5(eq7(categories_l2.uid, uid), eq7(categories_l2.name, child.name))
-      });
-      if (existingL2) {
+      const l2Key = buildL2Key(category.name, child.name);
+      if (l2ByKey.has(l2Key)) {
         continue;
       }
-      await db.insert(categories_l2).values({
+      const insertedL2 = await db.insert(categories_l2).values({
         uid,
         l1_id: l1Id,
         name: child.name,
@@ -37340,7 +37492,10 @@ var ensureCategoriesExist = async (uid, bookmarks) => {
         icon_color: child.icon_color,
         sort_order: child.sort_order,
         is_public: child.is_public
+      }).returning({
+        id: categories_l2.id
       });
+      l2ByKey.set(l2Key, insertedL2[0].id);
     }
   }
 };
@@ -37384,47 +37539,116 @@ var loadCategoryMaps = async (uid) => {
     l2ByKey
   };
 };
-var insertBookmark = async (uid, link, category_type, category_id) => {
-  await db.insert(links).values({
-    uid,
-    title: link.title,
-    url: link.url,
-    backup_url: link.backup_url,
-    content: link.content,
-    keywords: link.keywords,
-    description: link.description,
-    icon: link.icon,
-    category_type,
-    category_id,
-    sort_order: link.sort_order,
-    is_public: link.is_public
-  });
+var buildBookmarkInsertRow = (uid, link, category_type, category_id) => ({
+  uid,
+  title: link.title,
+  url: link.url,
+  backup_url: link.backup_url,
+  content: link.content,
+  keywords: link.keywords,
+  description: link.description,
+  icon: link.icon,
+  category_type,
+  category_id,
+  sort_order: link.sort_order,
+  is_public: link.is_public
+});
+var insertBookmark = async (row) => {
+  await db.insert(links).values(row);
+};
+var insertBookmarkBatch = async (rows) => {
+  if (rows.length === 0) {
+    return { success: 0, failed: 0 };
+  }
+  try {
+    await db.insert(links).values(rows);
+    return { success: rows.length, failed: 0 };
+  } catch (error48) {
+    console.error("import bookmark batch insert failed, fallback to single inserts", {
+      size: rows.length,
+      error: error48
+    });
+    let success2 = 0;
+    let failed = 0;
+    for (const row of rows) {
+      try {
+        await insertBookmark(row);
+        success2 += 1;
+      } catch (singleError) {
+        failed += 1;
+        console.error("import bookmark single insert failed", {
+          row,
+          error: singleError
+        });
+      }
+    }
+    return { success: success2, failed };
+  }
+};
+var flushBookmarkInsertRows = async (rows) => {
+  let success2 = 0;
+  let failed = 0;
+  for (let i = 0;i < rows.length; i += BOOKMARK_INSERT_BATCH_SIZE) {
+    const batch = rows.slice(i, i + BOOKMARK_INSERT_BATCH_SIZE);
+    const result = await insertBookmarkBatch(batch);
+    success2 += result.success;
+    failed += result.failed;
+  }
+  return { success: success2, failed };
+};
+var collectBookmarkInsertRows = (rows, uid, link, category_type, category_id) => {
+  rows.push(buildBookmarkInsertRow(uid, link, category_type, category_id));
 };
 var isValidNavLink = (link) => vLinkTitle(link.title) && vLinkUrl(link.url) && (link.backup_url === "" || vLinkUrl(link.backup_url));
 var ensureNavCategoriesExist = async (bookmarks) => {
+  const [l1Rows, l2Rows] = await Promise.all([
+    db.query.nav_categories_l1.findMany({
+      columns: {
+        id: true,
+        name: true
+      }
+    }),
+    db.query.nav_categories_l2.findMany({
+      columns: {
+        id: true,
+        l1_id: true,
+        name: true
+      }
+    })
+  ]);
+  const l1ByName = new Map;
+  for (const row of l1Rows) {
+    l1ByName.set(row.name, row.id);
+  }
+  const l2ByName = new Map;
+  for (const row of l2Rows) {
+    l2ByName.set(row.name, {
+      id: row.id,
+      l1_id: row.l1_id
+    });
+  }
   for (const category of bookmarks.categories) {
     if (!isValidCategoryName(category.name)) {
       continue;
     }
-    const existingL1 = await db.query.nav_categories_l1.findFirst({
-      where: eq7(nav_categories_l1.name, category.name)
-    });
-    const l1Id = existingL1 ? existingL1.id : (await db.insert(nav_categories_l1).values({
-      name: category.name,
-      description: category.description,
-      keywords: "",
-      icon: category.icon,
-      icon_color: category.icon_color,
-      sort_order: category.sort_order,
-      visibility: DEFAULT_NAV_VISIBILITY
-    }).returning())[0].id;
+    let l1Id = l1ByName.get(category.name);
+    if (!l1Id) {
+      l1Id = (await db.insert(nav_categories_l1).values({
+        name: category.name,
+        description: category.description,
+        keywords: "",
+        icon: category.icon,
+        icon_color: category.icon_color,
+        sort_order: category.sort_order,
+        visibility: DEFAULT_NAV_VISIBILITY
+      }).returning())[0].id;
+      l1ByName.set(category.name, l1Id);
+    }
     for (const child of category.children) {
       if (!isValidCategoryName(child.name)) {
         continue;
       }
-      const existingL2 = await db.query.nav_categories_l2.findFirst({
-        where: eq7(nav_categories_l2.name, child.name)
-      });
+      const existingL2 = l2ByName.get(child.name);
       if (existingL2) {
         if (existingL2.l1_id === l1Id) {
           continue;
@@ -37440,6 +37664,10 @@ var ensureNavCategoriesExist = async (bookmarks) => {
         icon_color: child.icon_color,
         sort_order: child.sort_order,
         visibility: DEFAULT_NAV_VISIBILITY
+      });
+      l2ByName.set(child.name, {
+        id: 0,
+        l1_id: l1Id
       });
     }
   }
@@ -37482,25 +37710,70 @@ var loadNavCategoryMaps = async () => {
     l2ByKey
   };
 };
-var insertNavLink = async (link, category_type, category_id) => {
-  await db.insert(nav_links).values({
-    title: link.title,
-    url: link.url,
-    backup_url: link.backup_url,
-    content: link.content,
-    keywords: link.keywords,
-    description: link.description,
-    icon: link.icon,
-    category_type,
-    category_id,
-    sort_order: link.sort_order,
-    visibility: DEFAULT_NAV_VISIBILITY
-  });
+var buildNavLinkInsertRow = (link, category_type, category_id) => ({
+  title: link.title,
+  url: link.url,
+  backup_url: link.backup_url,
+  content: link.content,
+  keywords: link.keywords,
+  description: link.description,
+  icon: link.icon,
+  category_type,
+  category_id,
+  sort_order: link.sort_order,
+  visibility: DEFAULT_NAV_VISIBILITY
+});
+var insertNavLink = async (row) => {
+  await db.insert(nav_links).values(row);
+};
+var insertNavLinkBatch = async (rows) => {
+  if (rows.length === 0) {
+    return { success: 0, failed: 0 };
+  }
+  try {
+    await db.insert(nav_links).values(rows);
+    return { success: rows.length, failed: 0 };
+  } catch (error48) {
+    console.error("import nav link batch insert failed, fallback to single inserts", {
+      size: rows.length,
+      error: error48
+    });
+    let success2 = 0;
+    let failed = 0;
+    for (const row of rows) {
+      try {
+        await insertNavLink(row);
+        success2 += 1;
+      } catch (singleError) {
+        failed += 1;
+        console.error("import nav link single insert failed", {
+          row,
+          error: singleError
+        });
+      }
+    }
+    return { success: success2, failed };
+  }
+};
+var flushNavLinkInsertRows = async (rows) => {
+  let success2 = 0;
+  let failed = 0;
+  for (let i = 0;i < rows.length; i += BOOKMARK_INSERT_BATCH_SIZE) {
+    const batch = rows.slice(i, i + BOOKMARK_INSERT_BATCH_SIZE);
+    const result = await insertNavLinkBatch(batch);
+    success2 += result.success;
+    failed += result.failed;
+  }
+  return { success: success2, failed };
+};
+var collectNavLinkInsertRows = (rows, link, category_type, category_id) => {
+  rows.push(buildNavLinkInsertRow(link, category_type, category_id));
 };
 var importNavLinksToCategories = async (bookmarks, categoryMaps) => {
   let total = 0;
   let success2 = 0;
   let failed = 0;
+  const rowsToInsert = [];
   for (const category of bookmarks.categories) {
     const l1Id = categoryMaps.l1ByName.get(category.name);
     for (const link of category.links) {
@@ -37509,12 +37782,7 @@ var importNavLinksToCategories = async (bookmarks, categoryMaps) => {
         failed += 1;
         continue;
       }
-      try {
-        await insertNavLink(link, "l1", l1Id);
-        success2 += 1;
-      } catch {
-        failed += 1;
-      }
+      collectNavLinkInsertRows(rowsToInsert, link, "l1", l1Id);
     }
     for (const child of category.children) {
       const l2Id = categoryMaps.l2ByKey.get(buildL2Key(category.name, child.name)) ?? categoryMaps.l2ByName.get(child.name);
@@ -37524,15 +37792,13 @@ var importNavLinksToCategories = async (bookmarks, categoryMaps) => {
           failed += 1;
           continue;
         }
-        try {
-          await insertNavLink(link, "l2", l2Id);
-          success2 += 1;
-        } catch {
-          failed += 1;
-        }
+        collectNavLinkInsertRows(rowsToInsert, link, "l2", l2Id);
       }
     }
   }
+  const insertStats = await flushNavLinkInsertRows(rowsToInsert);
+  success2 += insertStats.success;
+  failed += insertStats.failed;
   return { total, success: success2, failed };
 };
 var importParsedNavBookmarks = async (bookmarks) => {
@@ -37549,6 +37815,7 @@ var importLinksToCategories = async (uid, bookmarks, categoryMaps) => {
   let total = 0;
   let success2 = 0;
   let failed = 0;
+  const rowsToInsert = [];
   for (const category of bookmarks.categories) {
     const l1Id = categoryMaps.l1ByName.get(category.name);
     for (const link of category.links) {
@@ -37561,12 +37828,7 @@ var importLinksToCategories = async (uid, bookmarks, categoryMaps) => {
         failed += 1;
         continue;
       }
-      try {
-        await insertBookmark(uid, link, "l1", l1Id);
-        success2 += 1;
-      } catch (error48) {
-        failed += 1;
-      }
+      collectBookmarkInsertRows(rowsToInsert, uid, link, "l1", l1Id);
     }
     for (const child of category.children) {
       const l2Id = categoryMaps.l2ByKey.get(buildL2Key(category.name, child.name)) ?? categoryMaps.l2ByName.get(child.name);
@@ -37580,15 +37842,13 @@ var importLinksToCategories = async (uid, bookmarks, categoryMaps) => {
           failed += 1;
           continue;
         }
-        try {
-          await insertBookmark(uid, link, "l2", l2Id);
-          success2 += 1;
-        } catch (error48) {
-          failed += 1;
-        }
+        collectBookmarkInsertRows(rowsToInsert, uid, link, "l2", l2Id);
       }
     }
   }
+  const insertStats = await flushBookmarkInsertRows(rowsToInsert);
+  success2 += insertStats.success;
+  failed += insertStats.failed;
   return { total, success: success2, failed };
 };
 var importParsedBookmarks = async (uid, bookmarks) => {
@@ -37700,8 +37960,8 @@ var exportHTML = async (c3) => {
 };
 
 // src/api/link.ts
-import { mkdir as mkdir3, rm as rm5, writeFile as writeFile3 } from "fs/promises";
-import { dirname as dirname4, join as join6 } from "path";
+import { mkdir as mkdir4, rm as rm6, writeFile as writeFile4 } from "fs/promises";
+import { dirname as dirname5, join as join7 } from "path";
 import { and as and6, asc as asc5, desc as desc6, eq as eq8, inArray as inArray4, like as like2, or as or4, sql as sql4 } from "drizzle-orm";
 var MAX_LINK_ICON_SIZE = 100 * 1024;
 var HTML_CHARSET_SNIFF_BYTES = 8 * 1024;
@@ -38092,8 +38352,8 @@ var updateLinkIcon = async (c3) => {
   }
   const previousIcon = currentLink.icon?.trim() || "";
   if (previousIcon.startsWith("/images/")) {
-    const previousIconPath = join6(process.cwd(), "data", previousIcon.replace(/^\//, ""));
-    await rm5(previousIconPath, { force: true });
+    const previousIconPath = join7(process.cwd(), "data", previousIcon.replace(/^\//, ""));
+    await rm6(previousIconPath, { force: true });
   }
   if (file2.size > MAX_LINK_ICON_SIZE) {
     return c3.json({
@@ -38113,9 +38373,9 @@ var updateLinkIcon = async (c3) => {
   const now = new Date;
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
   const relativeIconPath = `/images/${uid}/${yearMonth}/${id}.${ext}`;
-  const savePath = join6(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
-  await mkdir3(dirname4(savePath), { recursive: true });
-  await writeFile3(savePath, Buffer.from(await file2.arrayBuffer()));
+  const savePath = join7(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
+  await mkdir4(dirname5(savePath), { recursive: true });
+  await writeFile4(savePath, Buffer.from(await file2.arrayBuffer()));
   const [row] = await db.update(links).set({
     icon: relativeIconPath,
     updated_at: new Date
@@ -38164,8 +38424,8 @@ var deleteLinkIcon = async (c3) => {
   }
   const currentIcon = currentLink.icon?.trim() || "";
   if (currentIcon.startsWith("/images/")) {
-    const iconPath = join6(process.cwd(), "data", currentIcon.replace(/^\//, ""));
-    await rm5(iconPath, { force: true });
+    const iconPath = join7(process.cwd(), "data", currentIcon.replace(/^\//, ""));
+    await rm6(iconPath, { force: true });
   }
   const [row] = await db.update(links).set({
     icon: "",
@@ -38252,8 +38512,8 @@ var deleteLinks = async (c3) => {
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
   await db.delete(links).where(and6(eq8(links.uid, uid), inArray4(links.id, validatedIds.ids)));
   await Promise.allSettled(iconPaths.map((iconPath) => {
-    const filePath = join6(process.cwd(), "data", iconPath.replace(/^\//, ""));
-    return rm5(filePath, { force: true });
+    const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm6(filePath, { force: true });
   }));
   return c3.json({
     code: 200,
@@ -38278,8 +38538,8 @@ var adminDeleteLinks = async (c3) => {
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
   await db.delete(links).where(inArray4(links.id, validatedIds.ids));
   await Promise.allSettled(iconPaths.map((iconPath) => {
-    const filePath = join6(process.cwd(), "data", iconPath.replace(/^\//, ""));
-    return rm5(filePath, { force: true });
+    const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
+    return rm6(filePath, { force: true });
   }));
   return c3.json({
     code: 200,
@@ -38576,8 +38836,8 @@ var getLinkInfo = async (c3) => {
 };
 
 // src/api/update.ts
-import { mkdir as mkdir4, writeFile as writeFile4 } from "fs/promises";
-import { dirname as dirname5, join as join7 } from "path";
+import { mkdir as mkdir5, writeFile as writeFile5 } from "fs/promises";
+import { dirname as dirname6, join as join8 } from "path";
 var UPDATE_MANIFEST_URL = "https://soft.xiaoz.org/source/zmark/latest.json";
 var UPDATE_REQUEST_TIMEOUT = 1e4;
 var UPDATE_DOWNLOAD_TIMEOUT = 120000;
@@ -38708,7 +38968,7 @@ var downloadUpdate = async (c3) => {
     });
   }
   const fileName = "update.tar.gz";
-  const filePath = join7(process.cwd(), "data", fileName);
+  const filePath = join8(process.cwd(), "data", fileName);
   try {
     const res = await fetchWithTimeout(manifest.url, UPDATE_DOWNLOAD_TIMEOUT);
     if (!res.ok) {
@@ -38727,8 +38987,8 @@ var downloadUpdate = async (c3) => {
       });
     }
     try {
-      await mkdir4(dirname5(filePath), { recursive: true });
-      await writeFile4(filePath, Buffer.from(arrayBuffer));
+      await mkdir5(dirname6(filePath), { recursive: true });
+      await writeFile5(filePath, Buffer.from(arrayBuffer));
     } catch {
       return c3.json({
         code: -1000,
@@ -39082,6 +39342,7 @@ userRouter.get("/get_user_setting", getUserSetting);
 adminRouter.post("/set_setting", setGlobalSetting);
 adminRouter.post("/save_license", saveLicense);
 adminRouter.post("/remove_license", removeLicense);
+adminRouter.post("/upload_logo", uploadLogo);
 adminRouter.get("/get_setting", getGlobalSetting);
 adminRouter.get("/list_users", listUsers);
 adminRouter.post("/list_links", listLinksByAdmin);
@@ -39095,6 +39356,7 @@ adminRouter.post("/update_nav_link", updateNavLink);
 adminRouter.post("/update_nav_link_icon", updateNavLinkIcon);
 adminRouter.post("/delete_nav_link_icon", deleteNavLinkIcon);
 adminRouter.post("/delete_nav_links", deleteNavLinks);
+adminRouter.post("/remove_duplicate_nav_links", removeDuplicateNavLinks);
 adminRouter.post("/update_nav_links_category", updateNavLinksCategory);
 adminRouter.post("/sort_nav_links", sortNavLinks);
 adminRouter.post("/import_nav_html", importNavHTML);

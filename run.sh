@@ -23,6 +23,9 @@ update() {
         echo "No update package found, skipping update."
         return 0
     fi
+    
+    # 删除已经存在的前端静态文件
+    rm -rf public/static/assets/*
 
     echo "Update package detected, extracting files..."
     tar -xzf "$update_file" -C "$SCRIPT_DIR" --overwrite
