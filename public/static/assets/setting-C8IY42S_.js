@@ -1,1 +1,0 @@
-import{_ as s}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{X as o,M as n,Y as t}from"./vendor-vue-Cplma5_Y.js";const r={},a={class:"setting"};function i(c,e){return n(),o("div",a,[...e[0]||(e[0]=[t("h1",null,"Welcome to ZAdmin",-1),t("p",null,"This is the setting page of your admin dashboard.",-1)])])}const m=s(r,[["render",i]]);export{m as default};

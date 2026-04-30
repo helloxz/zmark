@@ -21017,8 +21017,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.5.0";
-var APP_DATE = "2026042902";
+var APP_VERSION = "0.5.1";
+var APP_DATE = "2026043006";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -21436,6 +21436,36 @@ var initUser = async (c3) => {
     data: null
   });
 };
+var resetAdminPassword = async (c3) => {
+  const admin = db.select({
+    id: users.id,
+    username: users.username
+  }).from(users).where(eq2(users.role, "admin")).orderBy(users.id).limit(1).get();
+  if (!admin) {
+    return c3.text("\u7BA1\u7406\u5458\u8D26\u53F7\u4E0D\u5B58\u5728", 404);
+  }
+  const resetFilePath = join3(process.cwd(), "data", "reset.txt");
+  const resetFileExists = await Bun.file(resetFilePath).exists();
+  if (!resetFileExists) {
+    return c3.text("Forbidden", 403);
+  }
+  const password = randomString(12);
+  const encryptedPassword = enPassword(admin.username, password);
+  db.update(users).set({
+    password: encryptedPassword,
+    updated_at: new Date
+  }).where(eq2(users.id, admin.id)).run();
+  db.update(sessions).set({
+    status: "revoked"
+  }).where(and(eq2(sessions.uid, admin.id), eq2(sessions.status, "active"))).run();
+  try {
+    await rm2(resetFilePath, { force: true });
+  } catch {}
+  return c3.text(`\u7BA1\u7406\u5458\u7528\u6237\u540D:${admin.username}
+\u7BA1\u7406\u5458\u5BC6\u7801:${password}
+
+\u63D0\u793A\uFF1A\u8BF7\u68C0\u67E5data/reset.txt\u662F\u5426\u5DF2\u88AB\u5220\u9664\uFF0C\u82E5\u672A\u5220\u9664\u8BF7\u624B\u52A8\u5220\u9664\u6B64\u6587\u4EF6\uFF01`, 200);
+};
 var login = async (c3) => {
   let { username, password } = await c3.req.json();
   username = username.trim().toLowerCase();
@@ -21665,6 +21695,53 @@ var listUsers = async (c3) => {
     code: 200,
     msg: "success",
     data: users2
+  });
+};
+var resetUserPassword = async (c3) => {
+  const { id } = await c3.req.json();
+  if (!Number.isInteger(id) || id <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "user.id.invalid",
+      data: null
+    });
+  }
+  const user = db.select({
+    id: users.id,
+    username: users.username,
+    role: users.role
+  }).from(users).where(eq2(users.id, id)).get();
+  if (!user) {
+    return c3.json({
+      code: -1000,
+      msg: "user.not.found",
+      data: null
+    });
+  }
+  if (user.role !== "user") {
+    return c3.json({
+      code: -1000,
+      msg: "user.reset.only_user_allowed",
+      data: null
+    });
+  }
+  const password = randomString(12);
+  const encryptedPassword = enPassword(user.username, password);
+  db.update(users).set({
+    password: encryptedPassword,
+    updated_at: new Date
+  }).where(eq2(users.id, user.id)).run();
+  db.update(sessions).set({
+    status: "revoked"
+  }).where(and(eq2(sessions.uid, user.id), eq2(sessions.status, "active"))).run();
+  return c3.json({
+    code: 200,
+    msg: "user.password.reset.success",
+    data: {
+      id: user.id,
+      username: user.username,
+      password
+    }
   });
 };
 
@@ -22170,26 +22247,6 @@ var addNavCategory = async (c3) => {
   const validVisibility = ["public", "user", "admin"];
   if (!visibility || !validVisibility.includes(visibility)) {
     visibility = "public";
-  }
-  const l1CountResult = db.select({ count: sql2`count(*)` }).from(nav_categories_l1).get();
-  const l2CountResult = db.select({ count: sql2`count(*)` }).from(nav_categories_l2).get();
-  const totalNavCategoryCount = (l1CountResult?.count ?? 0) + (l2CountResult?.count ?? 0);
-  const host = getHostFromRequest(c3);
-  const { edition, result } = getLicense(host);
-  const isLicenseValid = (edition === "pro" || edition === "team") && result === "success";
-  if (!isLicenseValid) {
-    if (edition !== "free") {
-      return c3.json({
-        code: -1000,
-        msg: result,
-        data: null
-      });
-    }
-    return c3.json({
-      code: -1000,
-      msg: "license.nav_category_limit.reached",
-      data: null
-    });
   }
   if (parent_id) {
     const parentCategory = await db.query.nav_categories_l1.findFirst({
@@ -22959,9 +23016,11 @@ var addNavLink = async (c3) => {
   const { edition, result } = getLicense(host);
   let maxLimit = 0;
   if (edition === "pro" && result === "success") {
-    maxLimit = 500;
+    maxLimit = 300;
   } else if (edition === "team" && result === "success") {
     maxLimit = 2000;
+  } else {
+    maxLimit = 100;
   }
   if (maxLimit === 0 || (navLinkCountResult?.count ?? 0) >= maxLimit) {
     return c3.json({
@@ -37962,7 +38021,7 @@ var exportHTML = async (c3) => {
 // src/api/link.ts
 import { mkdir as mkdir4, rm as rm6, writeFile as writeFile4 } from "fs/promises";
 import { dirname as dirname5, join as join7 } from "path";
-import { and as and6, asc as asc5, desc as desc6, eq as eq8, inArray as inArray4, like as like2, or as or4, sql as sql4 } from "drizzle-orm";
+import { and as and6, asc as asc5, desc as desc6, eq as eq8, inArray as inArray4, like as like2, ne as ne2, or as or4, sql as sql4 } from "drizzle-orm";
 var MAX_LINK_ICON_SIZE = 100 * 1024;
 var HTML_CHARSET_SNIFF_BYTES = 8 * 1024;
 var normalizeHtmlCharset = (charset) => {
@@ -38038,6 +38097,14 @@ var ALLOWED_LINK_ICON_MIME_MAP = {
   "image/ico": "ico",
   "image/svg+xml": "svg",
   "image/webp": "webp"
+};
+var findDuplicateUserLinkByUrl = async (uid, url2, excludeId) => {
+  return db.query.links.findFirst({
+    columns: {
+      id: true
+    },
+    where: typeof excludeId === "number" ? and6(eq8(links.uid, uid), eq8(links.url, url2), ne2(links.id, excludeId)) : and6(eq8(links.uid, uid), eq8(links.url, url2))
+  });
 };
 var validateBatchLinkIds = async (ids, uid) => {
   if (!Array.isArray(ids) || ids.length === 0) {
@@ -38214,6 +38281,14 @@ var addLink = async (c3) => {
       data: null
     });
   }
+  const duplicateLink = await findDuplicateUserLinkByUrl(uid, validated.data.url);
+  if (duplicateLink) {
+    return c3.json({
+      code: -1000,
+      msg: "link.url.duplicate",
+      data: null
+    });
+  }
   const [row] = await db.insert(links).values({
     uid,
     ...validated.data
@@ -38264,6 +38339,14 @@ var updateLink = async (c3) => {
     return c3.json({
       code: -1000,
       msg: validated.msg,
+      data: null
+    });
+  }
+  const duplicateLink = await findDuplicateUserLinkByUrl(uid, validated.data.url, id);
+  if (duplicateLink) {
+    return c3.json({
+      code: -1000,
+      msg: "link.url.duplicate",
       data: null
     });
   }
@@ -38521,6 +38604,51 @@ var deleteLinks = async (c3) => {
     data: {
       count: validatedIds.ids.length,
       ids: validatedIds.ids
+    }
+  });
+};
+var removeDuplicateUserLinks = async (c3) => {
+  const uid = c3.get("uid");
+  const rows = await db.query.links.findMany({
+    where: eq8(links.uid, uid),
+    columns: {
+      id: true,
+      url: true,
+      icon: true
+    },
+    orderBy: asc5(links.id)
+  });
+  const firstIdByUrl = new Map;
+  const duplicateIds = [];
+  const keptIds = [];
+  const duplicateIconPaths = [];
+  for (const row of rows) {
+    const existingId = firstIdByUrl.get(row.url);
+    if (existingId == null) {
+      firstIdByUrl.set(row.url, row.id);
+      keptIds.push(row.id);
+      continue;
+    }
+    duplicateIds.push(row.id);
+    const iconPath = row.icon?.trim() || "";
+    if (iconPath.startsWith("/images/")) {
+      duplicateIconPaths.push(iconPath);
+    }
+  }
+  if (duplicateIds.length > 0) {
+    await db.delete(links).where(and6(eq8(links.uid, uid), inArray4(links.id, duplicateIds)));
+    await Promise.allSettled(duplicateIconPaths.map((iconPath) => {
+      const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
+      return rm6(filePath, { force: true });
+    }));
+  }
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      deleted_count: duplicateIds.length,
+      deleted_ids: duplicateIds,
+      kept_ids: keptIds
     }
   });
 };
@@ -39316,6 +39444,7 @@ publicRouter.get("/nav", index2);
 publicRouter.post("/api/init_user", initUser);
 publicRouter.post("/api/login", login);
 publicRouter.post("/api/register", register);
+publicRouter.get("/reset_admin_password", resetAdminPassword);
 userRouter.post("/add_category", addCategory);
 userRouter.post("/update_category", updateCategory);
 userRouter.post("/delete_category", deleteCategory);
@@ -39327,6 +39456,7 @@ userRouter.post("/delete_link_icon", deleteLinkIcon);
 userRouter.post("/sort_links", sortLinks);
 userRouter.post("/update_links_category", updateLinksCategory);
 userRouter.post("/delete_links", deleteLinks);
+userRouter.post("/remove_duplicate_links", removeDuplicateUserLinks);
 userRouter.post("/search_links", searchLinks);
 userRouter.get("/category_links", getCategoryLinks);
 userRouter.get("/info", userInfo);
@@ -39345,6 +39475,7 @@ adminRouter.post("/remove_license", removeLicense);
 adminRouter.post("/upload_logo", uploadLogo);
 adminRouter.get("/get_setting", getGlobalSetting);
 adminRouter.get("/list_users", listUsers);
+adminRouter.post("/reset_user_password", resetUserPassword);
 adminRouter.post("/list_links", listLinksByAdmin);
 adminRouter.post("/delete_links", adminDeleteLinks);
 adminRouter.post("/add_nav_category", addNavCategory);
