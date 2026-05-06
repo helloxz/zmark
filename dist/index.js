@@ -4,25 +4,43 @@ var __getProtoOf = Object.getPrototypeOf;
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+function __accessProp(key) {
+  return this[key];
+}
+var __toESMCache_node;
+var __toESMCache_esm;
 var __toESM = (mod, isNodeMode, target) => {
+  var canCache = mod != null && typeof mod === "object";
+  if (canCache) {
+    var cache = isNodeMode ? __toESMCache_node ??= new WeakMap : __toESMCache_esm ??= new WeakMap;
+    var cached = cache.get(mod);
+    if (cached)
+      return cached;
+  }
   target = mod != null ? __create(__getProtoOf(mod)) : {};
   const to = isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target;
   for (let key of __getOwnPropNames(mod))
     if (!__hasOwnProp.call(to, key))
       __defProp(to, key, {
-        get: () => mod[key],
+        get: __accessProp.bind(mod, key),
         enumerable: true
       });
+  if (canCache)
+    cache.set(mod, to);
   return to;
 };
 var __commonJS = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 var __require = import.meta.require;
@@ -6143,7 +6161,8 @@ __export(exports_schema, {
   links: () => links,
   globalSettings: () => globalSettings,
   categories_l2: () => categories_l2,
-  categories_l1: () => categories_l1
+  categories_l1: () => categories_l1,
+  apiTokens: () => apiTokens
 });
 import { sqliteTable, text, integer, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 var users = sqliteTable("zm_users", {
@@ -6181,7 +6200,8 @@ var nav_links = sqliteTable("zm_nav_links", {
   created_at: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date),
   updated_at: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date)
 }, (table) => ({
-  categoryIdx: index("idx_zm_nav_links_category").on(table.category_type, table.category_id, table.visibility)
+  categoryIdx: index("idx_zm_nav_links_category").on(table.category_type, table.category_id, table.visibility),
+  checkedIdIdx: index("idx_zm_nav_links_checked_id").on(table.last_checked_at, table.id)
 }));
 var categories_l1 = sqliteTable("zm_categories_l1", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -6232,7 +6252,8 @@ var links = sqliteTable("zm_links", {
   updated_at: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date)
 }, (table) => {
   return {
-    uidIdx: index("idx_zm_links_uid").on(table.uid)
+    uidIdx: index("idx_zm_links_uid").on(table.uid),
+    checkedIdIdx: index("idx_zm_links_checked_id").on(table.last_checked_at, table.id)
   };
 });
 var sessions = sqliteTable("zm_sessions", {
@@ -6247,6 +6268,16 @@ var sessions = sqliteTable("zm_sessions", {
   last_active_at: integer("last_active_at", { mode: "timestamp" }).$defaultFn(() => new Date).notNull(),
   expires_at: integer("expires_at", { mode: "timestamp" }).notNull(),
   status: text("status", { enum: ["active", "expired", "revoked"] }).default("active").notNull()
+});
+var apiTokens = sqliteTable("zm_api_tokens", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  uid: integer("uid").notNull().unique(),
+  token: text("token").notNull().unique(),
+  status: text("status", { enum: ["active", "disabled"] }).default("active").notNull(),
+  last_used_at: integer("last_used_at", { mode: "timestamp" }),
+  last_used_ip: text("last_used_ip").default(""),
+  created_at: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date).notNull(),
+  updated_at: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date).notNull()
 });
 var globalSettings = sqliteTable("zm_global_settings", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -20543,7 +20574,8 @@ var DEFAULT_SETTINGS = {
     invite_code: ""
   },
   nav_setting: {
-    icon_type: "online"
+    icon_type: "online",
+    category_link_limit: 24
   }
 };
 var ENTITLEMENT_GATEWAY_B64 = "aHR0cHM6Ly9zaG9wLnhpdXBpbmcubmV0L3ptYXJrL3F1ZXJ5";
@@ -20658,6 +20690,35 @@ var getLicense = (domain2) => {
     return { edition: "free", result: "invalid.license.domain" };
   }
   return { edition, result: "success" };
+};
+var passGate = () => {
+  const cached2 = Cache.get("license");
+  if (!cached2) {
+    return false;
+  }
+  let licenseData;
+  try {
+    licenseData = typeof cached2 === "string" ? JSON.parse(cached2) : cached2;
+  } catch {
+    return false;
+  }
+  const { edition, status, expired_at } = licenseData;
+  if (edition === "free") {
+    return false;
+  }
+  if (edition !== "pro" && edition !== "team") {
+    return false;
+  }
+  if (status !== "active") {
+    return false;
+  }
+  if (expired_at && expired_at !== "-") {
+    const expiredAt = new Date(expired_at);
+    if (Number.isNaN(expiredAt.getTime()) || new Date > expiredAt) {
+      return false;
+    }
+  }
+  return true;
 };
 var saveLicense = async (c3) => {
   const body = await c3.req.json();
@@ -21017,8 +21078,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.5.1";
-var APP_DATE = "2026043006";
+var APP_VERSION = "0.6.0";
+var APP_DATE = "2026050604";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -23016,7 +23077,7 @@ var addNavLink = async (c3) => {
   const { edition, result } = getLicense(host);
   let maxLimit = 0;
   if (edition === "pro" && result === "success") {
-    maxLimit = 300;
+    maxLimit = 500;
   } else if (edition === "team" && result === "success") {
     maxLimit = 2000;
   } else {
@@ -23569,7 +23630,7 @@ var searchNavLinks = async (c3) => {
 };
 
 // src/api/import.ts
-import { asc as asc4, desc as desc5, eq as eq7 } from "drizzle-orm";
+import { eq as eq7 } from "drizzle-orm";
 
 // node_modules/cheerio/dist/esm/options.js
 var defaultOpts = {
@@ -29002,7 +29063,7 @@ function setCss(el, prop2, value, idx) {
     } else if (val2 != null) {
       styles[prop2] = val2;
     }
-    el.attribs["style"] = stringify2(styles);
+    el.attribs["style"] = stringify3(styles);
   } else if (typeof prop2 === "object") {
     const keys = Object.keys(prop2);
     for (let i = 0;i < keys.length; i++) {
@@ -29029,7 +29090,7 @@ function getCss(el, prop2) {
   }
   return styles;
 }
-function stringify2(obj) {
+function stringify3(obj) {
   return Object.keys(obj).reduce((str, prop2) => `${str}${str ? " " : ""}${prop2}: ${obj[prop2]};`, "");
 }
 function parse7(styles) {
@@ -37185,6 +37246,7 @@ var import_whatwg_mimetype = __toESM(require_mime_type(), 1);
 // src/api/import.ts
 var DEFAULT_NAV_VISIBILITY = "public";
 var BOOKMARK_INSERT_BATCH_SIZE = 10;
+var VALID_JSON_BOOKMARK_TYPES = new Set(["zmark.bookmarks", "onenav.bookmarks"]);
 var DEFAULT_L1_CATEGORY_NAME = "\u9ED8\u8BA4\u5206\u7C7B";
 var BROWSER_ROOT_FOLDER_NAMES = new Set([
   "bookmarks",
@@ -37233,171 +37295,103 @@ var createL1Category = (name, sort_order) => ({
 var normalizeText = (value) => (value ?? "").replace(/\s+/g, " ").trim();
 var isBrowserRootFolder = (name) => BROWSER_ROOT_FOLDER_NAMES.has(normalizeText(name).toLowerCase());
 var buildL2Key = (l1Name, l2Name) => `${l1Name}__${l2Name}`;
-var escapeHtml = (value) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
-var renderBookmarkLink = (link, indent) => `${indent}<DT><A HREF="${escapeHtml(link.url)}">${escapeHtml(link.title)}</A>`;
-var renderBookmarkFolder = (name, lines, indent = "") => [
-  `${indent}<DT><H3>${escapeHtml(name)}</H3>`,
-  `${indent}<DL><p>`,
-  ...lines,
-  `${indent}</DL><p>`
-].join(`
-`);
-var hasRenderableContent = (category) => category.links.length > 0 || category.children.some((child) => child.links.length > 0);
-var sortExportLinks = (links2) => links2.sort((a, b) => {
-  const sortDiff = (a.sort_order ?? 0) - (b.sort_order ?? 0);
-  if (sortDiff !== 0) {
-    return sortDiff;
+
+class JsonImportError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "JsonImportError";
   }
-  const aCreatedAt = a.created_at?.getTime() ?? 0;
-  const bCreatedAt = b.created_at?.getTime() ?? 0;
-  return bCreatedAt - aCreatedAt;
-});
-var createDefaultExportCategory = () => ({
-  id: 0,
-  name: DEFAULT_L1_CATEGORY_NAME,
-  sort_order: 99999,
-  links: [],
-  children: []
-});
-var loadExportTree = async (uid) => {
-  const [l1Rows, l2Rows, linkRows] = await Promise.all([
-    db.query.categories_l1.findMany({
-      where: eq7(categories_l1.uid, uid),
-      columns: {
-        id: true,
-        name: true,
-        sort_order: true
-      },
-      orderBy: [
-        asc4(categories_l1.sort_order),
-        desc5(categories_l1.created_at)
-      ]
-    }),
-    db.query.categories_l2.findMany({
-      where: eq7(categories_l2.uid, uid),
-      columns: {
-        id: true,
-        l1_id: true,
-        name: true,
-        sort_order: true
-      },
-      orderBy: [
-        asc4(categories_l2.sort_order),
-        desc5(categories_l2.created_at)
-      ]
-    }),
-    db.query.links.findMany({
-      where: eq7(links.uid, uid),
-      columns: {
-        id: true,
-        title: true,
-        url: true,
-        category_type: true,
-        category_id: true,
-        sort_order: true,
-        created_at: true
-      },
-      orderBy: [asc4(links.sort_order), desc5(links.created_at)]
-    })
-  ]);
-  const l1Map = new Map;
-  const l2Map = new Map;
-  let defaultCategory = null;
-  for (const row of l1Rows) {
-    l1Map.set(row.id, {
-      id: row.id,
-      name: row.name,
-      sort_order: row.sort_order ?? 0,
-      links: [],
-      children: []
-    });
+}
+var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var readOptionalString = (value) => {
+  if (value === undefined || value === null) {
+    return "";
   }
-  for (const row of l2Rows) {
-    const child = {
-      id: row.id,
-      name: row.name,
-      sort_order: row.sort_order ?? 0,
-      links: []
-    };
-    l2Map.set(row.id, child);
-    const parent2 = l1Map.get(row.l1_id);
-    if (parent2) {
-      parent2.children.push(child);
-      continue;
-    }
-    defaultCategory ??= createDefaultExportCategory();
-    defaultCategory.children.push(child);
+  if (typeof value !== "string") {
+    throw new JsonImportError("invalid.json.format");
   }
-  for (const row of linkRows) {
-    if (row.category_type === "l1") {
-      const parent3 = l1Map.get(row.category_id);
-      if (parent3) {
-        parent3.links.push(row);
-        continue;
-      }
-      defaultCategory ??= createDefaultExportCategory();
-      defaultCategory.links.push(row);
-      continue;
-    }
-    const parent2 = l2Map.get(row.category_id);
-    if (parent2) {
-      parent2.links.push(row);
-      continue;
-    }
-    defaultCategory ??= createDefaultExportCategory();
-    defaultCategory.links.push(row);
-  }
-  const categories = [];
-  l1Map.forEach((category) => {
-    categories.push(category);
-  });
-  if (defaultCategory) {
-    categories.push(defaultCategory);
-  }
-  for (const category of categories) {
-    sortExportLinks(category.links);
-    category.children.sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-    for (const child of category.children) {
-      sortExportLinks(child.links);
-    }
-  }
-  categories.sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-  return categories;
+  return value.trim();
 };
-var buildBookmarkExportHtml = (categories) => {
-  const categoryLines = [];
-  for (const category of categories) {
-    if (!hasRenderableContent(category)) {
-      continue;
-    }
-    const folderLines = [];
-    for (const link of category.links) {
-      folderLines.push(renderBookmarkLink(link, "        "));
-    }
-    for (const child of category.children) {
-      if (child.links.length === 0) {
-        continue;
-      }
-      const childLines = child.links.map((link) => renderBookmarkLink(link, "            "));
-      folderLines.push(renderBookmarkFolder(child.name, childLines, "        "));
-    }
-    categoryLines.push(renderBookmarkFolder(category.name, folderLines, "    "));
+var readSortOrder = (value, fallback) => {
+  if (value === undefined || value === null) {
+    return fallback;
   }
-  const rootFolder = renderBookmarkFolder("Bookmarks", categoryLines);
-  return [
-    "<!DOCTYPE NETSCAPE-Bookmark-file-1>",
-    "<!-- This is an automatically generated file.",
-    "     It will be read and overwritten.",
-    "     DO NOT EDIT! -->",
-    '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">',
-    "<TITLE>Bookmarks</TITLE>",
-    "<H1>Bookmarks</H1>",
-    "<DL><p>",
-    rootFolder,
-    "</DL><p>",
-    ""
-  ].join(`
-`);
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  return Math.trunc(value);
+};
+var normalizeJsonLink = (value, index4) => {
+  if (!isRecord(value)) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  const title = readOptionalString(value.title);
+  const url2 = readOptionalString(value.url);
+  if (!title || !url2) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  return {
+    title,
+    url: url2,
+    backup_url: readOptionalString(value.backup_url),
+    content: "",
+    keywords: "",
+    description: readOptionalString(value.description),
+    icon: "",
+    sort_order: readSortOrder(value.sort_order, index4),
+    is_public: 0
+  };
+};
+var normalizeJsonLinks = (value) => {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  return value.map((item, index4) => normalizeJsonLink(item, index4));
+};
+var normalizeJsonL2Category = (value, index4) => {
+  if (!isRecord(value)) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  const name = readOptionalString(value.name);
+  if (!name) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  return {
+    name,
+    description: readOptionalString(value.description),
+    icon: "",
+    icon_color: "",
+    sort_order: readSortOrder(value.sort_order, index4),
+    is_public: 0,
+    links: normalizeJsonLinks(value.links)
+  };
+};
+var normalizeJsonL1Category = (value, index4) => {
+  if (!isRecord(value)) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  const name = readOptionalString(value.name);
+  if (!name) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  const childrenValue = value.children;
+  if (childrenValue !== undefined && childrenValue !== null && !Array.isArray(childrenValue)) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  const children2 = Array.isArray(childrenValue) ? childrenValue : [];
+  return {
+    name,
+    description: readOptionalString(value.description),
+    icon: "",
+    icon_color: "",
+    sort_order: readSortOrder(value.sort_order, index4),
+    is_public: 0,
+    links: normalizeJsonLinks(value.links),
+    children: children2.map((item, childIndex) => normalizeJsonL2Category(item, childIndex))
+  };
 };
 var pushLinkToL1 = (category, title, url2) => {
   category.links.push(createLink(title, url2, category.links.length));
@@ -37476,6 +37470,26 @@ var parseHTML2 = (html4) => {
   }
   walkBookmarkList($2, rootDl, categories, l1Map);
   return { categories };
+};
+var parseJSON = (json2) => {
+  let payload;
+  try {
+    payload = JSON.parse(json2);
+  } catch {
+    throw new JsonImportError("invalid.json");
+  }
+  if (!isRecord(payload)) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  if (typeof payload.type !== "string" || !VALID_JSON_BOOKMARK_TYPES.has(payload.type)) {
+    throw new JsonImportError("invalid.json.type");
+  }
+  if (!Array.isArray(payload.categories)) {
+    throw new JsonImportError("invalid.json.format");
+  }
+  return {
+    categories: payload.categories.map((category, index4) => normalizeJsonL1Category(category, index4))
+  };
 };
 var isValidCategoryName = (name) => vCategoryName(name);
 var isValidBookmarkLink = (link) => vLinkTitle(link.title) && vLinkUrl(link.url) && (link.backup_url === "" || vLinkUrl(link.backup_url));
@@ -37958,6 +37972,51 @@ var importHTML = async (c3) => {
     });
   }
 };
+var importJSON = async (c3) => {
+  const uid = c3.get("uid");
+  try {
+    const formData = await c3.req.formData();
+    const file2 = formData.get("file");
+    if (!file2 || !(file2 instanceof File)) {
+      return c3.json({
+        code: 400,
+        msg: "invalid.file",
+        data: null
+      });
+    }
+    const fileName = file2.name;
+    const fileExt = fileName.split(".").pop()?.toLowerCase();
+    if (fileExt !== "json") {
+      return c3.json({
+        code: 400,
+        msg: "invalid.file.type",
+        data: null
+      });
+    }
+    const json2 = await file2.text();
+    const bookmarks = parseJSON(json2);
+    const stats = await importParsedBookmarks(uid, bookmarks);
+    return c3.json({
+      code: 200,
+      msg: "import.success",
+      data: stats
+    });
+  } catch (error48) {
+    if (error48 instanceof JsonImportError) {
+      return c3.json({
+        code: 400,
+        msg: error48.message,
+        data: null
+      });
+    }
+    console.error(error48);
+    return c3.json({
+      code: 500,
+      msg: "import.failed",
+      data: null
+    });
+  }
+};
 var importNavHTML = async (c3) => {
   try {
     const formData = await c3.req.formData();
@@ -37995,18 +38054,574 @@ var importNavHTML = async (c3) => {
     });
   }
 };
+var importNavJSON = async (c3) => {
+  try {
+    const formData = await c3.req.formData();
+    const file2 = formData.get("file");
+    if (!file2 || !(file2 instanceof File)) {
+      return c3.json({
+        code: 400,
+        msg: "invalid.file",
+        data: null
+      });
+    }
+    const fileName = file2.name;
+    const fileExt = fileName.split(".").pop()?.toLowerCase();
+    if (fileExt !== "json") {
+      return c3.json({
+        code: 400,
+        msg: "invalid.file.type",
+        data: null
+      });
+    }
+    const json2 = await file2.text();
+    const bookmarks = parseJSON(json2);
+    const stats = await importParsedNavBookmarks(bookmarks);
+    return c3.json({
+      code: 200,
+      msg: "import.success",
+      data: stats
+    });
+  } catch (error48) {
+    if (error48 instanceof JsonImportError) {
+      return c3.json({
+        code: 400,
+        msg: error48.message,
+        data: null
+      });
+    }
+    console.error(error48);
+    return c3.json({
+      code: 500,
+      msg: "import.failed",
+      data: null
+    });
+  }
+};
+
+// src/api/export.ts
+import { asc as asc4, desc as desc5, eq as eq8 } from "drizzle-orm";
+var DEFAULT_L1_CATEGORY_NAME2 = "\u9ED8\u8BA4\u5206\u7C7B";
+var buildDatedExportFileName = (prefix, extension = "json") => {
+  const date5 = new Date;
+  const yyyy = String(date5.getFullYear());
+  const mm = String(date5.getMonth() + 1).padStart(2, "0");
+  const dd = String(date5.getDate()).padStart(2, "0");
+  return `${prefix}-${yyyy}${mm}${dd}.${extension}`;
+};
+var createDefaultCategory = () => ({
+  name: DEFAULT_L1_CATEGORY_NAME2,
+  description: "",
+  links: [],
+  children: []
+});
+var createDefaultHtmlCategory = () => ({
+  id: 0,
+  name: DEFAULT_L1_CATEGORY_NAME2,
+  links: [],
+  children: []
+});
+var escapeHtml = (value) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;");
+var renderBookmarkLink = (link, indent) => `${indent}<DT><A HREF="${escapeHtml(link.url)}">${escapeHtml(link.title)}</A>`;
+var renderBookmarkFolder = (name, lines, indent = "") => [
+  `${indent}<DT><H3>${escapeHtml(name)}</H3>`,
+  `${indent}<DL><p>`,
+  ...lines,
+  `${indent}</DL><p>`
+].join(`
+`);
+var hasRenderableContent = (category) => category.links.length > 0 || category.children.some((child) => child.links.length > 0);
+var buildBookmarkExportHtml = (categories) => {
+  const categoryLines = [];
+  for (const category of categories) {
+    if (!hasRenderableContent(category)) {
+      continue;
+    }
+    const folderLines = [];
+    for (const link of category.links) {
+      folderLines.push(renderBookmarkLink(link, "        "));
+    }
+    for (const child of category.children) {
+      if (child.links.length === 0) {
+        continue;
+      }
+      const childLines = child.links.map((link) => renderBookmarkLink(link, "            "));
+      folderLines.push(renderBookmarkFolder(child.name, childLines, "        "));
+    }
+    categoryLines.push(renderBookmarkFolder(category.name, folderLines, "    "));
+  }
+  const rootFolder = renderBookmarkFolder("Bookmarks", categoryLines);
+  return [
+    "<!DOCTYPE NETSCAPE-Bookmark-file-1>",
+    "<!-- This is an automatically generated file.",
+    "     It will be read and overwritten.",
+    "     DO NOT EDIT! -->",
+    '<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">',
+    "<TITLE>Bookmarks</TITLE>",
+    "<H1>Bookmarks</H1>",
+    "<DL><p>",
+    rootFolder,
+    "</DL><p>",
+    ""
+  ].join(`
+`);
+};
+var toExportLink = (link) => {
+  const result = {
+    title: link.title,
+    url: link.url,
+    description: link.description ?? "",
+    backup_url: link.backup_url ?? ""
+  };
+  if (typeof link.sort_order === "number") {
+    result.sort_order = link.sort_order;
+  }
+  return result;
+};
+var loadJsonExportPayload = async (uid) => {
+  const [l1Rows, l2Rows, linkRows] = await Promise.all([
+    db.query.categories_l1.findMany({
+      where: eq8(categories_l1.uid, uid),
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [
+        asc4(categories_l1.sort_order),
+        desc5(categories_l1.created_at)
+      ]
+    }),
+    db.query.categories_l2.findMany({
+      where: eq8(categories_l2.uid, uid),
+      columns: {
+        id: true,
+        l1_id: true,
+        name: true,
+        description: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [
+        asc4(categories_l2.sort_order),
+        desc5(categories_l2.created_at)
+      ]
+    }),
+    db.query.links.findMany({
+      where: eq8(links.uid, uid),
+      columns: {
+        title: true,
+        url: true,
+        description: true,
+        backup_url: true,
+        category_type: true,
+        category_id: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [asc4(links.sort_order), desc5(links.created_at)]
+    })
+  ]);
+  const categories = [];
+  const l1Map = new Map;
+  const l2Map = new Map;
+  let defaultCategory = null;
+  for (const row of l1Rows) {
+    const category = {
+      name: row.name,
+      description: row.description ?? "",
+      links: [],
+      children: []
+    };
+    categories.push(category);
+    l1Map.set(row.id, category);
+  }
+  for (const row of l2Rows) {
+    const child = {
+      name: row.name,
+      description: row.description ?? "",
+      links: []
+    };
+    l2Map.set(row.id, child);
+    const parent2 = l1Map.get(row.l1_id);
+    if (parent2) {
+      parent2.children.push(child);
+      continue;
+    }
+    defaultCategory ??= createDefaultCategory();
+    defaultCategory.children.push(child);
+  }
+  for (const row of linkRows) {
+    const link = toExportLink(row);
+    if (row.category_type === "l1") {
+      const parent3 = l1Map.get(row.category_id);
+      if (parent3) {
+        parent3.links.push(link);
+        continue;
+      }
+      defaultCategory ??= createDefaultCategory();
+      defaultCategory.links.push(link);
+      continue;
+    }
+    const parent2 = l2Map.get(row.category_id);
+    if (parent2) {
+      parent2.links.push(link);
+      continue;
+    }
+    defaultCategory ??= createDefaultCategory();
+    defaultCategory.links.push(link);
+  }
+  if (defaultCategory) {
+    categories.push(defaultCategory);
+  }
+  return {
+    type: "zmark.bookmarks",
+    version: 1,
+    categories
+  };
+};
+var loadNavJsonExportPayload = async () => {
+  const [l1Rows, l2Rows, linkRows] = await Promise.all([
+    db.query.nav_categories_l1.findMany({
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [
+        asc4(nav_categories_l1.sort_order),
+        desc5(nav_categories_l1.created_at)
+      ]
+    }),
+    db.query.nav_categories_l2.findMany({
+      columns: {
+        id: true,
+        l1_id: true,
+        name: true,
+        description: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [
+        asc4(nav_categories_l2.sort_order),
+        desc5(nav_categories_l2.created_at)
+      ]
+    }),
+    db.query.nav_links.findMany({
+      columns: {
+        title: true,
+        url: true,
+        description: true,
+        backup_url: true,
+        category_type: true,
+        category_id: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [asc4(nav_links.sort_order), desc5(nav_links.created_at)]
+    })
+  ]);
+  const categories = [];
+  const l1Map = new Map;
+  const l2Map = new Map;
+  let defaultCategory = null;
+  for (const row of l1Rows) {
+    const category = {
+      name: row.name,
+      description: row.description ?? "",
+      links: [],
+      children: []
+    };
+    categories.push(category);
+    l1Map.set(row.id, category);
+  }
+  for (const row of l2Rows) {
+    const child = {
+      name: row.name,
+      description: row.description ?? "",
+      links: []
+    };
+    l2Map.set(row.id, child);
+    const parent2 = l1Map.get(row.l1_id);
+    if (parent2) {
+      parent2.children.push(child);
+      continue;
+    }
+    defaultCategory ??= createDefaultCategory();
+    defaultCategory.children.push(child);
+  }
+  for (const row of linkRows) {
+    const link = toExportLink(row);
+    if (row.category_type === "l1") {
+      const parent3 = l1Map.get(row.category_id);
+      if (parent3) {
+        parent3.links.push(link);
+        continue;
+      }
+      defaultCategory ??= createDefaultCategory();
+      defaultCategory.links.push(link);
+      continue;
+    }
+    const parent2 = l2Map.get(row.category_id);
+    if (parent2) {
+      parent2.links.push(link);
+      continue;
+    }
+    defaultCategory ??= createDefaultCategory();
+    defaultCategory.links.push(link);
+  }
+  if (defaultCategory) {
+    categories.push(defaultCategory);
+  }
+  return {
+    type: "zmark.bookmarks",
+    version: 1,
+    categories
+  };
+};
+var loadNavHtmlExportTree = async () => {
+  const [l1Rows, l2Rows, linkRows] = await Promise.all([
+    db.query.nav_categories_l1.findMany({
+      columns: {
+        id: true,
+        name: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [
+        asc4(nav_categories_l1.sort_order),
+        desc5(nav_categories_l1.created_at)
+      ]
+    }),
+    db.query.nav_categories_l2.findMany({
+      columns: {
+        id: true,
+        l1_id: true,
+        name: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [
+        asc4(nav_categories_l2.sort_order),
+        desc5(nav_categories_l2.created_at)
+      ]
+    }),
+    db.query.nav_links.findMany({
+      columns: {
+        title: true,
+        url: true,
+        category_type: true,
+        category_id: true,
+        sort_order: true,
+        created_at: true
+      },
+      orderBy: [asc4(nav_links.sort_order), desc5(nav_links.created_at)]
+    })
+  ]);
+  const categories = [];
+  const l1Map = new Map;
+  const l2Map = new Map;
+  let defaultCategory = null;
+  for (const row of l1Rows) {
+    const category = {
+      id: row.id,
+      name: row.name,
+      links: [],
+      children: []
+    };
+    categories.push(category);
+    l1Map.set(row.id, category);
+  }
+  for (const row of l2Rows) {
+    const child = {
+      id: row.id,
+      name: row.name,
+      links: []
+    };
+    l2Map.set(row.id, child);
+    const parent2 = l1Map.get(row.l1_id);
+    if (parent2) {
+      parent2.children.push(child);
+      continue;
+    }
+    defaultCategory ??= createDefaultHtmlCategory();
+    defaultCategory.children.push(child);
+  }
+  for (const row of linkRows) {
+    if (row.category_type === "l1") {
+      const parent3 = l1Map.get(row.category_id);
+      if (parent3) {
+        parent3.links.push(row);
+        continue;
+      }
+      defaultCategory ??= createDefaultHtmlCategory();
+      defaultCategory.links.push(row);
+      continue;
+    }
+    const parent2 = l2Map.get(row.category_id);
+    if (parent2) {
+      parent2.links.push(row);
+      continue;
+    }
+    defaultCategory ??= createDefaultHtmlCategory();
+    defaultCategory.links.push(row);
+  }
+  if (defaultCategory) {
+    categories.push(defaultCategory);
+  }
+  return categories;
+};
+var loadHtmlExportTree = async (uid) => {
+  const [l1Rows, l2Rows, linkRows] = await Promise.all([
+    db.query.categories_l1.findMany({
+      where: eq8(categories_l1.uid, uid),
+      columns: {
+        id: true,
+        name: true
+      },
+      orderBy: [
+        asc4(categories_l1.sort_order),
+        desc5(categories_l1.created_at)
+      ]
+    }),
+    db.query.categories_l2.findMany({
+      where: eq8(categories_l2.uid, uid),
+      columns: {
+        id: true,
+        l1_id: true,
+        name: true
+      },
+      orderBy: [
+        asc4(categories_l2.sort_order),
+        desc5(categories_l2.created_at)
+      ]
+    }),
+    db.query.links.findMany({
+      where: eq8(links.uid, uid),
+      columns: {
+        title: true,
+        url: true,
+        category_type: true,
+        category_id: true
+      },
+      orderBy: [asc4(links.sort_order), desc5(links.created_at)]
+    })
+  ]);
+  const categories = [];
+  const l1Map = new Map;
+  const l2Map = new Map;
+  let defaultCategory = null;
+  for (const row of l1Rows) {
+    const category = {
+      id: row.id,
+      name: row.name,
+      links: [],
+      children: []
+    };
+    categories.push(category);
+    l1Map.set(row.id, category);
+  }
+  for (const row of l2Rows) {
+    const child = {
+      id: row.id,
+      name: row.name,
+      links: []
+    };
+    l2Map.set(row.id, child);
+    const parent2 = l1Map.get(row.l1_id);
+    if (parent2) {
+      parent2.children.push(child);
+      continue;
+    }
+    defaultCategory ??= createDefaultHtmlCategory();
+    defaultCategory.children.push(child);
+  }
+  for (const row of linkRows) {
+    if (row.category_type === "l1") {
+      const parent3 = l1Map.get(row.category_id);
+      if (parent3) {
+        parent3.links.push(row);
+        continue;
+      }
+      defaultCategory ??= createDefaultHtmlCategory();
+      defaultCategory.links.push(row);
+      continue;
+    }
+    const parent2 = l2Map.get(row.category_id);
+    if (parent2) {
+      parent2.links.push(row);
+      continue;
+    }
+    defaultCategory ??= createDefaultHtmlCategory();
+    defaultCategory.links.push(row);
+  }
+  if (defaultCategory) {
+    categories.push(defaultCategory);
+  }
+  return categories;
+};
 var exportHTML = async (c3) => {
   const uid = c3.get("uid");
   try {
-    const categories = await loadExportTree(uid);
+    const categories = await loadHtmlExportTree(uid);
     const html4 = buildBookmarkExportHtml(categories);
-    const date5 = new Date;
-    const yyyy = String(date5.getFullYear());
-    const mm = String(date5.getMonth() + 1).padStart(2, "0");
-    const dd = String(date5.getDate()).padStart(2, "0");
-    const fileName = `bookmarks-${yyyy}${mm}${dd}.html`;
     c3.header("Content-Type", "text/html; charset=UTF-8");
-    c3.header("Content-Disposition", `attachment; filename="${fileName}"`);
+    c3.header("Content-Disposition", `attachment; filename="${buildDatedExportFileName("bookmarks", "html")}"`);
+    return c3.body(html4);
+  } catch (error48) {
+    console.error(error48);
+    return c3.json({
+      code: 500,
+      msg: "export.failed",
+      data: null
+    });
+  }
+};
+var exportJson = async (c3) => {
+  const uid = c3.get("uid");
+  try {
+    const payload = await loadJsonExportPayload(uid);
+    const json2 = `${JSON.stringify(payload, null, 2)}
+`;
+    c3.header("Content-Type", "application/json; charset=UTF-8");
+    c3.header("Content-Disposition", `attachment; filename="${buildDatedExportFileName("zmark-export")}"`);
+    return c3.body(json2);
+  } catch (error48) {
+    console.error(error48);
+    return c3.json({
+      code: 500,
+      msg: "export.failed",
+      data: null
+    });
+  }
+};
+var exportNavJson = async (c3) => {
+  try {
+    const payload = await loadNavJsonExportPayload();
+    const json2 = `${JSON.stringify(payload, null, 2)}
+`;
+    c3.header("Content-Type", "application/json; charset=UTF-8");
+    c3.header("Content-Disposition", `attachment; filename="${buildDatedExportFileName("zmark-nav-export")}"`);
+    return c3.body(json2);
+  } catch (error48) {
+    console.error(error48);
+    return c3.json({
+      code: 500,
+      msg: "export.failed",
+      data: null
+    });
+  }
+};
+var exportNavHTML = async (c3) => {
+  try {
+    const categories = await loadNavHtmlExportTree();
+    const html4 = buildBookmarkExportHtml(categories);
+    c3.header("Content-Type", "text/html; charset=UTF-8");
+    c3.header("Content-Disposition", `attachment; filename="${buildDatedExportFileName("zmark-nav-export", "html")}"`);
     return c3.body(html4);
   } catch (error48) {
     console.error(error48);
@@ -38021,7 +38636,7 @@ var exportHTML = async (c3) => {
 // src/api/link.ts
 import { mkdir as mkdir4, rm as rm6, writeFile as writeFile4 } from "fs/promises";
 import { dirname as dirname5, join as join7 } from "path";
-import { and as and6, asc as asc5, desc as desc6, eq as eq8, inArray as inArray4, like as like2, ne as ne2, or as or4, sql as sql4 } from "drizzle-orm";
+import { and as and5, asc as asc5, desc as desc6, eq as eq9, inArray as inArray4, like as like2, ne as ne2, or as or4, sql as sql4 } from "drizzle-orm";
 var MAX_LINK_ICON_SIZE = 100 * 1024;
 var HTML_CHARSET_SNIFF_BYTES = 8 * 1024;
 var normalizeHtmlCharset = (charset) => {
@@ -38103,7 +38718,7 @@ var findDuplicateUserLinkByUrl = async (uid, url2, excludeId) => {
     columns: {
       id: true
     },
-    where: typeof excludeId === "number" ? and6(eq8(links.uid, uid), eq8(links.url, url2), ne2(links.id, excludeId)) : and6(eq8(links.uid, uid), eq8(links.url, url2))
+    where: typeof excludeId === "number" ? and5(eq9(links.uid, uid), eq9(links.url, url2), ne2(links.id, excludeId)) : and5(eq9(links.uid, uid), eq9(links.url, url2))
   });
 };
 var validateBatchLinkIds = async (ids, uid) => {
@@ -38318,7 +38933,7 @@ var updateLink = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq8(links.id, id)
+    where: eq9(links.id, id)
   });
   if (!currentLink) {
     return c3.json({
@@ -38352,7 +38967,7 @@ var updateLink = async (c3) => {
   }
   if (hasOptionalField("http_code")) {
     const { http_code } = body;
-    if (!Number.isInteger(http_code) || http_code < 0) {
+    if (!Number.isInteger(http_code) || http_code < -1) {
       return c3.json({
         code: -1000,
         msg: "link.http_code.invalid",
@@ -38379,7 +38994,7 @@ var updateLink = async (c3) => {
   if (hasOptionalField("http_code")) {
     updateData.http_code = body.http_code;
   }
-  const [row] = await db.update(links).set(updateData).where(and6(eq8(links.id, id), eq8(links.uid, uid))).returning();
+  const [row] = await db.update(links).set(updateData).where(and5(eq9(links.id, id), eq9(links.uid, uid))).returning();
   return c3.json({
     code: 200,
     msg: "success",
@@ -38412,7 +39027,7 @@ var updateLinkIcon = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq8(links.id, id),
+    where: eq9(links.id, id),
     columns: {
       id: true,
       uid: true,
@@ -38462,7 +39077,7 @@ var updateLinkIcon = async (c3) => {
   const [row] = await db.update(links).set({
     icon: relativeIconPath,
     updated_at: new Date
-  }).where(and6(eq8(links.id, id), eq8(links.uid, uid))).returning({
+  }).where(and5(eq9(links.id, id), eq9(links.uid, uid))).returning({
     id: links.id,
     icon: links.icon
   });
@@ -38484,7 +39099,7 @@ var deleteLinkIcon = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq8(links.id, id),
+    where: eq9(links.id, id),
     columns: {
       id: true,
       uid: true,
@@ -38513,7 +39128,7 @@ var deleteLinkIcon = async (c3) => {
   const [row] = await db.update(links).set({
     icon: "",
     updated_at: new Date
-  }).where(and6(eq8(links.id, id), eq8(links.uid, uid))).returning({
+  }).where(and5(eq9(links.id, id), eq9(links.uid, uid))).returning({
     id: links.id,
     icon: links.icon
   });
@@ -38568,7 +39183,7 @@ var updateLinksCategory = async (c3) => {
     category_type,
     category_id,
     updated_at: new Date
-  }).where(and6(eq8(links.uid, uid), inArray4(links.id, validatedIds.ids)));
+  }).where(and5(eq9(links.uid, uid), inArray4(links.id, validatedIds.ids)));
   return c3.json({
     code: 200,
     msg: "success",
@@ -38593,7 +39208,7 @@ var deleteLinks = async (c3) => {
     });
   }
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
-  await db.delete(links).where(and6(eq8(links.uid, uid), inArray4(links.id, validatedIds.ids)));
+  await db.delete(links).where(and5(eq9(links.uid, uid), inArray4(links.id, validatedIds.ids)));
   await Promise.allSettled(iconPaths.map((iconPath) => {
     const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
     return rm6(filePath, { force: true });
@@ -38610,7 +39225,7 @@ var deleteLinks = async (c3) => {
 var removeDuplicateUserLinks = async (c3) => {
   const uid = c3.get("uid");
   const rows = await db.query.links.findMany({
-    where: eq8(links.uid, uid),
+    where: eq9(links.uid, uid),
     columns: {
       id: true,
       url: true,
@@ -38636,7 +39251,7 @@ var removeDuplicateUserLinks = async (c3) => {
     }
   }
   if (duplicateIds.length > 0) {
-    await db.delete(links).where(and6(eq8(links.uid, uid), inArray4(links.id, duplicateIds)));
+    await db.delete(links).where(and5(eq9(links.uid, uid), inArray4(links.id, duplicateIds)));
     await Promise.allSettled(duplicateIconPaths.map((iconPath) => {
       const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
       return rm6(filePath, { force: true });
@@ -38753,7 +39368,7 @@ var sortLinks = async (c3) => {
         const [row] = await tx.update(links).set({
           sort_order: item.sort_order,
           updated_at: updatedAt
-        }).where(and6(eq8(links.id, item.id), eq8(links.uid, uid))).returning({
+        }).where(and5(eq9(links.id, item.id), eq9(links.uid, uid))).returning({
           id: links.id
         });
         if (!row) {
@@ -38817,7 +39432,7 @@ var listLinksByAdmin = async (c3) => {
     last_checked_at: links.last_checked_at,
     created_at: links.created_at,
     updated_at: links.updated_at
-  }).from(links).leftJoin(users, eq8(links.uid, users.id)).orderBy(desc6(links.id)).limit(limit).offset(offset);
+  }).from(links).leftJoin(users, eq9(links.uid, users.id)).orderBy(desc6(links.id)).limit(limit).offset(offset);
   return c3.json({
     code: 200,
     msg: "success",
@@ -38849,7 +39464,7 @@ var searchLinks = async (c3) => {
     });
   }
   const keywordPattern = `%${normalizedKeyword}%`;
-  const userLinksSubquery = db.select().from(links).where(eq8(links.uid, uid)).as("user_links");
+  const userLinksSubquery = db.select().from(links).where(eq9(links.uid, uid)).as("user_links");
   const links2 = await db.select().from(userLinksSubquery).where(or4(like2(userLinksSubquery.title, keywordPattern), like2(userLinksSubquery.url, keywordPattern), like2(userLinksSubquery.backup_url, keywordPattern), like2(userLinksSubquery.description, keywordPattern))).orderBy(desc6(userLinksSubquery.updated_at), desc6(userLinksSubquery.created_at), desc6(sql4`${userLinksSubquery.id}`)).limit(20);
   return c3.json({
     code: 200,
@@ -38891,7 +39506,7 @@ var getCategoryLinks = async (c3) => {
     });
   }
   const links2 = await db.query.links.findMany({
-    where: and6(eq8(links.uid, uid), eq8(links.category_type, categoryType), eq8(links.category_id, categoryId)),
+    where: and5(eq9(links.uid, uid), eq9(links.category_type, categoryType), eq9(links.category_id, categoryId)),
     orderBy: [asc5(links.sort_order), desc6(links.created_at)]
   });
   return c3.json({
@@ -39154,6 +39769,99 @@ var ping = async (c3) => {
   });
 };
 
+// src/api/token.ts
+import { eq as eq10 } from "drizzle-orm";
+var tokenFields = {
+  token: apiTokens.token,
+  status: apiTokens.status,
+  last_used_at: apiTokens.last_used_at,
+  last_used_ip: apiTokens.last_used_ip,
+  created_at: apiTokens.created_at,
+  updated_at: apiTokens.updated_at
+};
+var createTokenValue = () => `sk-${randomString(37)}`;
+var createUserToken = (uid) => {
+  return db.insert(apiTokens).values({
+    uid,
+    token: createTokenValue()
+  }).returning(tokenFields).get();
+};
+var getUserToken = (uid) => {
+  return db.select(tokenFields).from(apiTokens).where(eq10(apiTokens.uid, uid)).get();
+};
+var getToken = async (c3) => {
+  const uid = c3.get("uid");
+  const existingToken = getUserToken(uid);
+  if (existingToken) {
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: existingToken
+    });
+  }
+  const createdToken = createUserToken(uid);
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: createdToken
+  });
+};
+var updateTokenStatus = async (c3) => {
+  const uid = c3.get("uid");
+  const { status } = await c3.req.json();
+  if (status !== "active" && status !== "disabled") {
+    return c3.json({
+      code: -1000,
+      msg: "token.status.invalid",
+      data: null
+    });
+  }
+  const existingToken = getUserToken(uid);
+  if (!existingToken) {
+    const createdToken = createUserToken(uid);
+    const updatedToken2 = db.update(apiTokens).set({
+      status,
+      updated_at: new Date
+    }).where(eq10(apiTokens.uid, uid)).returning(tokenFields).get();
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: updatedToken2 || createdToken
+    });
+  }
+  const updatedToken = db.update(apiTokens).set({
+    status,
+    updated_at: new Date
+  }).where(eq10(apiTokens.uid, uid)).returning(tokenFields).get();
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: updatedToken
+  });
+};
+var regenerateToken = async (c3) => {
+  const uid = c3.get("uid");
+  const existingToken = getUserToken(uid);
+  if (!existingToken) {
+    const createdToken = createUserToken(uid);
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: createdToken
+    });
+  }
+  const updatedToken = db.update(apiTokens).set({
+    token: createTokenValue(),
+    status: "active",
+    updated_at: new Date
+  }).where(eq10(apiTokens.uid, uid)).returning(tokenFields).get();
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: updatedToken
+  });
+};
+
 // node_modules/hono/dist/utils/crypto.js
 var sha256 = async (data2) => {
   const algorithm = { name: "SHA-256", alias: "sha256" };
@@ -39293,18 +40001,18 @@ var bearerAuth = (options2) => {
 };
 
 // src/middleware/auth.ts
-import { and as and7, eq as eq9 } from "drizzle-orm";
+import { and as and6, eq as eq11 } from "drizzle-orm";
 var verifyApiToken = async (token, c3, role = "user") => {
   if (!token || token.length < 32) {
     return false;
   }
   try {
-    const session = db.select().from(sessions).where(and7(eq9(sessions.token, token), eq9(sessions.status, "active"))).get();
+    const session = db.select().from(sessions).where(and6(eq11(sessions.token, token), eq11(sessions.status, "active"))).get();
     if (!session) {
       return false;
     }
     if (session.expires_at.getTime() <= Date.now()) {
-      db.update(sessions).set({ status: "expired" }).where(eq9(sessions.id, session.id)).run();
+      db.update(sessions).set({ status: "expired" }).where(eq11(sessions.id, session.id)).run();
       return false;
     }
     if (role === "admin" && session.role !== "admin") {
@@ -39313,7 +40021,7 @@ var verifyApiToken = async (token, c3, role = "user") => {
     const userInfo2 = db.select({
       id: users.id,
       username: users.username
-    }).from(users).where(and7(eq9(users.id, session.uid), eq9(users.status, "active"))).get();
+    }).from(users).where(and6(eq11(users.id, session.uid), eq11(users.status, "active"))).get();
     if (!userInfo2) {
       return false;
     }
@@ -39322,6 +40030,41 @@ var verifyApiToken = async (token, c3, role = "user") => {
     c3.set("username", userInfo2.username);
     return true;
   } catch (error48) {
+    return false;
+  }
+};
+var verifyV1ApiToken = async (token, c3) => {
+  if (!token || !token.startsWith("sk-")) {
+    return false;
+  }
+  if (token.length !== 40) {
+    return false;
+  }
+  if (!/^sk-[A-Za-z0-9]{37}$/.test(token)) {
+    return false;
+  }
+  try {
+    const result = db.select({
+      uid: users.id,
+      username: users.username,
+      role: users.role,
+      userStatus: users.status,
+      tokenStatus: apiTokens.status
+    }).from(apiTokens).innerJoin(users, eq11(users.id, apiTokens.uid)).where(eq11(apiTokens.token, token)).get();
+    if (!result) {
+      return false;
+    }
+    if (result.tokenStatus !== "active") {
+      return false;
+    }
+    if (result.userStatus !== "active") {
+      return false;
+    }
+    c3.set("uid", result.uid);
+    c3.set("role", result.role);
+    c3.set("username", result.username);
+    return true;
+  } catch {
     return false;
   }
 };
@@ -39424,6 +40167,8 @@ var userRouter = new Hono2().basePath("/api/user");
 userRouter.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyApiToken(t, c3, "user") }));
 var adminRouter = new Hono2().basePath("/api/admin");
 adminRouter.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyApiToken(t, c3, "admin") }));
+var apiV1Router = new Hono2().basePath("/api/v1");
+apiV1Router.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyV1ApiToken(t, c3) }));
 publicRouter.use("*", cors(corsOptions));
 publicRouter.use("/images/*", serveStatic2({
   root: "./data",
@@ -39460,15 +40205,33 @@ userRouter.post("/remove_duplicate_links", removeDuplicateUserLinks);
 userRouter.post("/search_links", searchLinks);
 userRouter.get("/category_links", getCategoryLinks);
 userRouter.get("/info", userInfo);
+userRouter.get("/token", getToken);
+userRouter.post("/token/status", updateTokenStatus);
+userRouter.post("/token/regenerate", regenerateToken);
 userRouter.post("/logout", logout);
 userRouter.post("/change_password", changePassword);
 userRouter.post("/update_avatar", updateAvatar);
 userRouter.post("/import_html", importHTML);
+userRouter.post("/import_json", importJSON);
 userRouter.get("/export_html", exportHTML);
+userRouter.get("/export_json", exportJson);
 userRouter.post("/get_link_info", getLinkInfo);
 userRouter.get("/check_login", checkLogin);
 userRouter.post("/set_user_setting", setUserSetting);
 userRouter.get("/get_user_setting", getUserSetting);
+apiV1Router.get("/categories", listCategories);
+apiV1Router.post("/add_link", addLink);
+apiV1Router.post("/update_link", updateLink);
+apiV1Router.post("/update_link_icon", updateLinkIcon);
+apiV1Router.post("/delete_link_icon", deleteLinkIcon);
+apiV1Router.post("/sort_links", sortLinks);
+apiV1Router.post("/delete_links", deleteLinks);
+apiV1Router.post("/remove_duplicate_links", removeDuplicateUserLinks);
+apiV1Router.post("/search_links", searchLinks);
+apiV1Router.get("/category_links", getCategoryLinks);
+apiV1Router.get("/info", userInfo);
+apiV1Router.post("/import_json", importJSON);
+apiV1Router.post("/get_link_info", getLinkInfo);
 adminRouter.post("/set_setting", setGlobalSetting);
 adminRouter.post("/save_license", saveLicense);
 adminRouter.post("/remove_license", removeLicense);
@@ -39491,6 +40254,9 @@ adminRouter.post("/remove_duplicate_nav_links", removeDuplicateNavLinks);
 adminRouter.post("/update_nav_links_category", updateNavLinksCategory);
 adminRouter.post("/sort_nav_links", sortNavLinks);
 adminRouter.post("/import_nav_html", importNavHTML);
+adminRouter.post("/import_nav_json", importNavJSON);
+adminRouter.get("/export_nav_json", exportNavJson);
+adminRouter.get("/export_nav_html", exportNavHTML);
 publicRouter.get("/api/nav_categories", listNavCategories);
 publicRouter.get("/api/nav_links", getNavCategoryLinks);
 publicRouter.post("/api/search_nav_links", searchNavLinks);
@@ -39500,12 +40266,1028 @@ adminRouter.get("/check_update", checkUpdate);
 adminRouter.post("/download_update", downloadUpdate);
 adminRouter.get("/ping", ping);
 
+// src/utils/jobs.ts
+import { and as and7, asc as asc6, desc as desc7, eq as eq12, isNotNull, isNull, lt } from "drizzle-orm";
+
+// node_modules/croner/dist/croner.js
+function T(s) {
+  return Date.UTC(s.y, s.m - 1, s.d, s.h, s.i, s.s);
+}
+function D2(s, e) {
+  return s.y === e.y && s.m === e.m && s.d === e.d && s.h === e.h && s.i === e.i && s.s === e.s;
+}
+function A(s, e) {
+  let t = new Date(Date.parse(s));
+  if (isNaN(t))
+    throw new Error("Invalid ISO8601 passed to timezone parser.");
+  let r = s.substring(9);
+  return r.includes("Z") || r.includes("+") || r.includes("-") ? b(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate(), t.getUTCHours(), t.getUTCMinutes(), t.getUTCSeconds(), "Etc/UTC") : b(t.getFullYear(), t.getMonth() + 1, t.getDate(), t.getHours(), t.getMinutes(), t.getSeconds(), e);
+}
+function v(s, e, t) {
+  return k(A(s, e), t);
+}
+function k(s, e) {
+  let t = new Date(T(s)), r = g(t, s.tz), n = T(s), i = T(r), a = n - i, o = new Date(t.getTime() + a), h = g(o, s.tz);
+  if (D2(h, s)) {
+    let u = new Date(o.getTime() - 3600000), d = g(u, s.tz);
+    return D2(d, s) ? u : o;
+  }
+  let l = new Date(o.getTime() + T(s) - T(h)), y2 = g(l, s.tz);
+  if (D2(y2, s))
+    return l;
+  if (e)
+    throw new Error("Invalid date passed to fromTZ()");
+  return o.getTime() > l.getTime() ? o : l;
+}
+function g(s, e) {
+  let t, r;
+  try {
+    t = new Intl.DateTimeFormat("en-US", { timeZone: e, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: false }), r = t.formatToParts(s);
+  } catch (i) {
+    let a = i instanceof Error ? i.message : String(i);
+    throw new RangeError(`toTZ: Invalid timezone '${e}' or date. Please provide a valid IANA timezone (e.g., 'America/New_York', 'Europe/Stockholm'). Original error: ${a}`);
+  }
+  let n = { year: 0, month: 0, day: 0, hour: 0, minute: 0, second: 0 };
+  for (let i of r)
+    (i.type === "year" || i.type === "month" || i.type === "day" || i.type === "hour" || i.type === "minute" || i.type === "second") && (n[i.type] = parseInt(i.value, 10));
+  if (isNaN(n.year) || isNaN(n.month) || isNaN(n.day) || isNaN(n.hour) || isNaN(n.minute) || isNaN(n.second))
+    throw new Error(`toTZ: Failed to parse all date components from timezone '${e}'. This may indicate an invalid date or timezone configuration. Parsed components: ${JSON.stringify(n)}`);
+  return n.hour === 24 && (n.hour = 0), { y: n.year, m: n.month, d: n.day, h: n.hour, i: n.minute, s: n.second, tz: e };
+}
+function b(s, e, t, r, n, i, a) {
+  return { y: s, m: e, d: t, h: r, i: n, s: i, tz: a };
+}
+var O = [1, 2, 4, 8, 16];
+var C2 = class {
+  pattern;
+  timezone;
+  mode;
+  alternativeWeekdays;
+  sloppyRanges;
+  second;
+  minute;
+  hour;
+  day;
+  month;
+  dayOfWeek;
+  year;
+  lastDayOfMonth;
+  lastWeekday;
+  nearestWeekdays;
+  starDOM;
+  starDOW;
+  starYear;
+  useAndLogic;
+  constructor(e, t, r) {
+    this.pattern = e, this.timezone = t, this.mode = r?.mode ?? "auto", this.alternativeWeekdays = r?.alternativeWeekdays ?? false, this.sloppyRanges = r?.sloppyRanges ?? false, this.second = Array(60).fill(0), this.minute = Array(60).fill(0), this.hour = Array(24).fill(0), this.day = Array(31).fill(0), this.month = Array(12).fill(0), this.dayOfWeek = Array(7).fill(0), this.year = Array(1e4).fill(0), this.lastDayOfMonth = false, this.lastWeekday = false, this.nearestWeekdays = Array(31).fill(0), this.starDOM = false, this.starDOW = false, this.starYear = false, this.useAndLogic = false, this.parse();
+  }
+  parse() {
+    if (!(typeof this.pattern == "string" || this.pattern instanceof String))
+      throw new TypeError("CronPattern: Pattern has to be of type string.");
+    this.pattern.indexOf("@") >= 0 && (this.pattern = this.handleNicknames(this.pattern).trim());
+    let e = this.pattern.match(/\S+/g) || [""], t = e.length;
+    if (e.length < 5 || e.length > 7)
+      throw new TypeError("CronPattern: invalid configuration format ('" + this.pattern + "'), exactly five, six, or seven space separated parts are required.");
+    if (this.mode !== "auto") {
+      let n;
+      switch (this.mode) {
+        case "5-part":
+          n = 5;
+          break;
+        case "6-part":
+          n = 6;
+          break;
+        case "7-part":
+          n = 7;
+          break;
+        case "5-or-6-parts":
+          n = [5, 6];
+          break;
+        case "6-or-7-parts":
+          n = [6, 7];
+          break;
+        default:
+          n = 0;
+      }
+      if (!(Array.isArray(n) ? n.includes(t) : t === n)) {
+        let a = Array.isArray(n) ? n.join(" or ") : n.toString();
+        throw new TypeError(`CronPattern: mode '${this.mode}' requires exactly ${a} parts, but pattern '${this.pattern}' has ${t} parts.`);
+      }
+    }
+    if (e.length === 5 && e.unshift("0"), e.length === 6 && e.push("*"), e[3].toUpperCase() === "LW" ? (this.lastWeekday = true, e[3] = "") : e[3].toUpperCase().indexOf("L") >= 0 && (e[3] = e[3].replace(/L/gi, ""), this.lastDayOfMonth = true), e[3] == "*" && (this.starDOM = true), e[6] == "*" && (this.starYear = true), e[4].length >= 3 && (e[4] = this.replaceAlphaMonths(e[4])), e[5].length >= 3 && (e[5] = this.alternativeWeekdays ? this.replaceAlphaDaysQuartz(e[5]) : this.replaceAlphaDays(e[5])), e[5].startsWith("+") && (this.useAndLogic = true, e[5] = e[5].substring(1), e[5] === ""))
+      throw new TypeError("CronPattern: Day-of-week field cannot be empty after '+' modifier.");
+    switch (e[5] == "*" && (this.starDOW = true), this.pattern.indexOf("?") >= 0 && (e[0] = e[0].replace(/\?/g, "*"), e[1] = e[1].replace(/\?/g, "*"), e[2] = e[2].replace(/\?/g, "*"), e[3] = e[3].replace(/\?/g, "*"), e[4] = e[4].replace(/\?/g, "*"), e[5] = e[5].replace(/\?/g, "*"), e[6] && (e[6] = e[6].replace(/\?/g, "*"))), this.mode) {
+      case "5-part":
+        e[0] = "0", e[6] = "*";
+        break;
+      case "6-part":
+        e[6] = "*";
+        break;
+      case "5-or-6-parts":
+        e[6] = "*";
+        break;
+      case "6-or-7-parts":
+        break;
+      case "7-part":
+      case "auto":
+        break;
+    }
+    this.throwAtIllegalCharacters(e), this.partToArray("second", e[0], 0, 1), this.partToArray("minute", e[1], 0, 1), this.partToArray("hour", e[2], 0, 1), this.partToArray("day", e[3], -1, 1), this.partToArray("month", e[4], -1, 1);
+    let r = this.alternativeWeekdays ? -1 : 0;
+    this.partToArray("dayOfWeek", e[5], r, 63), this.partToArray("year", e[6], 0, 1), !this.alternativeWeekdays && this.dayOfWeek[7] && (this.dayOfWeek[0] = this.dayOfWeek[7]);
+  }
+  partToArray(e, t, r, n) {
+    let i = this[e], a = e === "day" && this.lastDayOfMonth, o = e === "day" && this.lastWeekday;
+    if (t === "" && !a && !o)
+      throw new TypeError("CronPattern: configuration entry " + e + " (" + t + ") is empty, check for trailing spaces.");
+    if (t === "*")
+      return i.fill(n);
+    let h = t.split(",");
+    if (h.length > 1)
+      for (let l = 0;l < h.length; l++)
+        this.partToArray(e, h[l], r, n);
+    else
+      t.indexOf("-") !== -1 && t.indexOf("/") !== -1 ? this.handleRangeWithStepping(t, e, r, n) : t.indexOf("-") !== -1 ? this.handleRange(t, e, r, n) : t.indexOf("/") !== -1 ? this.handleStepping(t, e, r, n) : t !== "" && this.handleNumber(t, e, r, n);
+  }
+  throwAtIllegalCharacters(e) {
+    for (let t = 0;t < e.length; t++)
+      if ((t === 3 ? /[^/*0-9,\-WwLl]+/ : t === 5 ? /[^/*0-9,\-#Ll]+/ : /[^/*0-9,\-]+/).test(e[t]))
+        throw new TypeError("CronPattern: configuration entry " + t + " (" + e[t] + ") contains illegal characters.");
+  }
+  handleNumber(e, t, r, n) {
+    let i = this.extractNth(e, t), a = e.toUpperCase().includes("W");
+    if (t !== "day" && a)
+      throw new TypeError("CronPattern: Nearest weekday modifier (W) only allowed in day-of-month.");
+    a && (t = "nearestWeekdays");
+    let o = parseInt(i[0], 10) + r;
+    if (isNaN(o))
+      throw new TypeError("CronPattern: " + t + " is not a number: '" + e + "'");
+    this.setPart(t, o, i[1] || n);
+  }
+  setPart(e, t, r) {
+    if (!Object.prototype.hasOwnProperty.call(this, e))
+      throw new TypeError("CronPattern: Invalid part specified: " + e);
+    if (e === "dayOfWeek") {
+      if (t === 7 && (t = 0), t < 0 || t > 6)
+        throw new RangeError("CronPattern: Invalid value for dayOfWeek: " + t);
+      this.setNthWeekdayOfMonth(t, r);
+      return;
+    }
+    if (e === "second" || e === "minute") {
+      if (t < 0 || t >= 60)
+        throw new RangeError("CronPattern: Invalid value for " + e + ": " + t);
+    } else if (e === "hour") {
+      if (t < 0 || t >= 24)
+        throw new RangeError("CronPattern: Invalid value for " + e + ": " + t);
+    } else if (e === "day" || e === "nearestWeekdays") {
+      if (t < 0 || t >= 31)
+        throw new RangeError("CronPattern: Invalid value for " + e + ": " + t);
+    } else if (e === "month") {
+      if (t < 0 || t >= 12)
+        throw new RangeError("CronPattern: Invalid value for " + e + ": " + t);
+    } else if (e === "year" && (t < 1 || t >= 1e4))
+      throw new RangeError("CronPattern: Invalid value for " + e + ": " + t + " (supported range: 1-9999)");
+    this[e][t] = r;
+  }
+  validateNotNaN(e, t) {
+    if (isNaN(e))
+      throw new TypeError(t);
+  }
+  validateRange(e, t, r, n, i) {
+    if (e > t)
+      throw new TypeError("CronPattern: From value is larger than to value: '" + i + "'");
+    if (r !== undefined) {
+      if (r === 0)
+        throw new TypeError("CronPattern: Syntax error, illegal stepping: 0");
+      if (r > this[n].length)
+        throw new TypeError("CronPattern: Syntax error, steps cannot be greater than maximum value of part (" + this[n].length + ")");
+    }
+  }
+  handleRangeWithStepping(e, t, r, n) {
+    if (e.toUpperCase().includes("W"))
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in ranges with stepping.");
+    let i = this.extractNth(e, t), a = i[0].match(/^(\d+)-(\d+)\/(\d+)$/);
+    if (a === null)
+      throw new TypeError("CronPattern: Syntax error, illegal range with stepping: '" + e + "'");
+    let [, o, h, l] = a, y2 = parseInt(o, 10) + r, u = parseInt(h, 10) + r, d = parseInt(l, 10);
+    this.validateNotNaN(y2, "CronPattern: Syntax error, illegal lower range (NaN)"), this.validateNotNaN(u, "CronPattern: Syntax error, illegal upper range (NaN)"), this.validateNotNaN(d, "CronPattern: Syntax error, illegal stepping: (NaN)"), this.validateRange(y2, u, d, t, e);
+    for (let c3 = y2;c3 <= u; c3 += d)
+      this.setPart(t, c3, i[1] || n);
+  }
+  extractNth(e, t) {
+    let r = e, n;
+    if (r.includes("#")) {
+      if (t !== "dayOfWeek")
+        throw new Error("CronPattern: nth (#) only allowed in day-of-week field");
+      n = r.split("#")[1], r = r.split("#")[0];
+    } else if (r.toUpperCase().endsWith("L")) {
+      if (t !== "dayOfWeek")
+        throw new Error("CronPattern: L modifier only allowed in day-of-week field (use L alone for day-of-month)");
+      n = "L", r = r.slice(0, -1);
+    }
+    return [r, n];
+  }
+  handleRange(e, t, r, n) {
+    if (e.toUpperCase().includes("W"))
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in a range.");
+    let i = this.extractNth(e, t), a = i[0].split("-");
+    if (a.length !== 2)
+      throw new TypeError("CronPattern: Syntax error, illegal range: '" + e + "'");
+    let o = parseInt(a[0], 10) + r, h = parseInt(a[1], 10) + r;
+    this.validateNotNaN(o, "CronPattern: Syntax error, illegal lower range (NaN)"), this.validateNotNaN(h, "CronPattern: Syntax error, illegal upper range (NaN)"), this.validateRange(o, h, undefined, t, e);
+    for (let l = o;l <= h; l++)
+      this.setPart(t, l, i[1] || n);
+  }
+  handleStepping(e, t, r, n) {
+    if (e.toUpperCase().includes("W"))
+      throw new TypeError("CronPattern: Syntax error, W is not allowed in parts with stepping.");
+    let i = this.extractNth(e, t), a = i[0].split("/");
+    if (a.length !== 2)
+      throw new TypeError("CronPattern: Syntax error, illegal stepping: '" + e + "'");
+    if (this.sloppyRanges)
+      a[0] === "" && (a[0] = "*");
+    else {
+      if (a[0] === "")
+        throw new TypeError("CronPattern: Syntax error, stepping with missing prefix ('" + e + "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.");
+      if (a[0] !== "*")
+        throw new TypeError("CronPattern: Syntax error, stepping with numeric prefix ('" + e + "') is not allowed. Use wildcard (*/step) or range (min-max/step) instead.");
+    }
+    let o = 0;
+    a[0] !== "*" && (o = parseInt(a[0], 10) + r);
+    let h = parseInt(a[1], 10);
+    this.validateNotNaN(h, "CronPattern: Syntax error, illegal stepping: (NaN)"), this.validateRange(0, this[t].length - 1, h, t, e);
+    for (let l = o;l < this[t].length; l += h)
+      this.setPart(t, l, i[1] || n);
+  }
+  replaceAlphaDays(e) {
+    return e.replace(/-sun/gi, "-7").replace(/sun/gi, "0").replace(/mon/gi, "1").replace(/tue/gi, "2").replace(/wed/gi, "3").replace(/thu/gi, "4").replace(/fri/gi, "5").replace(/sat/gi, "6");
+  }
+  replaceAlphaDaysQuartz(e) {
+    return e.replace(/sun/gi, "1").replace(/mon/gi, "2").replace(/tue/gi, "3").replace(/wed/gi, "4").replace(/thu/gi, "5").replace(/fri/gi, "6").replace(/sat/gi, "7");
+  }
+  replaceAlphaMonths(e) {
+    return e.replace(/jan/gi, "1").replace(/feb/gi, "2").replace(/mar/gi, "3").replace(/apr/gi, "4").replace(/may/gi, "5").replace(/jun/gi, "6").replace(/jul/gi, "7").replace(/aug/gi, "8").replace(/sep/gi, "9").replace(/oct/gi, "10").replace(/nov/gi, "11").replace(/dec/gi, "12");
+  }
+  handleNicknames(e) {
+    let t = e.trim().toLowerCase();
+    if (t === "@yearly" || t === "@annually")
+      return "0 0 1 1 *";
+    if (t === "@monthly")
+      return "0 0 1 * *";
+    if (t === "@weekly")
+      return "0 0 * * 0";
+    if (t === "@daily" || t === "@midnight")
+      return "0 0 * * *";
+    if (t === "@hourly")
+      return "0 * * * *";
+    if (t === "@reboot")
+      throw new TypeError("CronPattern: @reboot is not supported in this environment. This is an event-based trigger that requires system startup detection.");
+    return e;
+  }
+  setNthWeekdayOfMonth(e, t) {
+    if (typeof t != "number" && t.toUpperCase() === "L")
+      this.dayOfWeek[e] = this.dayOfWeek[e] | 32;
+    else if (t === 63)
+      this.dayOfWeek[e] = 63;
+    else if (t < 6 && t > 0)
+      this.dayOfWeek[e] = this.dayOfWeek[e] | O[t - 1];
+    else
+      throw new TypeError(`CronPattern: nth weekday out of range, should be 1-5 or L. Value: ${t}, Type: ${typeof t}`);
+  }
+};
+var P = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+var f = [["month", "year", 0], ["day", "month", -1], ["hour", "day", 0], ["minute", "hour", 0], ["second", "minute", 0]];
+var m = class s {
+  tz;
+  ms;
+  second;
+  minute;
+  hour;
+  day;
+  month;
+  year;
+  constructor(e, t) {
+    if (this.tz = t, e && e instanceof Date)
+      if (!isNaN(e))
+        this.fromDate(e);
+      else
+        throw new TypeError("CronDate: Invalid date passed to CronDate constructor");
+    else if (e == null)
+      this.fromDate(new Date);
+    else if (e && typeof e == "string")
+      this.fromString(e);
+    else if (e instanceof s)
+      this.fromCronDate(e);
+    else
+      throw new TypeError("CronDate: Invalid type (" + typeof e + ") passed to CronDate constructor");
+  }
+  getLastDayOfMonth(e, t) {
+    return t !== 1 ? P[t] : new Date(Date.UTC(e, t + 1, 0)).getUTCDate();
+  }
+  getLastWeekday(e, t) {
+    let r = this.getLastDayOfMonth(e, t), i = new Date(Date.UTC(e, t, r)).getUTCDay();
+    return i === 0 ? r - 2 : i === 6 ? r - 1 : r;
+  }
+  getNearestWeekday(e, t, r) {
+    let n = this.getLastDayOfMonth(e, t);
+    if (r > n)
+      return -1;
+    let a = new Date(Date.UTC(e, t, r)).getUTCDay();
+    return a === 0 ? r === n ? r - 2 : r + 1 : a === 6 ? r === 1 ? r + 2 : r - 1 : r;
+  }
+  isNthWeekdayOfMonth(e, t, r, n) {
+    let a = new Date(Date.UTC(e, t, r)).getUTCDay(), o = 0;
+    for (let h = 1;h <= r; h++)
+      new Date(Date.UTC(e, t, h)).getUTCDay() === a && o++;
+    if (n & 63 && O[o - 1] & n)
+      return true;
+    if (n & 32) {
+      let h = this.getLastDayOfMonth(e, t);
+      for (let l = r + 1;l <= h; l++)
+        if (new Date(Date.UTC(e, t, l)).getUTCDay() === a)
+          return false;
+      return true;
+    }
+    return false;
+  }
+  fromDate(e) {
+    if (this.tz !== undefined)
+      if (typeof this.tz == "number")
+        this.ms = e.getUTCMilliseconds(), this.second = e.getUTCSeconds(), this.minute = e.getUTCMinutes() + this.tz, this.hour = e.getUTCHours(), this.day = e.getUTCDate(), this.month = e.getUTCMonth(), this.year = e.getUTCFullYear(), this.apply();
+      else
+        try {
+          let t = g(e, this.tz);
+          this.ms = e.getMilliseconds(), this.second = t.s, this.minute = t.i, this.hour = t.h, this.day = t.d, this.month = t.m - 1, this.year = t.y;
+        } catch (t) {
+          let r = t instanceof Error ? t.message : String(t);
+          throw new TypeError(`CronDate: Failed to convert date to timezone '${this.tz}'. This may happen with invalid timezone names or dates. Original error: ${r}`);
+        }
+    else
+      this.ms = e.getMilliseconds(), this.second = e.getSeconds(), this.minute = e.getMinutes(), this.hour = e.getHours(), this.day = e.getDate(), this.month = e.getMonth(), this.year = e.getFullYear();
+  }
+  fromCronDate(e) {
+    this.tz = e.tz, this.year = e.year, this.month = e.month, this.day = e.day, this.hour = e.hour, this.minute = e.minute, this.second = e.second, this.ms = e.ms;
+  }
+  apply() {
+    if (this.month > 11 || this.month < 0 || this.day > P[this.month] || this.day < 1 || this.hour > 59 || this.minute > 59 || this.second > 59 || this.hour < 0 || this.minute < 0 || this.second < 0) {
+      let e = new Date(Date.UTC(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms));
+      return this.ms = e.getUTCMilliseconds(), this.second = e.getUTCSeconds(), this.minute = e.getUTCMinutes(), this.hour = e.getUTCHours(), this.day = e.getUTCDate(), this.month = e.getUTCMonth(), this.year = e.getUTCFullYear(), true;
+    } else
+      return false;
+  }
+  fromString(e) {
+    if (typeof this.tz == "number") {
+      let t = v(e);
+      this.ms = t.getUTCMilliseconds(), this.second = t.getUTCSeconds(), this.minute = t.getUTCMinutes(), this.hour = t.getUTCHours(), this.day = t.getUTCDate(), this.month = t.getUTCMonth(), this.year = t.getUTCFullYear(), this.apply();
+    } else
+      return this.fromDate(v(e, this.tz));
+  }
+  findNext(e, t, r, n) {
+    return this._findMatch(e, t, r, n, 1);
+  }
+  _findMatch(e, t, r, n, i) {
+    let a = this[t], o;
+    r.lastDayOfMonth && (o = this.getLastDayOfMonth(this.year, this.month));
+    let h = !r.starDOW && t == "day" ? new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay() : undefined, l = this[t] + n, y2 = i === 1 ? (u) => u < r[t].length : (u) => u >= 0;
+    for (let u = l;y2(u); u += i) {
+      let d = r[t][u];
+      if (t === "day" && !d) {
+        for (let c3 = 0;c3 < r.nearestWeekdays.length; c3++)
+          if (r.nearestWeekdays[c3]) {
+            let M2 = this.getNearestWeekday(this.year, this.month, c3 - n);
+            if (M2 === -1)
+              continue;
+            if (M2 === u - n) {
+              d = 1;
+              break;
+            }
+          }
+      }
+      if (t === "day" && r.lastWeekday) {
+        let c3 = this.getLastWeekday(this.year, this.month);
+        u - n === c3 && (d = 1);
+      }
+      if (t === "day" && r.lastDayOfMonth && u - n == o && (d = 1), t === "day" && !r.starDOW) {
+        let c3 = r.dayOfWeek[(h + (u - n - 1)) % 7];
+        if (c3 && c3 & 63)
+          c3 = this.isNthWeekdayOfMonth(this.year, this.month, u - n, c3) ? 1 : 0;
+        else if (c3)
+          throw new Error(`CronDate: Invalid value for dayOfWeek encountered. ${c3}`);
+        r.useAndLogic ? d = d && c3 : !e.domAndDow && !r.starDOM ? d = d || c3 : d = d && c3;
+      }
+      if (d)
+        return this[t] = u - n, a !== this[t] ? 2 : 1;
+    }
+    return 3;
+  }
+  recurse(e, t, r) {
+    if (r === 0 && !e.starYear) {
+      if (this.year >= 0 && this.year < e.year.length && e.year[this.year] === 0) {
+        let i = -1;
+        for (let a = this.year + 1;a < e.year.length && a < 1e4; a++)
+          if (e.year[a] === 1) {
+            i = a;
+            break;
+          }
+        if (i === -1)
+          return null;
+        this.year = i, this.month = 0, this.day = 1, this.hour = 0, this.minute = 0, this.second = 0, this.ms = 0;
+      }
+      if (this.year >= 1e4)
+        return null;
+    }
+    let n = this.findNext(t, f[r][0], e, f[r][2]);
+    if (n > 1) {
+      let i = r + 1;
+      for (;i < f.length; )
+        this[f[i][0]] = -f[i][2], i++;
+      if (n === 3) {
+        if (this[f[r][1]]++, this[f[r][0]] = -f[r][2], this.apply(), r === 0 && !e.starYear) {
+          for (;this.year >= 0 && this.year < e.year.length && e.year[this.year] === 0 && this.year < 1e4; )
+            this.year++;
+          if (this.year >= 1e4 || this.year >= e.year.length)
+            return null;
+        }
+        return this.recurse(e, t, 0);
+      } else if (this.apply())
+        return this.recurse(e, t, r - 1);
+    }
+    return r += 1, r >= f.length ? this : (e.starYear ? this.year >= 3000 : this.year >= 1e4) ? null : this.recurse(e, t, r);
+  }
+  increment(e, t, r) {
+    return this.second += t.interval !== undefined && t.interval > 1 && r ? t.interval : 1, this.ms = 0, this.apply(), this.recurse(e, t, 0);
+  }
+  decrement(e, t) {
+    return this.second -= t.interval !== undefined && t.interval > 1 ? t.interval : 1, this.ms = 0, this.apply(), this.recurseBackward(e, t, 0, 0);
+  }
+  recurseBackward(e, t, r, n = 0) {
+    if (n > 1e4)
+      return null;
+    if (r === 0 && !e.starYear) {
+      if (this.year >= 0 && this.year < e.year.length && e.year[this.year] === 0) {
+        let a = -1;
+        for (let o = this.year - 1;o >= 0; o--)
+          if (e.year[o] === 1) {
+            a = o;
+            break;
+          }
+        if (a === -1)
+          return null;
+        this.year = a, this.month = 11, this.day = 31, this.hour = 23, this.minute = 59, this.second = 59, this.ms = 0;
+      }
+      if (this.year < 0)
+        return null;
+    }
+    let i = this.findPrevious(t, f[r][0], e, f[r][2]);
+    if (i > 1) {
+      let a = r + 1;
+      for (;a < f.length; ) {
+        let o = f[a][0], h = f[a][2], l = this.getMaxPatternValue(o, e, h);
+        this[o] = l, a++;
+      }
+      if (i === 3) {
+        if (this[f[r][1]]--, r === 0) {
+          let y2 = this.getLastDayOfMonth(this.year, this.month);
+          this.day > y2 && (this.day = y2);
+        }
+        if (r === 1)
+          if (this.day <= 0)
+            this.day = 1;
+          else {
+            let y2 = this.year, u = this.month;
+            for (;u < 0; )
+              u += 12, y2--;
+            for (;u > 11; )
+              u -= 12, y2++;
+            let d = u !== 1 ? P[u] : new Date(Date.UTC(y2, u + 1, 0)).getUTCDate();
+            this.day > d && (this.day = d);
+          }
+        this.apply();
+        let o = f[r][0], h = f[r][2], l = this.getMaxPatternValue(o, e, h);
+        if (o === "day") {
+          let y2 = this.getLastDayOfMonth(this.year, this.month);
+          this[o] = Math.min(l, y2);
+        } else
+          this[o] = l;
+        if (this.apply(), r === 0) {
+          let y2 = f[1][2], u = this.getMaxPatternValue("day", e, y2), d = this.getLastDayOfMonth(this.year, this.month), c3 = Math.min(u, d);
+          c3 !== this.day && (this.day = c3, this.hour = this.getMaxPatternValue("hour", e, f[2][2]), this.minute = this.getMaxPatternValue("minute", e, f[3][2]), this.second = this.getMaxPatternValue("second", e, f[4][2]));
+        }
+        if (r === 0 && !e.starYear) {
+          for (;this.year >= 0 && this.year < e.year.length && e.year[this.year] === 0; )
+            this.year--;
+          if (this.year < 0)
+            return null;
+        }
+        return this.recurseBackward(e, t, 0, n + 1);
+      } else if (this.apply())
+        return this.recurseBackward(e, t, r - 1, n + 1);
+    }
+    return r += 1, r >= f.length ? this : this.year < 0 ? null : this.recurseBackward(e, t, r, n + 1);
+  }
+  getMaxPatternValue(e, t, r) {
+    if (e === "day" && t.lastDayOfMonth)
+      return this.getLastDayOfMonth(this.year, this.month);
+    if (e === "day" && !t.starDOW)
+      return this.getLastDayOfMonth(this.year, this.month);
+    for (let n = t[e].length - 1;n >= 0; n--)
+      if (t[e][n])
+        return n - r;
+    return t[e].length - 1 - r;
+  }
+  findPrevious(e, t, r, n) {
+    return this._findMatch(e, t, r, n, -1);
+  }
+  getDate(e) {
+    return e || this.tz === undefined ? new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.ms) : typeof this.tz == "number" ? new Date(Date.UTC(this.year, this.month, this.day, this.hour, this.minute - this.tz, this.second, this.ms)) : k(b(this.year, this.month + 1, this.day, this.hour, this.minute, this.second, this.tz), false);
+  }
+  getTime() {
+    return this.getDate(false).getTime();
+  }
+  match(e, t) {
+    if (!e.starYear && (this.year < 0 || this.year >= e.year.length || e.year[this.year] === 0))
+      return false;
+    for (let r = 0;r < f.length; r++) {
+      let n = f[r][0], i = f[r][2], a = this[n];
+      if (a + i < 0 || a + i >= e[n].length)
+        return false;
+      let o = e[n][a + i];
+      if (n === "day") {
+        if (!o) {
+          for (let h = 0;h < e.nearestWeekdays.length; h++)
+            if (e.nearestWeekdays[h]) {
+              let l = this.getNearestWeekday(this.year, this.month, h - i);
+              if (l !== -1 && l === a) {
+                o = 1;
+                break;
+              }
+            }
+        }
+        if (e.lastWeekday) {
+          let h = this.getLastWeekday(this.year, this.month);
+          a === h && (o = 1);
+        }
+        if (e.lastDayOfMonth) {
+          let h = this.getLastDayOfMonth(this.year, this.month);
+          a === h && (o = 1);
+        }
+        if (!e.starDOW) {
+          let h = new Date(Date.UTC(this.year, this.month, 1, 0, 0, 0, 0)).getUTCDay(), l = e.dayOfWeek[(h + (a - 1)) % 7];
+          l && l & 63 && (l = this.isNthWeekdayOfMonth(this.year, this.month, a, l) ? 1 : 0), e.useAndLogic ? o = o && l : !t.domAndDow && !e.starDOM ? o = o || l : o = o && l;
+        }
+      }
+      if (!o)
+        return false;
+    }
+    return true;
+  }
+};
+function R2(s2) {
+  if (s2 === undefined && (s2 = {}), delete s2.name, s2.legacyMode !== undefined && s2.domAndDow === undefined ? s2.domAndDow = !s2.legacyMode : s2.domAndDow === undefined && (s2.domAndDow = false), s2.legacyMode = !s2.domAndDow, s2.paused = s2.paused === undefined ? false : s2.paused, s2.maxRuns = s2.maxRuns === undefined ? 1 / 0 : s2.maxRuns, s2.catch = s2.catch === undefined ? false : s2.catch, s2.interval = s2.interval === undefined ? 0 : parseInt(s2.interval.toString(), 10), s2.utcOffset = s2.utcOffset === undefined ? undefined : parseInt(s2.utcOffset.toString(), 10), s2.dayOffset = s2.dayOffset === undefined ? 0 : parseInt(s2.dayOffset.toString(), 10), s2.unref = s2.unref === undefined ? false : s2.unref, s2.mode = s2.mode === undefined ? "auto" : s2.mode, s2.alternativeWeekdays = s2.alternativeWeekdays === undefined ? false : s2.alternativeWeekdays, s2.sloppyRanges = s2.sloppyRanges === undefined ? false : s2.sloppyRanges, !["auto", "5-part", "6-part", "7-part", "5-or-6-parts", "6-or-7-parts"].includes(s2.mode))
+    throw new Error("CronOptions: mode must be one of 'auto', '5-part', '6-part', '7-part', '5-or-6-parts', or '6-or-7-parts'.");
+  if (s2.startAt && (s2.startAt = new m(s2.startAt, s2.timezone)), s2.stopAt && (s2.stopAt = new m(s2.stopAt, s2.timezone)), s2.interval !== null) {
+    if (isNaN(s2.interval))
+      throw new Error("CronOptions: Supplied value for interval is not a number");
+    if (s2.interval < 0)
+      throw new Error("CronOptions: Supplied value for interval can not be negative");
+  }
+  if (s2.utcOffset !== undefined) {
+    if (isNaN(s2.utcOffset))
+      throw new Error("CronOptions: Invalid value passed for utcOffset, should be number representing minutes offset from UTC.");
+    if (s2.utcOffset < -870 || s2.utcOffset > 870)
+      throw new Error("CronOptions: utcOffset out of bounds.");
+    if (s2.utcOffset !== undefined && s2.timezone)
+      throw new Error("CronOptions: Combining 'utcOffset' with 'timezone' is not allowed.");
+  }
+  if (s2.unref !== true && s2.unref !== false)
+    throw new Error("CronOptions: Unref should be either true, false or undefined(false).");
+  if (s2.dayOffset !== undefined && s2.dayOffset !== 0 && isNaN(s2.dayOffset))
+    throw new Error("CronOptions: Invalid value passed for dayOffset, should be a number representing days to offset.");
+  return s2;
+}
+function p(s2) {
+  return Object.prototype.toString.call(s2) === "[object Function]" || typeof s2 == "function" || s2 instanceof Function;
+}
+function _(s2) {
+  return p(s2);
+}
+function x2(s2) {
+  typeof Deno < "u" && typeof Deno.unrefTimer < "u" ? Deno.unrefTimer(s2) : s2 && typeof s2.unref < "u" && s2.unref();
+}
+var W2 = 30 * 1000;
+var w = [];
+var E = class {
+  name;
+  options;
+  _states;
+  fn;
+  getTz() {
+    return this.options.timezone || this.options.utcOffset;
+  }
+  applyDayOffset(e) {
+    if (this.options.dayOffset !== undefined && this.options.dayOffset !== 0) {
+      let t = this.options.dayOffset * 24 * 60 * 60 * 1000;
+      return new Date(e.getTime() + t);
+    }
+    return e;
+  }
+  constructor(e, t, r) {
+    let n, i;
+    if (p(t))
+      i = t;
+    else if (typeof t == "object")
+      n = t;
+    else if (t !== undefined)
+      throw new Error("Cron: Invalid argument passed for optionsIn. Should be one of function, or object (options).");
+    if (p(r))
+      i = r;
+    else if (typeof r == "object")
+      n = r;
+    else if (r !== undefined)
+      throw new Error("Cron: Invalid argument passed for funcIn. Should be one of function, or object (options).");
+    if (this.name = n?.name, this.options = R2(n), this._states = { kill: false, blocking: false, previousRun: undefined, currentRun: undefined, once: undefined, currentTimeout: undefined, maxRuns: n ? n.maxRuns : undefined, paused: n ? n.paused : false, pattern: new C2("* * * * *", undefined, { mode: "auto" }) }, e && (e instanceof Date || typeof e == "string" && e.indexOf(":") > 0) ? this._states.once = new m(e, this.getTz()) : this._states.pattern = new C2(e, this.options.timezone, { mode: this.options.mode, alternativeWeekdays: this.options.alternativeWeekdays, sloppyRanges: this.options.sloppyRanges }), this.name) {
+      if (w.find((o) => o.name === this.name))
+        throw new Error("Cron: Tried to initialize new named job '" + this.name + "', but name already taken.");
+      w.push(this);
+    }
+    return i !== undefined && _(i) && (this.fn = i, this.schedule()), this;
+  }
+  nextRun(e) {
+    let t = this._next(e);
+    return t ? this.applyDayOffset(t.getDate(false)) : null;
+  }
+  nextRuns(e, t) {
+    this._states.maxRuns !== undefined && e > this._states.maxRuns && (e = this._states.maxRuns);
+    let r = t || this._states.currentRun || undefined;
+    return this._enumerateRuns(e, r, "next");
+  }
+  previousRuns(e, t) {
+    return this._enumerateRuns(e, t || undefined, "previous");
+  }
+  _enumerateRuns(e, t, r) {
+    let n = [], i = t ? new m(t, this.getTz()) : null, a = r === "next" ? this._next : this._previous;
+    for (;e--; ) {
+      let o = a.call(this, i);
+      if (!o)
+        break;
+      let h = o.getDate(false);
+      n.push(this.applyDayOffset(h)), i = o;
+    }
+    return n;
+  }
+  match(e) {
+    if (this._states.once) {
+      let r = new m(e, this.getTz());
+      r.ms = 0;
+      let n = new m(this._states.once, this.getTz());
+      return n.ms = 0, r.getTime() === n.getTime();
+    }
+    let t = new m(e, this.getTz());
+    return t.ms = 0, t.match(this._states.pattern, this.options);
+  }
+  getPattern() {
+    if (!this._states.once)
+      return this._states.pattern ? this._states.pattern.pattern : undefined;
+  }
+  getOnce() {
+    return this._states.once ? this._states.once.getDate() : null;
+  }
+  isRunning() {
+    let e = this.nextRun(this._states.currentRun), t = !this._states.paused, r = this.fn !== undefined, n = !this._states.kill;
+    return t && r && n && e !== null;
+  }
+  isStopped() {
+    return this._states.kill;
+  }
+  isBusy() {
+    return this._states.blocking;
+  }
+  currentRun() {
+    return this._states.currentRun ? this._states.currentRun.getDate() : null;
+  }
+  previousRun() {
+    return this._states.previousRun ? this._states.previousRun.getDate() : null;
+  }
+  msToNext(e) {
+    let t = this._next(e);
+    return t ? e instanceof m || e instanceof Date ? t.getTime() - e.getTime() : t.getTime() - new m(e).getTime() : null;
+  }
+  stop() {
+    this._states.kill = true, this._states.currentTimeout && clearTimeout(this._states.currentTimeout);
+    let e = w.indexOf(this);
+    e >= 0 && w.splice(e, 1);
+  }
+  pause() {
+    return this._states.paused = true, !this._states.kill;
+  }
+  resume() {
+    return this._states.paused = false, !this._states.kill;
+  }
+  schedule(e) {
+    if (e && this.fn)
+      throw new Error("Cron: It is not allowed to schedule two functions using the same Croner instance.");
+    e && (this.fn = e);
+    let t = this.msToNext(), r = this.nextRun(this._states.currentRun);
+    return t == null || isNaN(t) || r === null ? this : (t > W2 && (t = W2), this._states.currentTimeout = setTimeout(() => this._checkTrigger(r), t), this._states.currentTimeout && this.options.unref && x2(this._states.currentTimeout), this);
+  }
+  async _trigger(e) {
+    this._states.blocking = true, this._states.currentRun = new m(undefined, this.getTz());
+    try {
+      if (this.options.catch)
+        try {
+          this.fn !== undefined && await this.fn(this, this.options.context);
+        } catch (t) {
+          if (p(this.options.catch))
+            try {
+              this.options.catch(t, this);
+            } catch {}
+        }
+      else
+        this.fn !== undefined && await this.fn(this, this.options.context);
+    } finally {
+      this._states.previousRun = new m(e, this.getTz()), this._states.blocking = false;
+    }
+  }
+  async trigger() {
+    await this._trigger();
+  }
+  runsLeft() {
+    return this._states.maxRuns;
+  }
+  _checkTrigger(e) {
+    let t = new Date, r = !this._states.paused && t.getTime() >= e.getTime(), n = this._states.blocking && this.options.protect;
+    r && !n ? (this._states.maxRuns !== undefined && this._states.maxRuns--, this._trigger()) : r && n && p(this.options.protect) && setTimeout(() => this.options.protect(this), 0), this.schedule();
+  }
+  _next(e) {
+    let t = !!(e || this._states.currentRun), r = false;
+    !e && this.options.startAt && this.options.interval && ([e, t] = this._calculatePreviousRun(e, t), r = !e), e = new m(e, this.getTz()), this.options.startAt && e && e.getTime() < this.options.startAt.getTime() && (e = this.options.startAt);
+    let n = this._states.once || new m(e, this.getTz());
+    return !r && n !== this._states.once && (n = n.increment(this._states.pattern, this.options, t)), this._states.once && this._states.once.getTime() <= e.getTime() || n === null || this._states.maxRuns !== undefined && this._states.maxRuns <= 0 || this._states.kill || this.options.stopAt && n.getTime() >= this.options.stopAt.getTime() ? null : n;
+  }
+  _previous(e) {
+    let t = new m(e, this.getTz());
+    this.options.stopAt && t.getTime() > this.options.stopAt.getTime() && (t = this.options.stopAt);
+    let r = new m(t, this.getTz());
+    return this._states.once ? this._states.once.getTime() < t.getTime() ? this._states.once : null : (r = r.decrement(this._states.pattern, this.options), r === null || this.options.startAt && r.getTime() < this.options.startAt.getTime() ? null : r);
+  }
+  _calculatePreviousRun(e, t) {
+    let r = new m(undefined, this.getTz()), n = e;
+    if (this.options.startAt.getTime() <= r.getTime()) {
+      n = this.options.startAt;
+      let i = n.getTime() + this.options.interval * 1000;
+      for (;i <= r.getTime(); )
+        n = new m(n, this.getTz()).increment(this._states.pattern, this.options, true), i = n.getTime() + this.options.interval * 1000;
+      t = true;
+    }
+    return n === null && (n = undefined), [n, t];
+  }
+};
+
+// src/utils/jobs.ts
+var HTTP_CHECK_TIMEOUT_MS = 8000;
+var HTTP_CHECK_BATCH_SIZE = 10;
+var HTTP_CHECK_MAX_COUNT = 30;
+var HTTP_CHECK_BATCH_DELAY_MS = 5000;
+var HTTP_CHECK_EXPIRED_MS = 7 * 24 * 60 * 60 * 1000;
+var CHROME_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+var sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+function startCronJobs() {
+  const licenseRefreshMinute = Math.floor(Math.random() * 60);
+  const licenseRefreshHour = 2 + Math.floor(Math.random() * 4);
+  const licenseRefreshDayOfWeek = Math.floor(Math.random() * 7);
+  const licenseRefreshPattern = `0 ${licenseRefreshMinute} ${licenseRefreshHour} * * ${licenseRefreshDayOfWeek}`;
+  new E("* * * * * *", { interval: 90, protect: true }, async () => {
+    await checkUncheckedNavLinkHttpCodes();
+  });
+  new E("* * * * * *", { interval: 60, protect: true }, async () => {
+    await checkUncheckedLinkHttpCodes();
+  });
+  new E("* * * * * *", { interval: 180, protect: true }, async () => {
+    await checkExpiredLinkHttpCodes("links");
+  });
+  new E("* * * * * *", { interval: 300, protect: true }, async () => {
+    await checkExpiredLinkHttpCodes("nav_links");
+  });
+  new E(licenseRefreshPattern, { timezone: "Asia/Shanghai", protect: true }, async () => {
+    await checkLicense();
+  });
+  new E("0 0 4 * * 0", { timezone: "Asia/Shanghai", protect: true }, async () => {
+    await cleanupExpiredSessions();
+  });
+  console.log("\u2705 All cron jobs started.");
+}
+var cleanupExpiredSessions = async () => {
+  await db.delete(sessions).where(lt(sessions.expires_at, new Date));
+};
+var getHttpUrl = (url2) => {
+  try {
+    const parsedUrl = new URL(url2.trim());
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      return null;
+    }
+    return parsedUrl;
+  } catch {
+    return null;
+  }
+};
+var fetchUrlHttpCode = async (url2) => {
+  const parsedUrl = getHttpUrl(url2);
+  if (!parsedUrl) {
+    return -1;
+  }
+  const controller = new AbortController;
+  const timeoutId = setTimeout(() => controller.abort(), HTTP_CHECK_TIMEOUT_MS);
+  try {
+    const res = await fetch(parsedUrl.href, {
+      method: "GET",
+      redirect: "manual",
+      headers: {
+        "User-Agent": CHROME_USER_AGENT,
+        Referer: parsedUrl.origin
+      },
+      signal: controller.signal
+    });
+    const status = res.status;
+    await res.body?.cancel().catch(() => {});
+    return status;
+  } catch {
+    return -1;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+var updateNavLinkCheckResults = async (results) => {
+  if (results.length === 0) {
+    return;
+  }
+  const checkedAt = new Date;
+  await db.transaction(async (tx) => {
+    for (const item of results) {
+      await tx.update(nav_links).set({
+        http_code: item.httpCode,
+        last_checked_at: checkedAt
+      }).where(eq12(nav_links.id, item.id));
+    }
+  });
+};
+var updateLinkCheckResults = async (results) => {
+  if (results.length === 0) {
+    return;
+  }
+  const checkedAt = new Date;
+  await db.transaction(async (tx) => {
+    for (const item of results) {
+      await tx.update(links).set({
+        http_code: item.httpCode,
+        last_checked_at: checkedAt
+      }).where(eq12(links.id, item.id));
+    }
+  });
+};
+var checkUncheckedNavLinkHttpCodes = async () => {
+  if (!passGate()) {
+    return {
+      checked: 0,
+      updated: 0
+    };
+  }
+  const rows = await db.query.nav_links.findMany({
+    columns: {
+      id: true,
+      url: true
+    },
+    where: isNull(nav_links.last_checked_at),
+    orderBy: desc7(nav_links.id),
+    limit: HTTP_CHECK_MAX_COUNT
+  });
+  let updated = 0;
+  for (let i = 0;i < rows.length; i += HTTP_CHECK_BATCH_SIZE) {
+    const batch = rows.slice(i, i + HTTP_CHECK_BATCH_SIZE);
+    const results = await Promise.all(batch.map(async (item) => ({
+      id: item.id,
+      url: item.url,
+      httpCode: await fetchUrlHttpCode(item.url)
+    })));
+    await updateNavLinkCheckResults(results);
+    updated += results.length;
+    if (i + HTTP_CHECK_BATCH_SIZE < rows.length) {
+      await sleep(HTTP_CHECK_BATCH_DELAY_MS);
+    }
+  }
+  return {
+    checked: rows.length,
+    updated
+  };
+};
+var checkUncheckedLinkHttpCodes = async () => {
+  if (!passGate()) {
+    return {
+      checked: 0,
+      updated: 0
+    };
+  }
+  const rows = await db.query.links.findMany({
+    columns: {
+      id: true,
+      url: true
+    },
+    where: isNull(links.last_checked_at),
+    orderBy: desc7(links.id),
+    limit: HTTP_CHECK_MAX_COUNT
+  });
+  let updated = 0;
+  for (let i = 0;i < rows.length; i += HTTP_CHECK_BATCH_SIZE) {
+    const batch = rows.slice(i, i + HTTP_CHECK_BATCH_SIZE);
+    const results = await Promise.all(batch.map(async (item) => ({
+      id: item.id,
+      url: item.url,
+      httpCode: await fetchUrlHttpCode(item.url)
+    })));
+    await updateLinkCheckResults(results);
+    updated += results.length;
+    if (i + HTTP_CHECK_BATCH_SIZE < rows.length) {
+      await sleep(HTTP_CHECK_BATCH_DELAY_MS);
+    }
+  }
+  return {
+    checked: rows.length,
+    updated
+  };
+};
+var checkExpiredLinkHttpCodes = async (target) => {
+  if (!passGate()) {
+    return {
+      checked: 0,
+      updated: 0
+    };
+  }
+  const cutoffDate = new Date(Date.now() - HTTP_CHECK_EXPIRED_MS);
+  if (target === "links") {
+    const rows2 = await db.query.links.findMany({
+      columns: {
+        id: true,
+        url: true
+      },
+      where: and7(isNotNull(links.last_checked_at), lt(links.last_checked_at, cutoffDate)),
+      orderBy: asc6(links.last_checked_at),
+      limit: HTTP_CHECK_MAX_COUNT
+    });
+    let updated2 = 0;
+    for (let i = 0;i < rows2.length; i += HTTP_CHECK_BATCH_SIZE) {
+      const batch = rows2.slice(i, i + HTTP_CHECK_BATCH_SIZE);
+      const results = await Promise.all(batch.map(async (item) => ({
+        id: item.id,
+        url: item.url,
+        httpCode: await fetchUrlHttpCode(item.url)
+      })));
+      await updateLinkCheckResults(results);
+      updated2 += results.length;
+      if (i + HTTP_CHECK_BATCH_SIZE < rows2.length) {
+        await sleep(HTTP_CHECK_BATCH_DELAY_MS);
+      }
+    }
+    return {
+      checked: rows2.length,
+      updated: updated2
+    };
+  }
+  const rows = await db.query.nav_links.findMany({
+    columns: {
+      id: true,
+      url: true
+    },
+    where: and7(isNotNull(nav_links.last_checked_at), lt(nav_links.last_checked_at, cutoffDate)),
+    orderBy: asc6(nav_links.last_checked_at),
+    limit: HTTP_CHECK_MAX_COUNT
+  });
+  let updated = 0;
+  for (let i = 0;i < rows.length; i += HTTP_CHECK_BATCH_SIZE) {
+    const batch = rows.slice(i, i + HTTP_CHECK_BATCH_SIZE);
+    const results = await Promise.all(batch.map(async (item) => ({
+      id: item.id,
+      url: item.url,
+      httpCode: await fetchUrlHttpCode(item.url)
+    })));
+    await updateNavLinkCheckResults(results);
+    updated += results.length;
+    if (i + HTTP_CHECK_BATCH_SIZE < rows.length) {
+      await sleep(HTTP_CHECK_BATCH_DELAY_MS);
+    }
+  }
+  return {
+    checked: rows.length,
+    updated
+  };
+};
+
 // src/index.ts
 var app = new Hono2;
 checkLicense().catch(() => {});
+startCronJobs();
 app.route("/", publicRouter);
 app.route("/", userRouter);
 app.route("/", adminRouter);
+app.route("/", apiV1Router);
 var src_default = {
   port: 3080,
   fetch: app.fetch,
