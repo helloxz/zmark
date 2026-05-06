@@ -6325,8 +6325,17 @@ if (!existsSync(DB_PATH)) {
   mkdirSync(DB_PATH, { recursive: true });
 }
 var sqlite = new Database(`${DB_PATH}/zmark.db`, { create: true });
+var isSqliteClosed = false;
 sqlite.run("PRAGMA journal_mode = WAL;");
 var db = drizzle(sqlite, { schema: exports_schema });
+var closeSqlite = () => {
+  if (isSqliteClosed) {
+    return;
+  }
+  sqlite.run("PRAGMA wal_checkpoint(TRUNCATE);");
+  sqlite.close();
+  isSqliteClosed = true;
+};
 
 // src/api/setting.ts
 import { mkdir, rm, writeFile } from "fs/promises";
@@ -39581,693 +39590,9 @@ var getLinkInfo = async (c3) => {
 // src/api/update.ts
 import { mkdir as mkdir5, writeFile as writeFile5 } from "fs/promises";
 import { dirname as dirname6, join as join8 } from "path";
-var UPDATE_MANIFEST_URL = "https://soft.xiaoz.org/source/zmark/latest.json";
-var UPDATE_REQUEST_TIMEOUT = 1e4;
-var UPDATE_DOWNLOAD_TIMEOUT = 120000;
-var README_MAX_SIZE = 1024 * 1024;
-var compareVersions = (currentVersion, latestVersion) => {
-  const currentParts = currentVersion.split(".").map((part) => parseInt(part, 10) || 0);
-  const latestParts = latestVersion.split(".").map((part) => parseInt(part, 10) || 0);
-  const maxLength = Math.max(currentParts.length, latestParts.length);
-  for (let i = 0;i < maxLength; i += 1) {
-    const current = currentParts[i] ?? 0;
-    const latest = latestParts[i] ?? 0;
-    if (latest > current) {
-      return 1;
-    }
-    if (latest < current) {
-      return -1;
-    }
-  }
-  return 0;
-};
-var isValidVersion = (version2) => /^\d+(\.\d+){1,2}$/.test(version2);
-var fetchWithTimeout = async (url2, timeout) => {
-  const controller = new AbortController;
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-  try {
-    return await fetch(url2, {
-      method: "GET",
-      signal: controller.signal
-    });
-  } finally {
-    clearTimeout(timeoutId);
-  }
-};
-var fetchUpdateManifest = async () => {
-  const res = await fetchWithTimeout(UPDATE_MANIFEST_URL, UPDATE_REQUEST_TIMEOUT);
-  if (!res.ok) {
-    throw new Error("manifest_request_failed");
-  }
-  const json2 = await res.json();
-  if (!json2 || typeof json2.version !== "string" || typeof json2.readme !== "string" || typeof json2.url !== "string" || !isValidVersion(json2.version)) {
-    throw new Error("manifest_invalid");
-  }
-  return {
-    version: json2.version.trim(),
-    readme: json2.readme.trim(),
-    url: json2.url.trim()
-  };
-};
-var fetchReadmeContent = async (url2) => {
-  const res = await fetchWithTimeout(url2, UPDATE_REQUEST_TIMEOUT);
-  if (!res.ok) {
-    return "";
-  }
-  const contentLength = res.headers.get("content-length");
-  if (contentLength && parseInt(contentLength, 10) > README_MAX_SIZE) {
-    return "";
-  }
-  const text4 = await res.text();
-  if (Buffer.byteLength(text4, "utf-8") > README_MAX_SIZE) {
-    return "";
-  }
-  return text4;
-};
-var getUpdateErrorMessage = (error48) => {
-  if (error48 instanceof Error && error48.name === "AbortError") {
-    return "update.request.timeout";
-  }
-  if (error48 instanceof Error && error48.message === "manifest_invalid") {
-    return "update.latest.invalid";
-  }
-  return "update.check.failed";
-};
-var scheduleProcessExit = () => {
-  setTimeout(() => {
-    process.exit(0);
-  }, 1000);
-};
-var checkUpdate = async (c3) => {
-  try {
-    const manifest = await fetchUpdateManifest();
-    const hasUpdate = compareVersions(APP_VERSION, manifest.version) > 0;
-    let readme = "";
-    if (hasUpdate) {
-      try {
-        readme = await fetchReadmeContent(manifest.readme);
-      } catch {
-        readme = "";
-      }
-    }
-    return c3.json({
-      code: 200,
-      msg: "success",
-      data: {
-        has_update: hasUpdate,
-        current_version: APP_VERSION,
-        latest_version: manifest.version,
-        readme,
-        url: hasUpdate ? manifest.url : ""
-      }
-    });
-  } catch (error48) {
-    return c3.json({
-      code: -1000,
-      msg: getUpdateErrorMessage(error48),
-      data: null
-    });
-  }
-};
-var downloadUpdate = async (c3) => {
-  const host = getHostFromRequest(c3);
-  const { edition, result } = getLicense(host);
-  const isLicenseValid = (edition === "pro" || edition === "team") && result === "success";
-  if (!isLicenseValid) {
-    return c3.json({
-      code: -1000,
-      msg: "license.update.denied",
-      data: null
-    });
-  }
-  let manifest;
-  try {
-    manifest = await fetchUpdateManifest();
-  } catch (error48) {
-    return c3.json({
-      code: -1000,
-      msg: getUpdateErrorMessage(error48),
-      data: null
-    });
-  }
-  const fileName = "update.tar.gz";
-  const filePath = join8(process.cwd(), "data", fileName);
-  try {
-    const res = await fetchWithTimeout(manifest.url, UPDATE_DOWNLOAD_TIMEOUT);
-    if (!res.ok) {
-      return c3.json({
-        code: -1000,
-        msg: "update.download.failed",
-        data: null
-      });
-    }
-    const arrayBuffer = await res.arrayBuffer();
-    if (arrayBuffer.byteLength === 0) {
-      return c3.json({
-        code: -1000,
-        msg: "update.download.failed",
-        data: null
-      });
-    }
-    try {
-      await mkdir5(dirname6(filePath), { recursive: true });
-      await writeFile5(filePath, Buffer.from(arrayBuffer));
-    } catch {
-      return c3.json({
-        code: -1000,
-        msg: "update.download.write_failed",
-        data: null
-      });
-    }
-    scheduleProcessExit();
-    return c3.json({
-      code: 200,
-      msg: "success",
-      data: {
-        version: manifest.version,
-        file_name: fileName,
-        file_path: filePath,
-        url: manifest.url
-      }
-    });
-  } catch (error48) {
-    const message = error48 instanceof Error && error48.name === "AbortError" ? "update.request.timeout" : "update.download.failed";
-    return c3.json({
-      code: -1000,
-      msg: message,
-      data: null
-    });
-  }
-};
-var ping = async (c3) => {
-  return c3.json({
-    code: 200,
-    msg: "pong",
-    data: {
-      version: APP_VERSION
-    }
-  });
-};
-
-// src/api/token.ts
-import { eq as eq10 } from "drizzle-orm";
-var tokenFields = {
-  token: apiTokens.token,
-  status: apiTokens.status,
-  last_used_at: apiTokens.last_used_at,
-  last_used_ip: apiTokens.last_used_ip,
-  created_at: apiTokens.created_at,
-  updated_at: apiTokens.updated_at
-};
-var createTokenValue = () => `sk-${randomString(37)}`;
-var createUserToken = (uid) => {
-  return db.insert(apiTokens).values({
-    uid,
-    token: createTokenValue()
-  }).returning(tokenFields).get();
-};
-var getUserToken = (uid) => {
-  return db.select(tokenFields).from(apiTokens).where(eq10(apiTokens.uid, uid)).get();
-};
-var getToken = async (c3) => {
-  const uid = c3.get("uid");
-  const existingToken = getUserToken(uid);
-  if (existingToken) {
-    return c3.json({
-      code: 200,
-      msg: "success",
-      data: existingToken
-    });
-  }
-  const createdToken = createUserToken(uid);
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: createdToken
-  });
-};
-var updateTokenStatus = async (c3) => {
-  const uid = c3.get("uid");
-  const { status } = await c3.req.json();
-  if (status !== "active" && status !== "disabled") {
-    return c3.json({
-      code: -1000,
-      msg: "token.status.invalid",
-      data: null
-    });
-  }
-  const existingToken = getUserToken(uid);
-  if (!existingToken) {
-    const createdToken = createUserToken(uid);
-    const updatedToken2 = db.update(apiTokens).set({
-      status,
-      updated_at: new Date
-    }).where(eq10(apiTokens.uid, uid)).returning(tokenFields).get();
-    return c3.json({
-      code: 200,
-      msg: "success",
-      data: updatedToken2 || createdToken
-    });
-  }
-  const updatedToken = db.update(apiTokens).set({
-    status,
-    updated_at: new Date
-  }).where(eq10(apiTokens.uid, uid)).returning(tokenFields).get();
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: updatedToken
-  });
-};
-var regenerateToken = async (c3) => {
-  const uid = c3.get("uid");
-  const existingToken = getUserToken(uid);
-  if (!existingToken) {
-    const createdToken = createUserToken(uid);
-    return c3.json({
-      code: 200,
-      msg: "success",
-      data: createdToken
-    });
-  }
-  const updatedToken = db.update(apiTokens).set({
-    token: createTokenValue(),
-    status: "active",
-    updated_at: new Date
-  }).where(eq10(apiTokens.uid, uid)).returning(tokenFields).get();
-  return c3.json({
-    code: 200,
-    msg: "success",
-    data: updatedToken
-  });
-};
-
-// node_modules/hono/dist/utils/crypto.js
-var sha256 = async (data2) => {
-  const algorithm = { name: "SHA-256", alias: "sha256" };
-  const hash2 = await createHash(data2, algorithm);
-  return hash2;
-};
-var createHash = async (data2, algorithm) => {
-  let sourceBuffer;
-  if (ArrayBuffer.isView(data2) || data2 instanceof ArrayBuffer) {
-    sourceBuffer = data2;
-  } else {
-    if (typeof data2 === "object") {
-      data2 = JSON.stringify(data2);
-    }
-    sourceBuffer = new TextEncoder().encode(String(data2));
-  }
-  if (crypto && crypto.subtle) {
-    const buffer = await crypto.subtle.digest({
-      name: algorithm.name
-    }, sourceBuffer);
-    const hash2 = Array.prototype.map.call(new Uint8Array(buffer), (x2) => ("00" + x2.toString(16)).slice(-2)).join("");
-    return hash2;
-  }
-  return null;
-};
-
-// node_modules/hono/dist/utils/buffer.js
-var constantTimeEqualString = (a, b) => {
-  const aLen = a.length;
-  const bLen = b.length;
-  const maxLen = Math.max(aLen, bLen);
-  let out = aLen ^ bLen;
-  for (let i = 0;i < maxLen; i++) {
-    const aChar = i < aLen ? a.charCodeAt(i) : 0;
-    const bChar = i < bLen ? b.charCodeAt(i) : 0;
-    out |= aChar ^ bChar;
-  }
-  return out === 0;
-};
-var timingSafeEqualString = async (a, b, hashFunction) => {
-  if (!hashFunction) {
-    hashFunction = sha256;
-  }
-  const [sa, sb] = await Promise.all([hashFunction(a), hashFunction(b)]);
-  if (sa == null || sb == null || typeof sa !== "string" || typeof sb !== "string") {
-    return false;
-  }
-  const hashEqual = constantTimeEqualString(sa, sb);
-  const originalEqual = constantTimeEqualString(a, b);
-  return hashEqual && originalEqual;
-};
-var timingSafeEqual = async (a, b, hashFunction) => {
-  if (typeof a === "string" && typeof b === "string") {
-    return timingSafeEqualString(a, b, hashFunction);
-  }
-  if (!hashFunction) {
-    hashFunction = sha256;
-  }
-  const [sa, sb] = await Promise.all([hashFunction(a), hashFunction(b)]);
-  if (!sa || !sb || typeof sa !== "string" || typeof sb !== "string") {
-    return false;
-  }
-  return timingSafeEqualString(sa, sb);
-};
-
-// node_modules/hono/dist/middleware/bearer-auth/index.js
-var TOKEN_STRINGS = "[A-Za-z0-9._~+/-]+=*";
-var PREFIX = "Bearer";
-var HEADER = "Authorization";
-var bearerAuth = (options2) => {
-  if (!(("token" in options2) || ("verifyToken" in options2))) {
-    throw new Error('bearer auth middleware requires options for "token"');
-  }
-  if (!options2.realm) {
-    options2.realm = "";
-  }
-  if (options2.prefix === undefined) {
-    options2.prefix = PREFIX;
-  }
-  const realm = options2.realm?.replace(/"/g, "\\\"");
-  const prefix = options2.prefix;
-  const tokenRegexp = new RegExp(`^${TOKEN_STRINGS}$`);
-  const wwwAuthenticatePrefix = prefix === "" ? "" : `${prefix} `;
-  const throwHTTPException = async (c3, status, wwwAuthenticateHeader, messageOption) => {
-    const wwwAuthenticateHeaderValue = typeof wwwAuthenticateHeader === "function" ? await wwwAuthenticateHeader(c3) : wwwAuthenticateHeader;
-    const headers = {
-      "WWW-Authenticate": typeof wwwAuthenticateHeaderValue === "string" ? wwwAuthenticateHeaderValue : `${wwwAuthenticatePrefix}${Object.entries(wwwAuthenticateHeaderValue).map(([key, value]) => `${key}="${value}"`).join(",")}`
-    };
-    const responseMessage = typeof messageOption === "function" ? await messageOption(c3) : messageOption;
-    const res = typeof responseMessage === "string" ? new Response(responseMessage, { status, headers }) : new Response(JSON.stringify(responseMessage), {
-      status,
-      headers: {
-        ...headers,
-        "content-type": "application/json"
-      }
-    });
-    throw new HTTPException(status, { res });
-  };
-  return async function bearerAuth2(c3, next2) {
-    const headerToken = c3.req.header(options2.headerName || HEADER);
-    if (!headerToken) {
-      await throwHTTPException(c3, 401, options2.noAuthenticationHeader?.wwwAuthenticateHeader || `${wwwAuthenticatePrefix}realm="${realm}"`, options2.noAuthenticationHeader?.message || options2.noAuthenticationHeaderMessage || "Unauthorized");
-    } else {
-      let tokenValue;
-      if (prefix === "") {
-        tokenValue = headerToken;
-      } else {
-        const headerLower = headerToken.toLowerCase();
-        const prefixLower = prefix.toLowerCase();
-        if (headerLower.startsWith(prefixLower) && headerToken[prefix.length] === " ") {
-          tokenValue = headerToken.slice(prefix.length).trimStart();
-        }
-      }
-      if (!tokenValue || !tokenRegexp.test(tokenValue)) {
-        await throwHTTPException(c3, 400, options2.invalidAuthenticationHeader?.wwwAuthenticateHeader || `${wwwAuthenticatePrefix}error="invalid_request"`, options2.invalidAuthenticationHeader?.message || options2.invalidAuthenticationHeaderMessage || "Bad Request");
-      } else {
-        let equal = false;
-        if ("verifyToken" in options2) {
-          equal = await options2.verifyToken(tokenValue, c3);
-        } else if (typeof options2.token === "string") {
-          equal = await timingSafeEqual(options2.token, tokenValue, options2.hashFunction);
-        } else if (Array.isArray(options2.token) && options2.token.length > 0) {
-          for (const token of options2.token) {
-            if (await timingSafeEqual(token, tokenValue, options2.hashFunction)) {
-              equal = true;
-              break;
-            }
-          }
-        }
-        if (!equal) {
-          await throwHTTPException(c3, 401, options2.invalidToken?.wwwAuthenticateHeader || `${wwwAuthenticatePrefix}error="invalid_token"`, options2.invalidToken?.message || options2.invalidTokenMessage || "Unauthorized");
-        }
-      }
-    }
-    await next2();
-  };
-};
-
-// src/middleware/auth.ts
-import { and as and6, eq as eq11 } from "drizzle-orm";
-var verifyApiToken = async (token, c3, role = "user") => {
-  if (!token || token.length < 32) {
-    return false;
-  }
-  try {
-    const session = db.select().from(sessions).where(and6(eq11(sessions.token, token), eq11(sessions.status, "active"))).get();
-    if (!session) {
-      return false;
-    }
-    if (session.expires_at.getTime() <= Date.now()) {
-      db.update(sessions).set({ status: "expired" }).where(eq11(sessions.id, session.id)).run();
-      return false;
-    }
-    if (role === "admin" && session.role !== "admin") {
-      return false;
-    }
-    const userInfo2 = db.select({
-      id: users.id,
-      username: users.username
-    }).from(users).where(and6(eq11(users.id, session.uid), eq11(users.status, "active"))).get();
-    if (!userInfo2) {
-      return false;
-    }
-    c3.set("uid", userInfo2.id);
-    c3.set("role", session.role);
-    c3.set("username", userInfo2.username);
-    return true;
-  } catch (error48) {
-    return false;
-  }
-};
-var verifyV1ApiToken = async (token, c3) => {
-  if (!token || !token.startsWith("sk-")) {
-    return false;
-  }
-  if (token.length !== 40) {
-    return false;
-  }
-  if (!/^sk-[A-Za-z0-9]{37}$/.test(token)) {
-    return false;
-  }
-  try {
-    const result = db.select({
-      uid: users.id,
-      username: users.username,
-      role: users.role,
-      userStatus: users.status,
-      tokenStatus: apiTokens.status
-    }).from(apiTokens).innerJoin(users, eq11(users.id, apiTokens.uid)).where(eq11(apiTokens.token, token)).get();
-    if (!result) {
-      return false;
-    }
-    if (result.tokenStatus !== "active") {
-      return false;
-    }
-    if (result.userStatus !== "active") {
-      return false;
-    }
-    c3.set("uid", result.uid);
-    c3.set("role", result.role);
-    c3.set("username", result.username);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-// node_modules/hono/dist/middleware/cors/index.js
-var cors = (options2) => {
-  const defaults = {
-    origin: "*",
-    allowMethods: ["GET", "HEAD", "PUT", "POST", "DELETE", "PATCH"],
-    allowHeaders: [],
-    exposeHeaders: []
-  };
-  const opts = {
-    ...defaults,
-    ...options2
-  };
-  const findAllowOrigin = ((optsOrigin) => {
-    if (typeof optsOrigin === "string") {
-      if (optsOrigin === "*") {
-        if (opts.credentials) {
-          return (origin) => origin || null;
-        }
-        return () => optsOrigin;
-      } else {
-        return (origin) => optsOrigin === origin ? origin : null;
-      }
-    } else if (typeof optsOrigin === "function") {
-      return optsOrigin;
-    } else {
-      return (origin) => optsOrigin.includes(origin) ? origin : null;
-    }
-  })(opts.origin);
-  const findAllowMethods = ((optsAllowMethods) => {
-    if (typeof optsAllowMethods === "function") {
-      return optsAllowMethods;
-    } else if (Array.isArray(optsAllowMethods)) {
-      return () => optsAllowMethods;
-    } else {
-      return () => [];
-    }
-  })(opts.allowMethods);
-  return async function cors2(c3, next2) {
-    function set2(key, value) {
-      c3.res.headers.set(key, value);
-    }
-    const allowOrigin = await findAllowOrigin(c3.req.header("origin") || "", c3);
-    if (allowOrigin) {
-      set2("Access-Control-Allow-Origin", allowOrigin);
-    }
-    if (opts.credentials) {
-      set2("Access-Control-Allow-Credentials", "true");
-    }
-    if (opts.exposeHeaders?.length) {
-      set2("Access-Control-Expose-Headers", opts.exposeHeaders.join(","));
-    }
-    if (c3.req.method === "OPTIONS") {
-      if (opts.origin !== "*" || opts.credentials) {
-        set2("Vary", "Origin");
-      }
-      if (opts.maxAge != null) {
-        set2("Access-Control-Max-Age", opts.maxAge.toString());
-      }
-      const allowMethods = await findAllowMethods(c3.req.header("origin") || "", c3);
-      if (allowMethods.length) {
-        set2("Access-Control-Allow-Methods", allowMethods.join(","));
-      }
-      let headers = opts.allowHeaders;
-      if (!headers?.length) {
-        const requestHeaders = c3.req.header("Access-Control-Request-Headers");
-        if (requestHeaders) {
-          headers = requestHeaders.split(/\s*,\s*/);
-        }
-      }
-      if (headers?.length) {
-        set2("Access-Control-Allow-Headers", headers.join(","));
-        c3.res.headers.append("Vary", "Access-Control-Request-Headers");
-      }
-      c3.res.headers.delete("Content-Length");
-      c3.res.headers.delete("Content-Type");
-      return new Response(null, {
-        headers: c3.res.headers,
-        status: 204,
-        statusText: "No Content"
-      });
-    }
-    await next2();
-    if (opts.origin !== "*" || opts.credentials) {
-      c3.header("Vary", "Origin", { append: true });
-    }
-  };
-};
-
-// src/routers.ts
-var corsOptions = {
-  origin: "*",
-  exposeHeaders: ["Content-Disposition"]
-};
-var publicRouter = new Hono2;
-var userRouter = new Hono2().basePath("/api/user");
-userRouter.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyApiToken(t, c3, "user") }));
-var adminRouter = new Hono2().basePath("/api/admin");
-adminRouter.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyApiToken(t, c3, "admin") }));
-var apiV1Router = new Hono2().basePath("/api/v1");
-apiV1Router.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyV1ApiToken(t, c3) }));
-publicRouter.use("*", cors(corsOptions));
-publicRouter.use("/images/*", serveStatic2({
-  root: "./data",
-  onFound: (_path, c3) => {
-    c3.header("Cache-Control", `public, immutable, max-age=604800`);
-  }
-}));
-publicRouter.use("/static/*", serveStatic2({
-  root: "./public",
-  onFound: (_path, c3) => {
-    c3.header("Cache-Control", `public, immutable, max-age=604800`);
-  }
-}));
-publicRouter.get("/dashboard/*", index2);
-publicRouter.get("/user/*", index2);
-publicRouter.get("/", index2);
-publicRouter.get("/nav", index2);
-publicRouter.post("/api/init_user", initUser);
-publicRouter.post("/api/login", login);
-publicRouter.post("/api/register", register);
-publicRouter.get("/reset_admin_password", resetAdminPassword);
-userRouter.post("/add_category", addCategory);
-userRouter.post("/update_category", updateCategory);
-userRouter.post("/delete_category", deleteCategory);
-userRouter.get("/categories", listCategories);
-userRouter.post("/add_link", addLink);
-userRouter.post("/update_link", updateLink);
-userRouter.post("/update_link_icon", updateLinkIcon);
-userRouter.post("/delete_link_icon", deleteLinkIcon);
-userRouter.post("/sort_links", sortLinks);
-userRouter.post("/update_links_category", updateLinksCategory);
-userRouter.post("/delete_links", deleteLinks);
-userRouter.post("/remove_duplicate_links", removeDuplicateUserLinks);
-userRouter.post("/search_links", searchLinks);
-userRouter.get("/category_links", getCategoryLinks);
-userRouter.get("/info", userInfo);
-userRouter.get("/token", getToken);
-userRouter.post("/token/status", updateTokenStatus);
-userRouter.post("/token/regenerate", regenerateToken);
-userRouter.post("/logout", logout);
-userRouter.post("/change_password", changePassword);
-userRouter.post("/update_avatar", updateAvatar);
-userRouter.post("/import_html", importHTML);
-userRouter.post("/import_json", importJSON);
-userRouter.get("/export_html", exportHTML);
-userRouter.get("/export_json", exportJson);
-userRouter.post("/get_link_info", getLinkInfo);
-userRouter.get("/check_login", checkLogin);
-userRouter.post("/set_user_setting", setUserSetting);
-userRouter.get("/get_user_setting", getUserSetting);
-apiV1Router.get("/categories", listCategories);
-apiV1Router.post("/add_link", addLink);
-apiV1Router.post("/update_link", updateLink);
-apiV1Router.post("/update_link_icon", updateLinkIcon);
-apiV1Router.post("/delete_link_icon", deleteLinkIcon);
-apiV1Router.post("/sort_links", sortLinks);
-apiV1Router.post("/delete_links", deleteLinks);
-apiV1Router.post("/remove_duplicate_links", removeDuplicateUserLinks);
-apiV1Router.post("/search_links", searchLinks);
-apiV1Router.get("/category_links", getCategoryLinks);
-apiV1Router.get("/info", userInfo);
-apiV1Router.post("/import_json", importJSON);
-apiV1Router.post("/get_link_info", getLinkInfo);
-adminRouter.post("/set_setting", setGlobalSetting);
-adminRouter.post("/save_license", saveLicense);
-adminRouter.post("/remove_license", removeLicense);
-adminRouter.post("/upload_logo", uploadLogo);
-adminRouter.get("/get_setting", getGlobalSetting);
-adminRouter.get("/list_users", listUsers);
-adminRouter.post("/reset_user_password", resetUserPassword);
-adminRouter.post("/list_links", listLinksByAdmin);
-adminRouter.post("/delete_links", adminDeleteLinks);
-adminRouter.post("/add_nav_category", addNavCategory);
-adminRouter.post("/update_nav_category", updateNavCategory);
-adminRouter.post("/delete_nav_category", deleteNavCategory);
-adminRouter.post("/move_nav_data", moveNavData);
-adminRouter.post("/add_nav_link", addNavLink);
-adminRouter.post("/update_nav_link", updateNavLink);
-adminRouter.post("/update_nav_link_icon", updateNavLinkIcon);
-adminRouter.post("/delete_nav_link_icon", deleteNavLinkIcon);
-adminRouter.post("/delete_nav_links", deleteNavLinks);
-adminRouter.post("/remove_duplicate_nav_links", removeDuplicateNavLinks);
-adminRouter.post("/update_nav_links_category", updateNavLinksCategory);
-adminRouter.post("/sort_nav_links", sortNavLinks);
-adminRouter.post("/import_nav_html", importNavHTML);
-adminRouter.post("/import_nav_json", importNavJSON);
-adminRouter.get("/export_nav_json", exportNavJson);
-adminRouter.get("/export_nav_html", exportNavHTML);
-publicRouter.get("/api/nav_categories", listNavCategories);
-publicRouter.get("/api/nav_links", getNavCategoryLinks);
-publicRouter.post("/api/search_nav_links", searchNavLinks);
-publicRouter.get("/api/public_setting", getPublicSettings);
-adminRouter.get("/app_info", getAppInfo);
-adminRouter.get("/check_update", checkUpdate);
-adminRouter.post("/download_update", downloadUpdate);
-adminRouter.get("/ping", ping);
 
 // src/utils/jobs.ts
-import { and as and7, asc as asc6, desc as desc7, eq as eq12, isNotNull, isNull, lt } from "drizzle-orm";
+import { and as and6, asc as asc6, desc as desc7, eq as eq10, isNotNull, isNull, lt } from "drizzle-orm";
 
 // node_modules/croner/dist/croner.js
 function T(s) {
@@ -41050,31 +40375,38 @@ var HTTP_CHECK_MAX_COUNT = 30;
 var HTTP_CHECK_BATCH_DELAY_MS = 5000;
 var HTTP_CHECK_EXPIRED_MS = 7 * 24 * 60 * 60 * 1000;
 var CHROME_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+var cronJobs = [];
 var sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function startCronJobs() {
   const licenseRefreshMinute = Math.floor(Math.random() * 60);
   const licenseRefreshHour = 2 + Math.floor(Math.random() * 4);
   const licenseRefreshDayOfWeek = Math.floor(Math.random() * 7);
   const licenseRefreshPattern = `0 ${licenseRefreshMinute} ${licenseRefreshHour} * * ${licenseRefreshDayOfWeek}`;
-  new E("* * * * * *", { interval: 90, protect: true }, async () => {
+  cronJobs.push(new E("* * * * * *", { interval: 90, protect: true }, async () => {
     await checkUncheckedNavLinkHttpCodes();
-  });
-  new E("* * * * * *", { interval: 60, protect: true }, async () => {
+  }));
+  cronJobs.push(new E("* * * * * *", { interval: 60, protect: true }, async () => {
     await checkUncheckedLinkHttpCodes();
-  });
-  new E("* * * * * *", { interval: 180, protect: true }, async () => {
+  }));
+  cronJobs.push(new E("* * * * * *", { interval: 180, protect: true }, async () => {
     await checkExpiredLinkHttpCodes("links");
-  });
-  new E("* * * * * *", { interval: 300, protect: true }, async () => {
+  }));
+  cronJobs.push(new E("* * * * * *", { interval: 300, protect: true }, async () => {
     await checkExpiredLinkHttpCodes("nav_links");
-  });
-  new E(licenseRefreshPattern, { timezone: "Asia/Shanghai", protect: true }, async () => {
+  }));
+  cronJobs.push(new E(licenseRefreshPattern, { timezone: "Asia/Shanghai", protect: true }, async () => {
     await checkLicense();
-  });
-  new E("0 0 4 * * 0", { timezone: "Asia/Shanghai", protect: true }, async () => {
+  }));
+  cronJobs.push(new E("0 0 4 * * 0", { timezone: "Asia/Shanghai", protect: true }, async () => {
     await cleanupExpiredSessions();
-  });
+  }));
   console.log("\u2705 All cron jobs started.");
+}
+function stopCronJobs() {
+  for (const job of cronJobs) {
+    job.stop();
+  }
+  cronJobs.length = 0;
 }
 var cleanupExpiredSessions = async () => {
   await db.delete(sessions).where(lt(sessions.expires_at, new Date));
@@ -41126,7 +40458,7 @@ var updateNavLinkCheckResults = async (results) => {
       await tx.update(nav_links).set({
         http_code: item.httpCode,
         last_checked_at: checkedAt
-      }).where(eq12(nav_links.id, item.id));
+      }).where(eq10(nav_links.id, item.id));
     }
   });
 };
@@ -41140,7 +40472,7 @@ var updateLinkCheckResults = async (results) => {
       await tx.update(links).set({
         http_code: item.httpCode,
         last_checked_at: checkedAt
-      }).where(eq12(links.id, item.id));
+      }).where(eq10(links.id, item.id));
     }
   });
 };
@@ -41228,7 +40560,7 @@ var checkExpiredLinkHttpCodes = async (target) => {
         id: true,
         url: true
       },
-      where: and7(isNotNull(links.last_checked_at), lt(links.last_checked_at, cutoffDate)),
+      where: and6(isNotNull(links.last_checked_at), lt(links.last_checked_at, cutoffDate)),
       orderBy: asc6(links.last_checked_at),
       limit: HTTP_CHECK_MAX_COUNT
     });
@@ -41256,7 +40588,7 @@ var checkExpiredLinkHttpCodes = async (target) => {
       id: true,
       url: true
     },
-    where: and7(isNotNull(nav_links.last_checked_at), lt(nav_links.last_checked_at, cutoffDate)),
+    where: and6(isNotNull(nav_links.last_checked_at), lt(nav_links.last_checked_at, cutoffDate)),
     orderBy: asc6(nav_links.last_checked_at),
     limit: HTTP_CHECK_MAX_COUNT
   });
@@ -41279,6 +40611,702 @@ var checkExpiredLinkHttpCodes = async (target) => {
     updated
   };
 };
+
+// src/api/update.ts
+var UPDATE_MANIFEST_URL = "https://soft.xiaoz.org/source/zmark/latest.json";
+var UPDATE_REQUEST_TIMEOUT = 1e4;
+var UPDATE_DOWNLOAD_TIMEOUT = 120000;
+var README_MAX_SIZE = 1024 * 1024;
+var UPDATE_SHUTDOWN_WAIT = 1e4;
+var compareVersions = (currentVersion, latestVersion) => {
+  const currentParts = currentVersion.split(".").map((part) => parseInt(part, 10) || 0);
+  const latestParts = latestVersion.split(".").map((part) => parseInt(part, 10) || 0);
+  const maxLength = Math.max(currentParts.length, latestParts.length);
+  for (let i = 0;i < maxLength; i += 1) {
+    const current = currentParts[i] ?? 0;
+    const latest = latestParts[i] ?? 0;
+    if (latest > current) {
+      return 1;
+    }
+    if (latest < current) {
+      return -1;
+    }
+  }
+  return 0;
+};
+var isValidVersion = (version2) => /^\d+(\.\d+){1,2}$/.test(version2);
+var fetchWithTimeout = async (url2, timeout) => {
+  const controller = new AbortController;
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(url2, {
+      method: "GET",
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+var fetchUpdateManifest = async () => {
+  const res = await fetchWithTimeout(UPDATE_MANIFEST_URL, UPDATE_REQUEST_TIMEOUT);
+  if (!res.ok) {
+    throw new Error("manifest_request_failed");
+  }
+  const json2 = await res.json();
+  if (!json2 || typeof json2.version !== "string" || typeof json2.readme !== "string" || typeof json2.url !== "string" || !isValidVersion(json2.version)) {
+    throw new Error("manifest_invalid");
+  }
+  return {
+    version: json2.version.trim(),
+    readme: json2.readme.trim(),
+    url: json2.url.trim()
+  };
+};
+var fetchReadmeContent = async (url2) => {
+  const res = await fetchWithTimeout(url2, UPDATE_REQUEST_TIMEOUT);
+  if (!res.ok) {
+    return "";
+  }
+  const contentLength = res.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > README_MAX_SIZE) {
+    return "";
+  }
+  const text4 = await res.text();
+  if (Buffer.byteLength(text4, "utf-8") > README_MAX_SIZE) {
+    return "";
+  }
+  return text4;
+};
+var getUpdateErrorMessage = (error48) => {
+  if (error48 instanceof Error && error48.name === "AbortError") {
+    return "update.request.timeout";
+  }
+  if (error48 instanceof Error && error48.message === "manifest_invalid") {
+    return "update.latest.invalid";
+  }
+  return "update.check.failed";
+};
+var sleep2 = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+var scheduleProcessExit = () => {
+  (async () => {
+    try {
+      stopCronJobs();
+      await sleep2(UPDATE_SHUTDOWN_WAIT);
+      closeSqlite();
+    } catch (error48) {
+      console.error("Failed to shutdown gracefully after update.", error48);
+    } finally {
+      process.exit(0);
+    }
+  })();
+};
+var checkUpdate = async (c3) => {
+  try {
+    const manifest = await fetchUpdateManifest();
+    const hasUpdate = compareVersions(APP_VERSION, manifest.version) > 0;
+    let readme = "";
+    if (hasUpdate) {
+      try {
+        readme = await fetchReadmeContent(manifest.readme);
+      } catch {
+        readme = "";
+      }
+    }
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        has_update: hasUpdate,
+        current_version: APP_VERSION,
+        latest_version: manifest.version,
+        readme,
+        url: hasUpdate ? manifest.url : ""
+      }
+    });
+  } catch (error48) {
+    return c3.json({
+      code: -1000,
+      msg: getUpdateErrorMessage(error48),
+      data: null
+    });
+  }
+};
+var downloadUpdate = async (c3) => {
+  const host = getHostFromRequest(c3);
+  const { edition, result } = getLicense(host);
+  const isLicenseValid = (edition === "pro" || edition === "team") && result === "success";
+  if (!isLicenseValid) {
+    return c3.json({
+      code: -1000,
+      msg: "license.update.denied",
+      data: null
+    });
+  }
+  let manifest;
+  try {
+    manifest = await fetchUpdateManifest();
+  } catch (error48) {
+    return c3.json({
+      code: -1000,
+      msg: getUpdateErrorMessage(error48),
+      data: null
+    });
+  }
+  const fileName = "update.tar.gz";
+  const filePath = join8(process.cwd(), "data", fileName);
+  try {
+    const res = await fetchWithTimeout(manifest.url, UPDATE_DOWNLOAD_TIMEOUT);
+    if (!res.ok) {
+      return c3.json({
+        code: -1000,
+        msg: "update.download.failed",
+        data: null
+      });
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    if (arrayBuffer.byteLength === 0) {
+      return c3.json({
+        code: -1000,
+        msg: "update.download.failed",
+        data: null
+      });
+    }
+    try {
+      await mkdir5(dirname6(filePath), { recursive: true });
+      await writeFile5(filePath, Buffer.from(arrayBuffer));
+    } catch {
+      return c3.json({
+        code: -1000,
+        msg: "update.download.write_failed",
+        data: null
+      });
+    }
+    scheduleProcessExit();
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        version: manifest.version,
+        file_name: fileName,
+        file_path: filePath,
+        url: manifest.url
+      }
+    });
+  } catch (error48) {
+    const message = error48 instanceof Error && error48.name === "AbortError" ? "update.request.timeout" : "update.download.failed";
+    return c3.json({
+      code: -1000,
+      msg: message,
+      data: null
+    });
+  }
+};
+var ping = async (c3) => {
+  return c3.json({
+    code: 200,
+    msg: "pong",
+    data: {
+      version: APP_VERSION
+    }
+  });
+};
+
+// src/api/token.ts
+import { eq as eq11 } from "drizzle-orm";
+var tokenFields = {
+  token: apiTokens.token,
+  status: apiTokens.status,
+  last_used_at: apiTokens.last_used_at,
+  last_used_ip: apiTokens.last_used_ip,
+  created_at: apiTokens.created_at,
+  updated_at: apiTokens.updated_at
+};
+var createTokenValue = () => `sk-${randomString(37)}`;
+var createUserToken = (uid) => {
+  return db.insert(apiTokens).values({
+    uid,
+    token: createTokenValue()
+  }).returning(tokenFields).get();
+};
+var getUserToken = (uid) => {
+  return db.select(tokenFields).from(apiTokens).where(eq11(apiTokens.uid, uid)).get();
+};
+var getToken = async (c3) => {
+  const uid = c3.get("uid");
+  const existingToken = getUserToken(uid);
+  if (existingToken) {
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: existingToken
+    });
+  }
+  const createdToken = createUserToken(uid);
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: createdToken
+  });
+};
+var updateTokenStatus = async (c3) => {
+  const uid = c3.get("uid");
+  const { status } = await c3.req.json();
+  if (status !== "active" && status !== "disabled") {
+    return c3.json({
+      code: -1000,
+      msg: "token.status.invalid",
+      data: null
+    });
+  }
+  const existingToken = getUserToken(uid);
+  if (!existingToken) {
+    const createdToken = createUserToken(uid);
+    const updatedToken2 = db.update(apiTokens).set({
+      status,
+      updated_at: new Date
+    }).where(eq11(apiTokens.uid, uid)).returning(tokenFields).get();
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: updatedToken2 || createdToken
+    });
+  }
+  const updatedToken = db.update(apiTokens).set({
+    status,
+    updated_at: new Date
+  }).where(eq11(apiTokens.uid, uid)).returning(tokenFields).get();
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: updatedToken
+  });
+};
+var regenerateToken = async (c3) => {
+  const uid = c3.get("uid");
+  const existingToken = getUserToken(uid);
+  if (!existingToken) {
+    const createdToken = createUserToken(uid);
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: createdToken
+    });
+  }
+  const updatedToken = db.update(apiTokens).set({
+    token: createTokenValue(),
+    status: "active",
+    updated_at: new Date
+  }).where(eq11(apiTokens.uid, uid)).returning(tokenFields).get();
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: updatedToken
+  });
+};
+
+// node_modules/hono/dist/utils/crypto.js
+var sha256 = async (data2) => {
+  const algorithm = { name: "SHA-256", alias: "sha256" };
+  const hash2 = await createHash(data2, algorithm);
+  return hash2;
+};
+var createHash = async (data2, algorithm) => {
+  let sourceBuffer;
+  if (ArrayBuffer.isView(data2) || data2 instanceof ArrayBuffer) {
+    sourceBuffer = data2;
+  } else {
+    if (typeof data2 === "object") {
+      data2 = JSON.stringify(data2);
+    }
+    sourceBuffer = new TextEncoder().encode(String(data2));
+  }
+  if (crypto && crypto.subtle) {
+    const buffer = await crypto.subtle.digest({
+      name: algorithm.name
+    }, sourceBuffer);
+    const hash2 = Array.prototype.map.call(new Uint8Array(buffer), (x3) => ("00" + x3.toString(16)).slice(-2)).join("");
+    return hash2;
+  }
+  return null;
+};
+
+// node_modules/hono/dist/utils/buffer.js
+var constantTimeEqualString = (a, b2) => {
+  const aLen = a.length;
+  const bLen = b2.length;
+  const maxLen = Math.max(aLen, bLen);
+  let out = aLen ^ bLen;
+  for (let i = 0;i < maxLen; i++) {
+    const aChar = i < aLen ? a.charCodeAt(i) : 0;
+    const bChar = i < bLen ? b2.charCodeAt(i) : 0;
+    out |= aChar ^ bChar;
+  }
+  return out === 0;
+};
+var timingSafeEqualString = async (a, b2, hashFunction) => {
+  if (!hashFunction) {
+    hashFunction = sha256;
+  }
+  const [sa, sb] = await Promise.all([hashFunction(a), hashFunction(b2)]);
+  if (sa == null || sb == null || typeof sa !== "string" || typeof sb !== "string") {
+    return false;
+  }
+  const hashEqual = constantTimeEqualString(sa, sb);
+  const originalEqual = constantTimeEqualString(a, b2);
+  return hashEqual && originalEqual;
+};
+var timingSafeEqual = async (a, b2, hashFunction) => {
+  if (typeof a === "string" && typeof b2 === "string") {
+    return timingSafeEqualString(a, b2, hashFunction);
+  }
+  if (!hashFunction) {
+    hashFunction = sha256;
+  }
+  const [sa, sb] = await Promise.all([hashFunction(a), hashFunction(b2)]);
+  if (!sa || !sb || typeof sa !== "string" || typeof sb !== "string") {
+    return false;
+  }
+  return timingSafeEqualString(sa, sb);
+};
+
+// node_modules/hono/dist/middleware/bearer-auth/index.js
+var TOKEN_STRINGS = "[A-Za-z0-9._~+/-]+=*";
+var PREFIX = "Bearer";
+var HEADER = "Authorization";
+var bearerAuth = (options2) => {
+  if (!(("token" in options2) || ("verifyToken" in options2))) {
+    throw new Error('bearer auth middleware requires options for "token"');
+  }
+  if (!options2.realm) {
+    options2.realm = "";
+  }
+  if (options2.prefix === undefined) {
+    options2.prefix = PREFIX;
+  }
+  const realm = options2.realm?.replace(/"/g, "\\\"");
+  const prefix = options2.prefix;
+  const tokenRegexp = new RegExp(`^${TOKEN_STRINGS}$`);
+  const wwwAuthenticatePrefix = prefix === "" ? "" : `${prefix} `;
+  const throwHTTPException = async (c3, status, wwwAuthenticateHeader, messageOption) => {
+    const wwwAuthenticateHeaderValue = typeof wwwAuthenticateHeader === "function" ? await wwwAuthenticateHeader(c3) : wwwAuthenticateHeader;
+    const headers = {
+      "WWW-Authenticate": typeof wwwAuthenticateHeaderValue === "string" ? wwwAuthenticateHeaderValue : `${wwwAuthenticatePrefix}${Object.entries(wwwAuthenticateHeaderValue).map(([key, value]) => `${key}="${value}"`).join(",")}`
+    };
+    const responseMessage = typeof messageOption === "function" ? await messageOption(c3) : messageOption;
+    const res = typeof responseMessage === "string" ? new Response(responseMessage, { status, headers }) : new Response(JSON.stringify(responseMessage), {
+      status,
+      headers: {
+        ...headers,
+        "content-type": "application/json"
+      }
+    });
+    throw new HTTPException(status, { res });
+  };
+  return async function bearerAuth2(c3, next2) {
+    const headerToken = c3.req.header(options2.headerName || HEADER);
+    if (!headerToken) {
+      await throwHTTPException(c3, 401, options2.noAuthenticationHeader?.wwwAuthenticateHeader || `${wwwAuthenticatePrefix}realm="${realm}"`, options2.noAuthenticationHeader?.message || options2.noAuthenticationHeaderMessage || "Unauthorized");
+    } else {
+      let tokenValue;
+      if (prefix === "") {
+        tokenValue = headerToken;
+      } else {
+        const headerLower = headerToken.toLowerCase();
+        const prefixLower = prefix.toLowerCase();
+        if (headerLower.startsWith(prefixLower) && headerToken[prefix.length] === " ") {
+          tokenValue = headerToken.slice(prefix.length).trimStart();
+        }
+      }
+      if (!tokenValue || !tokenRegexp.test(tokenValue)) {
+        await throwHTTPException(c3, 400, options2.invalidAuthenticationHeader?.wwwAuthenticateHeader || `${wwwAuthenticatePrefix}error="invalid_request"`, options2.invalidAuthenticationHeader?.message || options2.invalidAuthenticationHeaderMessage || "Bad Request");
+      } else {
+        let equal = false;
+        if ("verifyToken" in options2) {
+          equal = await options2.verifyToken(tokenValue, c3);
+        } else if (typeof options2.token === "string") {
+          equal = await timingSafeEqual(options2.token, tokenValue, options2.hashFunction);
+        } else if (Array.isArray(options2.token) && options2.token.length > 0) {
+          for (const token of options2.token) {
+            if (await timingSafeEqual(token, tokenValue, options2.hashFunction)) {
+              equal = true;
+              break;
+            }
+          }
+        }
+        if (!equal) {
+          await throwHTTPException(c3, 401, options2.invalidToken?.wwwAuthenticateHeader || `${wwwAuthenticatePrefix}error="invalid_token"`, options2.invalidToken?.message || options2.invalidTokenMessage || "Unauthorized");
+        }
+      }
+    }
+    await next2();
+  };
+};
+
+// src/middleware/auth.ts
+import { and as and7, eq as eq12 } from "drizzle-orm";
+var verifyApiToken = async (token, c3, role = "user") => {
+  if (!token || token.length < 32) {
+    return false;
+  }
+  try {
+    const session = db.select().from(sessions).where(and7(eq12(sessions.token, token), eq12(sessions.status, "active"))).get();
+    if (!session) {
+      return false;
+    }
+    if (session.expires_at.getTime() <= Date.now()) {
+      db.update(sessions).set({ status: "expired" }).where(eq12(sessions.id, session.id)).run();
+      return false;
+    }
+    if (role === "admin" && session.role !== "admin") {
+      return false;
+    }
+    const userInfo2 = db.select({
+      id: users.id,
+      username: users.username
+    }).from(users).where(and7(eq12(users.id, session.uid), eq12(users.status, "active"))).get();
+    if (!userInfo2) {
+      return false;
+    }
+    c3.set("uid", userInfo2.id);
+    c3.set("role", session.role);
+    c3.set("username", userInfo2.username);
+    return true;
+  } catch (error48) {
+    return false;
+  }
+};
+var verifyV1ApiToken = async (token, c3) => {
+  if (!token || !token.startsWith("sk-")) {
+    return false;
+  }
+  if (token.length !== 40) {
+    return false;
+  }
+  if (!/^sk-[A-Za-z0-9]{37}$/.test(token)) {
+    return false;
+  }
+  try {
+    const result = db.select({
+      uid: users.id,
+      username: users.username,
+      role: users.role,
+      userStatus: users.status,
+      tokenStatus: apiTokens.status
+    }).from(apiTokens).innerJoin(users, eq12(users.id, apiTokens.uid)).where(eq12(apiTokens.token, token)).get();
+    if (!result) {
+      return false;
+    }
+    if (result.tokenStatus !== "active") {
+      return false;
+    }
+    if (result.userStatus !== "active") {
+      return false;
+    }
+    c3.set("uid", result.uid);
+    c3.set("role", result.role);
+    c3.set("username", result.username);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// node_modules/hono/dist/middleware/cors/index.js
+var cors = (options2) => {
+  const defaults = {
+    origin: "*",
+    allowMethods: ["GET", "HEAD", "PUT", "POST", "DELETE", "PATCH"],
+    allowHeaders: [],
+    exposeHeaders: []
+  };
+  const opts = {
+    ...defaults,
+    ...options2
+  };
+  const findAllowOrigin = ((optsOrigin) => {
+    if (typeof optsOrigin === "string") {
+      if (optsOrigin === "*") {
+        if (opts.credentials) {
+          return (origin) => origin || null;
+        }
+        return () => optsOrigin;
+      } else {
+        return (origin) => optsOrigin === origin ? origin : null;
+      }
+    } else if (typeof optsOrigin === "function") {
+      return optsOrigin;
+    } else {
+      return (origin) => optsOrigin.includes(origin) ? origin : null;
+    }
+  })(opts.origin);
+  const findAllowMethods = ((optsAllowMethods) => {
+    if (typeof optsAllowMethods === "function") {
+      return optsAllowMethods;
+    } else if (Array.isArray(optsAllowMethods)) {
+      return () => optsAllowMethods;
+    } else {
+      return () => [];
+    }
+  })(opts.allowMethods);
+  return async function cors2(c3, next2) {
+    function set2(key, value) {
+      c3.res.headers.set(key, value);
+    }
+    const allowOrigin = await findAllowOrigin(c3.req.header("origin") || "", c3);
+    if (allowOrigin) {
+      set2("Access-Control-Allow-Origin", allowOrigin);
+    }
+    if (opts.credentials) {
+      set2("Access-Control-Allow-Credentials", "true");
+    }
+    if (opts.exposeHeaders?.length) {
+      set2("Access-Control-Expose-Headers", opts.exposeHeaders.join(","));
+    }
+    if (c3.req.method === "OPTIONS") {
+      if (opts.origin !== "*" || opts.credentials) {
+        set2("Vary", "Origin");
+      }
+      if (opts.maxAge != null) {
+        set2("Access-Control-Max-Age", opts.maxAge.toString());
+      }
+      const allowMethods = await findAllowMethods(c3.req.header("origin") || "", c3);
+      if (allowMethods.length) {
+        set2("Access-Control-Allow-Methods", allowMethods.join(","));
+      }
+      let headers = opts.allowHeaders;
+      if (!headers?.length) {
+        const requestHeaders = c3.req.header("Access-Control-Request-Headers");
+        if (requestHeaders) {
+          headers = requestHeaders.split(/\s*,\s*/);
+        }
+      }
+      if (headers?.length) {
+        set2("Access-Control-Allow-Headers", headers.join(","));
+        c3.res.headers.append("Vary", "Access-Control-Request-Headers");
+      }
+      c3.res.headers.delete("Content-Length");
+      c3.res.headers.delete("Content-Type");
+      return new Response(null, {
+        headers: c3.res.headers,
+        status: 204,
+        statusText: "No Content"
+      });
+    }
+    await next2();
+    if (opts.origin !== "*" || opts.credentials) {
+      c3.header("Vary", "Origin", { append: true });
+    }
+  };
+};
+
+// src/routers.ts
+var corsOptions = {
+  origin: "*",
+  exposeHeaders: ["Content-Disposition"]
+};
+var publicRouter = new Hono2;
+var userRouter = new Hono2().basePath("/api/user");
+userRouter.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyApiToken(t, c3, "user") }));
+var adminRouter = new Hono2().basePath("/api/admin");
+adminRouter.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyApiToken(t, c3, "admin") }));
+var apiV1Router = new Hono2().basePath("/api/v1");
+apiV1Router.use("*", cors(corsOptions), bearerAuth({ verifyToken: (t, c3) => verifyV1ApiToken(t, c3) }));
+publicRouter.use("*", cors(corsOptions));
+publicRouter.use("/images/*", serveStatic2({
+  root: "./data",
+  onFound: (_path, c3) => {
+    c3.header("Cache-Control", `public, immutable, max-age=604800`);
+  }
+}));
+publicRouter.use("/static/*", serveStatic2({
+  root: "./public",
+  onFound: (_path, c3) => {
+    c3.header("Cache-Control", `public, immutable, max-age=604800`);
+  }
+}));
+publicRouter.get("/dashboard/*", index2);
+publicRouter.get("/user/*", index2);
+publicRouter.get("/", index2);
+publicRouter.get("/nav", index2);
+publicRouter.post("/api/init_user", initUser);
+publicRouter.post("/api/login", login);
+publicRouter.post("/api/register", register);
+publicRouter.get("/reset_admin_password", resetAdminPassword);
+userRouter.post("/add_category", addCategory);
+userRouter.post("/update_category", updateCategory);
+userRouter.post("/delete_category", deleteCategory);
+userRouter.get("/categories", listCategories);
+userRouter.post("/add_link", addLink);
+userRouter.post("/update_link", updateLink);
+userRouter.post("/update_link_icon", updateLinkIcon);
+userRouter.post("/delete_link_icon", deleteLinkIcon);
+userRouter.post("/sort_links", sortLinks);
+userRouter.post("/update_links_category", updateLinksCategory);
+userRouter.post("/delete_links", deleteLinks);
+userRouter.post("/remove_duplicate_links", removeDuplicateUserLinks);
+userRouter.post("/search_links", searchLinks);
+userRouter.get("/category_links", getCategoryLinks);
+userRouter.get("/info", userInfo);
+userRouter.get("/token", getToken);
+userRouter.post("/token/status", updateTokenStatus);
+userRouter.post("/token/regenerate", regenerateToken);
+userRouter.post("/logout", logout);
+userRouter.post("/change_password", changePassword);
+userRouter.post("/update_avatar", updateAvatar);
+userRouter.post("/import_html", importHTML);
+userRouter.post("/import_json", importJSON);
+userRouter.get("/export_html", exportHTML);
+userRouter.get("/export_json", exportJson);
+userRouter.post("/get_link_info", getLinkInfo);
+userRouter.get("/check_login", checkLogin);
+userRouter.post("/set_user_setting", setUserSetting);
+userRouter.get("/get_user_setting", getUserSetting);
+apiV1Router.get("/categories", listCategories);
+apiV1Router.post("/add_link", addLink);
+apiV1Router.post("/update_link", updateLink);
+apiV1Router.post("/update_link_icon", updateLinkIcon);
+apiV1Router.post("/delete_link_icon", deleteLinkIcon);
+apiV1Router.post("/sort_links", sortLinks);
+apiV1Router.post("/delete_links", deleteLinks);
+apiV1Router.post("/remove_duplicate_links", removeDuplicateUserLinks);
+apiV1Router.post("/search_links", searchLinks);
+apiV1Router.get("/category_links", getCategoryLinks);
+apiV1Router.get("/info", userInfo);
+apiV1Router.post("/import_json", importJSON);
+apiV1Router.post("/get_link_info", getLinkInfo);
+adminRouter.post("/set_setting", setGlobalSetting);
+adminRouter.post("/save_license", saveLicense);
+adminRouter.post("/remove_license", removeLicense);
+adminRouter.post("/upload_logo", uploadLogo);
+adminRouter.get("/get_setting", getGlobalSetting);
+adminRouter.get("/list_users", listUsers);
+adminRouter.post("/reset_user_password", resetUserPassword);
+adminRouter.post("/list_links", listLinksByAdmin);
+adminRouter.post("/delete_links", adminDeleteLinks);
+adminRouter.post("/add_nav_category", addNavCategory);
+adminRouter.post("/update_nav_category", updateNavCategory);
+adminRouter.post("/delete_nav_category", deleteNavCategory);
+adminRouter.post("/move_nav_data", moveNavData);
+adminRouter.post("/add_nav_link", addNavLink);
+adminRouter.post("/update_nav_link", updateNavLink);
+adminRouter.post("/update_nav_link_icon", updateNavLinkIcon);
+adminRouter.post("/delete_nav_link_icon", deleteNavLinkIcon);
+adminRouter.post("/delete_nav_links", deleteNavLinks);
+adminRouter.post("/remove_duplicate_nav_links", removeDuplicateNavLinks);
+adminRouter.post("/update_nav_links_category", updateNavLinksCategory);
+adminRouter.post("/sort_nav_links", sortNavLinks);
+adminRouter.post("/import_nav_html", importNavHTML);
+adminRouter.post("/import_nav_json", importNavJSON);
+adminRouter.get("/export_nav_json", exportNavJson);
+adminRouter.get("/export_nav_html", exportNavHTML);
+publicRouter.get("/api/nav_categories", listNavCategories);
+publicRouter.get("/api/nav_links", getNavCategoryLinks);
+publicRouter.post("/api/search_nav_links", searchNavLinks);
+publicRouter.get("/api/public_setting", getPublicSettings);
+adminRouter.get("/app_info", getAppInfo);
+adminRouter.get("/check_update", checkUpdate);
+adminRouter.post("/download_update", downloadUpdate);
+adminRouter.get("/ping", ping);
 
 // src/index.ts
 var app = new Hono2;
