@@ -21012,7 +21012,22 @@ var getSettingValue = (key) => {
 var DEFAULT_USER_SETTINGS = {
   category_collapsed: true,
   icon_type: "online",
-  home_entry: "bookmark"
+  home_entry: "bookmark",
+  login_redirect: "bookmark",
+  bookmark_subtitle: "hostname"
+};
+var getUserSettingValue = (uid) => {
+  const setting = db.select().from(userSettings).where(eq(userSettings.uid, uid)).get();
+  if (!setting) {
+    return DEFAULT_USER_SETTINGS;
+  }
+  let storedValue = {};
+  try {
+    storedValue = JSON.parse(setting.value);
+  } catch {
+    storedValue = {};
+  }
+  return { ...DEFAULT_USER_SETTINGS, ...storedValue };
 };
 var setUserSetting = async (c3) => {
   const uid = c3.get("uid");
@@ -21063,32 +21078,17 @@ var setUserSetting = async (c3) => {
 };
 var getUserSetting = async (c3) => {
   const uid = c3.get("uid");
-  const setting = db.select().from(userSettings).where(eq(userSettings.uid, uid)).get();
-  if (!setting) {
-    return c3.json({
-      code: 200,
-      msg: "success",
-      data: DEFAULT_USER_SETTINGS
-    });
-  }
-  let storedValue = {};
-  try {
-    storedValue = JSON.parse(setting.value);
-  } catch {
-    storedValue = {};
-  }
-  const mergedValue = { ...DEFAULT_USER_SETTINGS, ...storedValue };
   return c3.json({
     code: 200,
     msg: "success",
-    data: mergedValue
+    data: getUserSettingValue(uid)
   });
 };
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.6.0";
-var APP_DATE = "2026050604";
+var APP_VERSION = "0.6.1";
+var APP_DATE = "2026050802";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -21598,6 +21598,8 @@ var login = async (c3) => {
     ua: userAgent,
     expires_at: expiresAt
   }).run();
+  const userSettings2 = getUserSettingValue(user.id);
+  const redirect = userSettings2.login_redirect === "nav" ? "/nav" : "/user/home";
   return c3.json({
     code: 200,
     msg: "login.success",
@@ -21606,7 +21608,8 @@ var login = async (c3) => {
       username: user.username,
       email: user.email,
       role: user.role,
-      token
+      token,
+      redirect
     }
   });
 };
