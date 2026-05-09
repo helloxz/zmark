@@ -21087,8 +21087,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.6.1";
-var APP_DATE = "2026050802";
+var APP_VERSION = "0.7.0";
+var APP_DATE = "2026050903";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -23133,6 +23133,7 @@ var addNavLink = async (c3) => {
       id: row.id,
       title: row.title,
       url: row.url,
+      description: row.description,
       category_type: row.category_type,
       category_id: row.category_id
     }
@@ -23213,6 +23214,7 @@ var updateNavLink = async (c3) => {
       id: row.id,
       title: row.title,
       url: row.url,
+      description: row.description,
       category_type: row.category_type,
       category_id: row.category_id
     }
