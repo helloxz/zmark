@@ -20584,7 +20584,7 @@ var DEFAULT_SETTINGS = {
   },
   nav_setting: {
     icon_type: "online",
-    category_link_limit: 24
+    category_link_limit: 25
   }
 };
 var ENTITLEMENT_GATEWAY_B64 = "aHR0cHM6Ly9zaG9wLnhpdXBpbmcubmV0L3ptYXJrL3F1ZXJ5";
@@ -21087,8 +21087,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.7.0";
-var APP_DATE = "2026050903";
+var APP_VERSION = "0.8.0";
+var APP_DATE = "2026051202";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -22090,6 +22090,171 @@ var updateCategory = async (c3) => {
     }
   });
 };
+var sortCategories = async (c3) => {
+  const { category_type, parent_id, items } = await c3.req.json();
+  const uid = c3.get("uid");
+  if (!vCategoryType(category_type)) {
+    return c3.json({
+      code: -1000,
+      msg: "category.type.invalid",
+      data: null
+    });
+  }
+  if (!Array.isArray(items) || items.length === 0) {
+    return c3.json({
+      code: -1000,
+      msg: "category.ids.required",
+      data: null
+    });
+  }
+  if (items.length > 200) {
+    return c3.json({
+      code: -1000,
+      msg: "category.ids.too_many",
+      data: null
+    });
+  }
+  if (category_type === "l2" && (!Number.isInteger(parent_id) || parent_id <= 0)) {
+    return c3.json({
+      code: -1000,
+      msg: "category.parent_id.invalid",
+      data: null
+    });
+  }
+  const seenIds = new Set;
+  const sortItems = [];
+  for (const item of items) {
+    if (!item || typeof item !== "object") {
+      return c3.json({
+        code: -1000,
+        msg: "category.ids.invalid",
+        data: null
+      });
+    }
+    const { id, sort_order } = item;
+    if (!Number.isInteger(id) || id <= 0 || seenIds.has(id)) {
+      return c3.json({
+        code: -1000,
+        msg: "category.ids.invalid",
+        data: null
+      });
+    }
+    if (!Number.isInteger(sort_order) || sort_order < 0 || sort_order > 99999) {
+      return c3.json({
+        code: -1000,
+        msg: "category.sort_order.invalid",
+        data: null
+      });
+    }
+    seenIds.add(id);
+    sortItems.push({ id, sort_order });
+  }
+  const ids = sortItems.map((item) => item.id);
+  if (category_type === "l1") {
+    const rows2 = await db.query.categories_l1.findMany({
+      where: inArray(categories_l1.id, ids),
+      columns: {
+        id: true,
+        uid: true
+      }
+    });
+    if (rows2.length !== ids.length || rows2.some((row) => row.uid !== uid)) {
+      return c3.json({
+        code: -1000,
+        msg: "category.ids.not_found",
+        data: null
+      });
+    }
+    const updatedAt2 = new Date;
+    try {
+      await db.transaction(async (tx) => {
+        for (const item of sortItems) {
+          const [row] = await tx.update(categories_l1).set({
+            sort_order: item.sort_order,
+            updated_at: updatedAt2
+          }).where(and2(eq3(categories_l1.id, item.id), eq3(categories_l1.uid, uid))).returning({
+            id: categories_l1.id
+          });
+          if (!row) {
+            throw new Error("category.sort_order.update_failed");
+          }
+        }
+      });
+    } catch {
+      return c3.json({
+        code: -1000,
+        msg: "category.sort_order.update_failed",
+        data: null
+      });
+    }
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        count: sortItems.length,
+        ids
+      }
+    });
+  }
+  const parentCategory = await db.query.categories_l1.findFirst({
+    where: and2(eq3(categories_l1.id, parent_id), eq3(categories_l1.uid, uid)),
+    columns: {
+      id: true
+    }
+  });
+  if (!parentCategory) {
+    return c3.json({
+      code: -1000,
+      msg: "category.parent_id.not_found",
+      data: null
+    });
+  }
+  const rows = await db.query.categories_l2.findMany({
+    where: inArray(categories_l2.id, ids),
+    columns: {
+      id: true,
+      uid: true,
+      l1_id: true
+    }
+  });
+  if (rows.length !== ids.length || rows.some((row) => row.uid !== uid || row.l1_id !== parent_id)) {
+    return c3.json({
+      code: -1000,
+      msg: "category.ids.not_found",
+      data: null
+    });
+  }
+  const updatedAt = new Date;
+  try {
+    await db.transaction(async (tx) => {
+      for (const item of sortItems) {
+        const [row] = await tx.update(categories_l2).set({
+          sort_order: item.sort_order,
+          updated_at: updatedAt
+        }).where(and2(eq3(categories_l2.id, item.id), eq3(categories_l2.uid, uid), eq3(categories_l2.l1_id, parent_id))).returning({
+          id: categories_l2.id
+        });
+        if (!row) {
+          throw new Error("category.sort_order.update_failed");
+        }
+      }
+    });
+  } catch {
+    return c3.json({
+      code: -1000,
+      msg: "category.sort_order.update_failed",
+      data: null
+    });
+  }
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      count: sortItems.length,
+      ids
+    }
+  });
+};
 var deleteCategory = async (c3) => {
   let { category_type, category_id, category_name } = await c3.req.json();
   const uid = c3.get("uid");
@@ -22550,6 +22715,167 @@ var updateNavCategory = async (c3) => {
     data: {
       id: row.id,
       name: row.name
+    }
+  });
+};
+var sortNavCategories = async (c3) => {
+  const { category_type, parent_id, items } = await c3.req.json();
+  if (!vCategoryType(category_type)) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.type.invalid",
+      data: null
+    });
+  }
+  if (!Array.isArray(items) || items.length === 0) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.ids.required",
+      data: null
+    });
+  }
+  if (items.length > 200) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.ids.too_many",
+      data: null
+    });
+  }
+  if (category_type === "l2" && (!Number.isInteger(parent_id) || parent_id <= 0)) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.parent_id.invalid",
+      data: null
+    });
+  }
+  const seenIds = new Set;
+  const sortItems = [];
+  for (const item of items) {
+    if (!item || typeof item !== "object") {
+      return c3.json({
+        code: -1000,
+        msg: "nav_category.ids.invalid",
+        data: null
+      });
+    }
+    const { id, sort_order } = item;
+    if (!Number.isInteger(id) || id <= 0 || seenIds.has(id)) {
+      return c3.json({
+        code: -1000,
+        msg: "nav_category.ids.invalid",
+        data: null
+      });
+    }
+    if (!Number.isInteger(sort_order) || sort_order < 0 || sort_order > 99999) {
+      return c3.json({
+        code: -1000,
+        msg: "nav_category.sort_order.invalid",
+        data: null
+      });
+    }
+    seenIds.add(id);
+    sortItems.push({ id, sort_order });
+  }
+  const ids = sortItems.map((item) => item.id);
+  const updatedAt = new Date;
+  if (category_type === "l1") {
+    const rows2 = await db.query.nav_categories_l1.findMany({
+      where: inArray2(nav_categories_l1.id, ids),
+      columns: {
+        id: true
+      }
+    });
+    if (rows2.length !== ids.length) {
+      return c3.json({
+        code: -1000,
+        msg: "nav_category.ids.not_found",
+        data: null
+      });
+    }
+    try {
+      await db.transaction(async (tx) => {
+        for (const item of sortItems) {
+          const [row] = await tx.update(nav_categories_l1).set({
+            sort_order: item.sort_order,
+            updated_at: updatedAt
+          }).where(eq4(nav_categories_l1.id, item.id)).returning({
+            id: nav_categories_l1.id
+          });
+          if (!row) {
+            throw new Error("nav_category.sort_order.update_failed");
+          }
+        }
+      });
+    } catch {
+      return c3.json({
+        code: -1000,
+        msg: "nav_category.sort_order.update_failed",
+        data: null
+      });
+    }
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        count: sortItems.length,
+        ids
+      }
+    });
+  }
+  const parentCategory = await db.query.nav_categories_l1.findFirst({
+    where: eq4(nav_categories_l1.id, parent_id),
+    columns: {
+      id: true
+    }
+  });
+  if (!parentCategory) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.parent_id.not_found",
+      data: null
+    });
+  }
+  const rows = await db.query.nav_categories_l2.findMany({
+    where: inArray2(nav_categories_l2.id, ids),
+    columns: {
+      id: true,
+      l1_id: true
+    }
+  });
+  if (rows.length !== ids.length || rows.some((row) => row.l1_id !== parent_id)) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.ids.not_found",
+      data: null
+    });
+  }
+  try {
+    await db.transaction(async (tx) => {
+      for (const item of sortItems) {
+        const [row] = await tx.update(nav_categories_l2).set({
+          sort_order: item.sort_order,
+          updated_at: updatedAt
+        }).where(and3(eq4(nav_categories_l2.id, item.id), eq4(nav_categories_l2.l1_id, parent_id))).returning({
+          id: nav_categories_l2.id
+        });
+        if (!row) {
+          throw new Error("nav_category.sort_order.update_failed");
+        }
+      }
+    });
+  } catch {
+    return c3.json({
+      code: -1000,
+      msg: "nav_category.sort_order.update_failed",
+      data: null
+    });
+  }
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      count: sortItems.length,
+      ids
     }
   });
 };
@@ -40622,7 +40948,7 @@ var UPDATE_MANIFEST_URL = "https://soft.xiaoz.org/source/zmark/latest.json";
 var UPDATE_REQUEST_TIMEOUT = 1e4;
 var UPDATE_DOWNLOAD_TIMEOUT = 120000;
 var README_MAX_SIZE = 1024 * 1024;
-var UPDATE_SHUTDOWN_WAIT = 1e4;
+var UPDATE_SHUTDOWN_WAIT = 6000;
 var compareVersions = (currentVersion, latestVersion) => {
   const currentParts = currentVersion.split(".").map((part) => parseInt(part, 10) || 0);
   const latestParts = latestVersion.split(".").map((part) => parseInt(part, 10) || 0);
@@ -41240,6 +41566,7 @@ publicRouter.get("/reset_admin_password", resetAdminPassword);
 userRouter.post("/add_category", addCategory);
 userRouter.post("/update_category", updateCategory);
 userRouter.post("/delete_category", deleteCategory);
+userRouter.post("/sort_categories", sortCategories);
 userRouter.get("/categories", listCategories);
 userRouter.post("/add_link", addLink);
 userRouter.post("/update_link", updateLink);
@@ -41292,6 +41619,7 @@ adminRouter.post("/add_nav_category", addNavCategory);
 adminRouter.post("/update_nav_category", updateNavCategory);
 adminRouter.post("/delete_nav_category", deleteNavCategory);
 adminRouter.post("/move_nav_data", moveNavData);
+adminRouter.post("/sort_nav_categories", sortNavCategories);
 adminRouter.post("/add_nav_link", addNavLink);
 adminRouter.post("/update_nav_link", updateNavLink);
 adminRouter.post("/update_nav_link_icon", updateNavLinkIcon);
