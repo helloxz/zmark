@@ -42118,6 +42118,7 @@ publicRouter.get("/dashboard/*", index2);
 publicRouter.get("/user/*", index2);
 publicRouter.get("/", index2);
 publicRouter.get("/nav", index2);
+publicRouter.get("/nav/link/*", index2);
 publicRouter.post("/api/init_user", initUser);
 publicRouter.post("/api/login", login);
 publicRouter.post("/api/register", register);
