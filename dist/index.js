@@ -20584,7 +20584,10 @@ var DEFAULT_SETTINGS = {
   },
   nav_setting: {
     icon_type: "online",
-    category_link_limit: 25
+    category_link_limit: 25,
+    nav_link_detail: false,
+    top_ad: "",
+    bottom_ad: ""
   }
 };
 var ENTITLEMENT_GATEWAY_B64 = "aHR0cHM6Ly9zaG9wLnhpdXBpbmcubmV0L3ptYXJrL3F1ZXJ5";
@@ -20951,6 +20954,24 @@ var getPublicSettings = async (c3) => {
     });
   }
   const value = getSettingValue(key);
+  if (key === "nav_setting") {
+    const host = getHostFromRequest(c3);
+    const { edition, result } = getLicense(host);
+    const navSetting = { ...value ?? {} };
+    if (edition === "free" || result !== "success") {
+      navSetting.nav_link_detail = false;
+      navSetting.top_ad = "";
+      navSetting.bottom_ad = "";
+    } else if (edition === "pro") {
+      navSetting.top_ad = "";
+      navSetting.bottom_ad = "";
+    }
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: navSetting
+    });
+  }
   return c3.json({
     code: 200,
     msg: "success",
@@ -21087,8 +21108,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.8.0";
-var APP_DATE = "2026051202";
+var APP_VERSION = "0.9.0";
+var APP_DATE = "2026051303";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -23599,6 +23620,93 @@ var getNavCategoryLinks = async (c3) => {
     code: 200,
     msg: "success",
     data: links2
+  });
+};
+var getNavLinkDetail = async (c3) => {
+  const id = Number(c3.req.query("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    return c3.json({
+      code: -1000,
+      msg: "nav_link.id.invalid",
+      data: null
+    });
+  }
+  const role = await getRequestUserRole(c3);
+  const allowedVisibility = getAllowedVisibilityByRole(role);
+  const link = await db.query.nav_links.findFirst({
+    where: and4(eq5(nav_links.id, id), inArray3(nav_links.visibility, allowedVisibility))
+  });
+  if (!link) {
+    return c3.json({
+      code: 404,
+      msg: "nav_link.id.not_found",
+      data: null
+    });
+  }
+  if (link.category_type === "l1") {
+    const l1Category2 = await db.query.nav_categories_l1.findFirst({
+      columns: {
+        id: true,
+        name: true
+      },
+      where: and4(eq5(nav_categories_l1.id, link.category_id), inArray3(nav_categories_l1.visibility, allowedVisibility))
+    });
+    if (!l1Category2) {
+      return c3.json({
+        code: 404,
+        msg: "nav_link.id.not_found",
+        data: null
+      });
+    }
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        l1_category: l1Category2,
+        link
+      }
+    });
+  }
+  const l2Category = await db.query.nav_categories_l2.findFirst({
+    columns: {
+      id: true,
+      name: true,
+      l1_id: true
+    },
+    where: and4(eq5(nav_categories_l2.id, link.category_id), inArray3(nav_categories_l2.visibility, allowedVisibility))
+  });
+  if (!l2Category) {
+    return c3.json({
+      code: 404,
+      msg: "nav_link.id.not_found",
+      data: null
+    });
+  }
+  const l1Category = await db.query.nav_categories_l1.findFirst({
+    columns: {
+      id: true,
+      name: true
+    },
+    where: and4(eq5(nav_categories_l1.id, l2Category.l1_id), inArray3(nav_categories_l1.visibility, allowedVisibility))
+  });
+  if (!l1Category) {
+    return c3.json({
+      code: 404,
+      msg: "nav_link.id.not_found",
+      data: null
+    });
+  }
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: {
+      l1_category: l1Category,
+      l2_category: {
+        id: l2Category.id,
+        name: l2Category.name
+      },
+      link
+    }
   });
 };
 var deleteNavLinks = async (c3) => {
@@ -37600,7 +37708,9 @@ var BROWSER_ROOT_FOLDER_NAMES = new Set([
   "\u4E66\u7B7E\u5DE5\u5177\u680F",
   "\u4E66\u7B7E\u83DC\u5355",
   "\u5176\u4ED6\u4E66\u7B7E",
-  "\u79FB\u52A8\u8BBE\u5907\u4E66\u7B7E"
+  "\u79FB\u52A8\u8BBE\u5907\u4E66\u7B7E",
+  "\u6536\u85CF\u5939\u680F",
+  "\u5176\u4ED6\u6536\u85CF\u5939"
 ]);
 var createLink = (title, url2, sort_order) => ({
   title,
@@ -39874,6 +39984,7 @@ var getLinkInfo = async (c3) => {
     });
   }
   let title = "";
+  let keywords = "";
   let description = "";
   try {
     const parsedUrl = new URL(trimmedUrl);
@@ -39894,7 +40005,7 @@ var getLinkInfo = async (c3) => {
       return c3.json({
         code: 200,
         msg: "success",
-        data: { title: "", description: "" }
+        data: { title: "", keywords: "", description: "" }
       });
     }
     const contentType = res.headers.get("content-type") || "";
@@ -39902,7 +40013,7 @@ var getLinkInfo = async (c3) => {
       return c3.json({
         code: 200,
         msg: "success",
-        data: { title: "", description: "" }
+        data: { title: "", keywords: "", description: "" }
       });
     }
     const bytes = new Uint8Array(await res.arrayBuffer());
@@ -39910,11 +40021,12 @@ var getLinkInfo = async (c3) => {
     const $2 = load(html4);
     title = $2('meta[property="og:title"]').attr("content")?.trim() || $2("title").text()?.trim() || "";
     description = $2('meta[property="og:description"]').attr("content")?.trim() || $2('meta[name="description"]').attr("content")?.trim() || "";
+    keywords = $2('meta[name="keywords"]').attr("content")?.trim() || "";
   } catch {}
   return c3.json({
     code: 200,
     msg: "success",
-    data: { title, description }
+    data: { title, keywords, description }
   });
 };
 
@@ -41142,6 +41254,453 @@ var ping = async (c3) => {
   });
 };
 
+// src/api/backup.ts
+import { access, copyFile, mkdir as mkdir6, readdir, readFile, rename, rm as rm7, stat as stat2, writeFile as writeFile6 } from "fs/promises";
+import { join as join9 } from "path";
+var BACKUP_DIR = join9(process.cwd(), "data", "backup");
+var BACKUP_FILE_PATTERN = /^zmark-backup-v(.+)-(\d{14})\.tar\.gz$/;
+var MAX_BACKUP_UPLOAD_SIZE = 100 * 1024 * 1024;
+var ROLLBACK_SHUTDOWN_WAIT = 6000;
+var ALLOWED_BACKUP_MIME_TYPES = new Set([
+  "application/gzip",
+  "application/gzip-compressed",
+  "application/x-gzip",
+  "application/x-compressed",
+  "application/x-tar",
+  "application/octet-stream"
+]);
+var isCreatingBackup = false;
+var padNumber = (value) => String(value).padStart(2, "0");
+var buildBackupTimestamp = (date5 = new Date) => [
+  date5.getFullYear(),
+  padNumber(date5.getMonth() + 1),
+  padNumber(date5.getDate()),
+  padNumber(date5.getHours()),
+  padNumber(date5.getMinutes()),
+  padNumber(date5.getSeconds())
+].join("");
+var formatDateTime = (date5) => [
+  `${date5.getFullYear()}-${padNumber(date5.getMonth() + 1)}-${padNumber(date5.getDate())}`,
+  `${padNumber(date5.getHours())}:${padNumber(date5.getMinutes())}:${padNumber(date5.getSeconds())}`
+].join(" ");
+var formatTimestamp = (timestamp) => {
+  const year = timestamp.slice(0, 4);
+  const month = timestamp.slice(4, 6);
+  const day = timestamp.slice(6, 8);
+  const hour = timestamp.slice(8, 10);
+  const minute = timestamp.slice(10, 12);
+  const second = timestamp.slice(12, 14);
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+};
+var pathExists = async (path) => {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+};
+var isValidBackupFileName = (fileName) => BACKUP_FILE_PATTERN.test(fileName);
+var getBackupFilePath = (fileName) => join9(BACKUP_DIR, fileName);
+var getBackupVersion = (fileName) => fileName.match(BACKUP_FILE_PATTERN)?.[1] || "";
+var compareVersions2 = (currentVersion, targetVersion) => {
+  const currentParts = currentVersion.split(".").map((part) => parseInt(part, 10) || 0);
+  const targetParts = targetVersion.split(".").map((part) => parseInt(part, 10) || 0);
+  const maxLength = Math.max(currentParts.length, targetParts.length);
+  for (let i = 0;i < maxLength; i += 1) {
+    const current = currentParts[i] ?? 0;
+    const target = targetParts[i] ?? 0;
+    if (target > current) {
+      return 1;
+    }
+    if (target < current) {
+      return -1;
+    }
+  }
+  return 0;
+};
+var sleep3 = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+var scheduleRollbackProcessExit = () => {
+  (async () => {
+    try {
+      stopCronJobs();
+      await sleep3(ROLLBACK_SHUTDOWN_WAIT);
+      closeSqlite();
+    } catch (error48) {
+      console.error("Failed to shutdown gracefully after backup rollback.", error48);
+    } finally {
+      process.exit(0);
+    }
+  })();
+};
+var ensureBackupLimit = async (c3) => {
+  const backups = await readBackupFiles();
+  const backupLimit = getBackupLimit(c3);
+  return backups.length < backupLimit;
+};
+var readBackupFiles = async () => {
+  if (!await pathExists(BACKUP_DIR)) {
+    return [];
+  }
+  const entries = await readdir(BACKUP_DIR, { withFileTypes: true });
+  const backups = [];
+  for (const entry of entries) {
+    if (!entry.isFile()) {
+      continue;
+    }
+    const match2 = entry.name.match(BACKUP_FILE_PATTERN);
+    if (!match2) {
+      continue;
+    }
+    const filePath = join9(BACKUP_DIR, entry.name);
+    const fileStat = await stat2(filePath);
+    backups.push({
+      data: {
+        file_name: entry.name,
+        version: match2[1],
+        created_at: formatTimestamp(match2[2]),
+        updated_at: formatDateTime(fileStat.mtime),
+        size: fileStat.size,
+        path: filePath
+      },
+      updatedAtMs: fileStat.mtimeMs
+    });
+  }
+  return backups.sort((a, b2) => b2.updatedAtMs - a.updatedAtMs).map((backup) => backup.data);
+};
+var getBackupLimit = (c3) => {
+  const host = getHostFromRequest(c3);
+  const { edition, result } = getLicense(host);
+  if (result !== "success") {
+    return 1;
+  }
+  if (edition === "team") {
+    return 20;
+  }
+  if (edition === "pro") {
+    return 10;
+  }
+  return 1;
+};
+var isAllowedBackupMimeType = (mimeType) => {
+  if (!mimeType) {
+    return true;
+  }
+  const normalizedMimeType = mimeType.toLowerCase();
+  return ALLOWED_BACKUP_MIME_TYPES.has(normalizedMimeType) || normalizedMimeType.includes("gzip") || normalizedMimeType.includes("tar") || normalizedMimeType.includes("compressed");
+};
+var getExistingBackupSources = async () => {
+  const sources = ["data/db"];
+  if (await pathExists(join9(process.cwd(), "data", "images"))) {
+    sources.push("data/images");
+  }
+  return sources;
+};
+var runTar = async (targetPath, sources) => {
+  const proc = Bun.spawn(["tar", "-czf", targetPath, "-C", process.cwd(), ...sources], {
+    stdout: "pipe",
+    stderr: "pipe"
+  });
+  const [exitCode, stderr] = await Promise.all([
+    proc.exited,
+    new Response(proc.stderr).text()
+  ]);
+  if (exitCode !== 0) {
+    throw new Error(stderr || "tar_failed");
+  }
+};
+var createBackup = async (c3) => {
+  if (isCreatingBackup) {
+    return c3.json({
+      code: -1000,
+      msg: "backup.create.busy",
+      data: null
+    });
+  }
+  isCreatingBackup = true;
+  try {
+    await mkdir6(BACKUP_DIR, { recursive: true });
+    if (!await ensureBackupLimit(c3)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.limit.exceeded",
+        data: null
+      });
+    }
+    if (!await pathExists(join9(process.cwd(), "data", "db"))) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.source.missing",
+        data: null
+      });
+    }
+    const timestamp = buildBackupTimestamp();
+    const fileName = `zmark-backup-v${APP_VERSION}-${timestamp}.tar.gz`;
+    const tmpPath = join9(BACKUP_DIR, `.${fileName}.tmp`);
+    const filePath = join9(BACKUP_DIR, fileName);
+    const sources = await getExistingBackupSources();
+    stopCronJobs();
+    try {
+      await runTar(tmpPath, sources);
+      await rename(tmpPath, filePath);
+    } catch (error48) {
+      await rm7(tmpPath, { force: true });
+      console.error("Failed to create backup.", error48);
+      return c3.json({
+        code: -1000,
+        msg: "backup.create.failed",
+        data: null
+      });
+    } finally {
+      startCronJobs();
+    }
+    const fileStat = await stat2(filePath);
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        file_name: fileName,
+        version: APP_VERSION,
+        created_at: formatTimestamp(timestamp),
+        updated_at: formatDateTime(fileStat.mtime),
+        size: fileStat.size,
+        path: filePath
+      }
+    });
+  } catch (error48) {
+    console.error("Failed to prepare backup.", error48);
+    return c3.json({
+      code: -1000,
+      msg: "backup.create.failed",
+      data: null
+    });
+  } finally {
+    isCreatingBackup = false;
+  }
+};
+var uploadBackup = async (c3) => {
+  try {
+    const formData = await c3.req.formData();
+    const file2 = formData.get("file");
+    if (!file2 || !(file2 instanceof File)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.required",
+        data: null
+      });
+    }
+    if (!isValidBackupFileName(file2.name)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.invalid_name",
+        data: null
+      });
+    }
+    if (file2.size > MAX_BACKUP_UPLOAD_SIZE) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.too_large",
+        data: null
+      });
+    }
+    if (!isAllowedBackupMimeType(file2.type)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.invalid_type",
+        data: null
+      });
+    }
+    await mkdir6(BACKUP_DIR, { recursive: true });
+    const filePath = getBackupFilePath(file2.name);
+    if (await pathExists(filePath)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.exists",
+        data: null
+      });
+    }
+    if (!await ensureBackupLimit(c3)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.limit.exceeded",
+        data: null
+      });
+    }
+    const tmpPath = join9(BACKUP_DIR, `.${file2.name}.upload.tmp`);
+    try {
+      await writeFile6(tmpPath, Buffer.from(await file2.arrayBuffer()));
+      await rename(tmpPath, filePath);
+    } catch (error48) {
+      await rm7(tmpPath, { force: true });
+      console.error("Failed to upload backup.", error48);
+      return c3.json({
+        code: -1000,
+        msg: "backup.upload.failed",
+        data: null
+      });
+    }
+    const fileStat = await stat2(filePath);
+    const match2 = file2.name.match(BACKUP_FILE_PATTERN);
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        file_name: file2.name,
+        version: match2?.[1] || "",
+        created_at: match2?.[2] ? formatTimestamp(match2[2]) : "",
+        updated_at: formatDateTime(fileStat.mtime),
+        size: fileStat.size,
+        path: filePath
+      }
+    });
+  } catch (error48) {
+    console.error("Failed to prepare backup upload.", error48);
+    return c3.json({
+      code: -1000,
+      msg: "backup.upload.failed",
+      data: null
+    });
+  }
+};
+var downloadBackup = async (c3) => {
+  const fileName = c3.req.query("file_name") || "";
+  if (!isValidBackupFileName(fileName)) {
+    return c3.json({
+      code: -1000,
+      msg: "backup.file.invalid_name",
+      data: null
+    });
+  }
+  const filePath = getBackupFilePath(fileName);
+  if (!await pathExists(filePath)) {
+    return c3.json({
+      code: -1000,
+      msg: "backup.file.not_found",
+      data: null
+    });
+  }
+  try {
+    const buffer = await readFile(filePath);
+    c3.header("Content-Type", "application/gzip");
+    c3.header("Content-Disposition", `attachment; filename="${fileName}"`);
+    return c3.body(buffer);
+  } catch (error48) {
+    console.error("Failed to download backup.", error48);
+    return c3.json({
+      code: -1000,
+      msg: "backup.download.failed",
+      data: null
+    });
+  }
+};
+var deleteBackup = async (c3) => {
+  try {
+    const { filename } = await c3.req.json();
+    if (typeof filename !== "string" || !isValidBackupFileName(filename)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.invalid_name",
+        data: null
+      });
+    }
+    const filePath = getBackupFilePath(filename);
+    if (!await pathExists(filePath)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.not_found",
+        data: null
+      });
+    }
+    await rm7(filePath, { force: false });
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        file_name: filename
+      }
+    });
+  } catch (error48) {
+    console.error("Failed to delete backup.", error48);
+    return c3.json({
+      code: -1000,
+      msg: "backup.delete.failed",
+      data: null
+    });
+  }
+};
+var rollbackBackup = async (c3) => {
+  try {
+    const { filename } = await c3.req.json();
+    if (typeof filename !== "string" || !isValidBackupFileName(filename)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.invalid_name",
+        data: null
+      });
+    }
+    const backupVersion = getBackupVersion(filename);
+    if (!backupVersion || compareVersions2(APP_VERSION, backupVersion) > 0) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.version.not_supported",
+        data: null
+      });
+    }
+    const filePath = getBackupFilePath(filename);
+    if (!await pathExists(filePath)) {
+      return c3.json({
+        code: -1000,
+        msg: "backup.file.not_found",
+        data: null
+      });
+    }
+    const rollbackPath = join9(process.cwd(), "data", "update.tar.gz");
+    try {
+      await copyFile(filePath, rollbackPath);
+    } catch (error48) {
+      console.error("Failed to copy backup for rollback.", error48);
+      return c3.json({
+        code: -1000,
+        msg: "backup.rollback.write_failed",
+        data: null
+      });
+    }
+    scheduleRollbackProcessExit();
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: {
+        file_name: filename,
+        version: backupVersion
+      }
+    });
+  } catch (error48) {
+    console.error("Failed to rollback backup.", error48);
+    return c3.json({
+      code: -1000,
+      msg: "backup.rollback.failed",
+      data: null
+    });
+  }
+};
+var listBackups = async (c3) => {
+  try {
+    const backups = await readBackupFiles();
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: backups
+    });
+  } catch (error48) {
+    console.error("Failed to list backups.", error48);
+    return c3.json({
+      code: -1000,
+      msg: "backup.list.failed",
+      data: null
+    });
+  }
+};
+
 // src/api/token.ts
 import { eq as eq11 } from "drizzle-orm";
 var tokenFields = {
@@ -41634,11 +42193,18 @@ adminRouter.get("/export_nav_json", exportNavJson);
 adminRouter.get("/export_nav_html", exportNavHTML);
 publicRouter.get("/api/nav_categories", listNavCategories);
 publicRouter.get("/api/nav_links", getNavCategoryLinks);
+publicRouter.get("/api/nav_link", getNavLinkDetail);
 publicRouter.post("/api/search_nav_links", searchNavLinks);
 publicRouter.get("/api/public_setting", getPublicSettings);
 adminRouter.get("/app_info", getAppInfo);
 adminRouter.get("/check_update", checkUpdate);
 adminRouter.post("/download_update", downloadUpdate);
+adminRouter.post("/create_backup", createBackup);
+adminRouter.get("/list_backups", listBackups);
+adminRouter.post("/upload_backup", uploadBackup);
+adminRouter.get("/download_backup", downloadBackup);
+adminRouter.post("/delete_backup", deleteBackup);
+adminRouter.post("/rollback_backup", rollbackBackup);
 adminRouter.get("/ping", ping);
 
 // src/index.ts

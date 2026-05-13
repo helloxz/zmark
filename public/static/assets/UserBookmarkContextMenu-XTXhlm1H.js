@@ -1,1 +1,0 @@
-import{_ as o}from"./UserBookmarkContextMenu.vue_vue_type_script_setup_true_lang-oOKXnI4R.js";import"./vendor-vue-CCJdQhpo.js";import"./DynamicIcon-kK0UwRtx.js";import"./vendor-iconify-BLhjdFpw.js";import"./vendor-ui-CAJSjvP1.js";export{o as default};
