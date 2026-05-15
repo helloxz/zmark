@@ -1,4 +1,4 @@
-FROM oven/bun:slim
+FROM oven/bun:1.3.13-slim
 # 创建工作目录为/opt/zmark
 WORKDIR /opt/zmark
 # 合并所有 COPY 操作
