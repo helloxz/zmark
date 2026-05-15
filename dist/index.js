@@ -6337,6 +6337,9 @@ var closeSqlite = () => {
   isSqliteClosed = true;
 };
 
+// src/api/html.ts
+import { eq as eq2 } from "drizzle-orm";
+
 // src/api/setting.ts
 import { mkdir, rm, writeFile } from "fs/promises";
 import { dirname as dirname2, join as join2 } from "path";
@@ -21108,8 +21111,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.9.0";
-var APP_DATE = "2026051303";
+var APP_VERSION = "0.9.2";
+var APP_DATE = "2026051504";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -21155,6 +21158,20 @@ var index2 = async (c3) => {
   const path = c3.req.path;
   if (path.startsWith("/dashboard") || path === "/user/login") {
     site_setting.custom_header = "";
+  }
+  if (path.startsWith("/nav/link/")) {
+    const idStr = path.replace("/nav/link/", "");
+    const id = parseInt(idStr, 10);
+    if (!Number.isInteger(id) || id <= 0 || String(id) !== idStr) {
+      return c3.notFound();
+    }
+    const link = db.select().from(nav_links).where(eq2(nav_links.id, id)).get();
+    if (!link) {
+      return c3.notFound();
+    }
+    site_setting.title = link.title ? `${link.title} - ${site_setting.title || "Zmark"}` : site_setting.title || "Zmark";
+    site_setting.keywords = link.keywords || site_setting.keywords || "";
+    site_setting.description = link.description || site_setting.description || "";
   }
   return c3.html(html`<!DOCTYPE html>
 <html lang="zh">
@@ -21305,7 +21322,7 @@ function vEmail(email3) {
 }
 
 // src/api/user.ts
-import { eq as eq2, and, desc, sql } from "drizzle-orm";
+import { eq as eq3, and, desc, sql } from "drizzle-orm";
 var MAX_AVATAR_SIZE = 100 * 1024;
 var ALLOWED_AVATAR_MIME_MAP = {
   "image/jpeg": "jpg",
@@ -21332,17 +21349,17 @@ var getRequestUserRole = async (c3) => {
       uid: sessions.uid,
       role: sessions.role,
       expires_at: sessions.expires_at
-    }).from(sessions).where(and(eq2(sessions.token, token), eq2(sessions.status, "active"))).get();
+    }).from(sessions).where(and(eq3(sessions.token, token), eq3(sessions.status, "active"))).get();
     if (!session) {
       return "public";
     }
     if (session.expires_at.getTime() <= Date.now()) {
-      db.update(sessions).set({ status: "expired" }).where(eq2(sessions.id, session.id)).run();
+      db.update(sessions).set({ status: "expired" }).where(eq3(sessions.id, session.id)).run();
       return "public";
     }
     const user = db.select({
       id: users.id
-    }).from(users).where(and(eq2(users.id, session.uid), eq2(users.status, "active"))).get();
+    }).from(users).where(and(eq3(users.id, session.uid), eq3(users.status, "active"))).get();
     if (!user) {
       return "public";
     }
@@ -21416,7 +21433,7 @@ var register = async (c3) => {
       data: null
     });
   }
-  const existingUsername = db.select().from(users).where(eq2(users.username, username)).get();
+  const existingUsername = db.select().from(users).where(eq3(users.username, username)).get();
   if (existingUsername) {
     return c3.json({
       code: -1000,
@@ -21424,7 +21441,7 @@ var register = async (c3) => {
       data: null
     });
   }
-  const existingEmail = db.select().from(users).where(eq2(users.email, email3)).get();
+  const existingEmail = db.select().from(users).where(eq3(users.email, email3)).get();
   if (existingEmail) {
     return c3.json({
       code: -1000,
@@ -21531,7 +21548,7 @@ var resetAdminPassword = async (c3) => {
   const admin = db.select({
     id: users.id,
     username: users.username
-  }).from(users).where(eq2(users.role, "admin")).orderBy(users.id).limit(1).get();
+  }).from(users).where(eq3(users.role, "admin")).orderBy(users.id).limit(1).get();
   if (!admin) {
     return c3.text("\u7BA1\u7406\u5458\u8D26\u53F7\u4E0D\u5B58\u5728", 404);
   }
@@ -21545,10 +21562,10 @@ var resetAdminPassword = async (c3) => {
   db.update(users).set({
     password: encryptedPassword,
     updated_at: new Date
-  }).where(eq2(users.id, admin.id)).run();
+  }).where(eq3(users.id, admin.id)).run();
   db.update(sessions).set({
     status: "revoked"
-  }).where(and(eq2(sessions.uid, admin.id), eq2(sessions.status, "active"))).run();
+  }).where(and(eq3(sessions.uid, admin.id), eq3(sessions.status, "active"))).run();
   try {
     await rm2(resetFilePath, { force: true });
   } catch {}
@@ -21570,7 +21587,7 @@ var login = async (c3) => {
         data: null
       });
     }
-    const userByEmail = db.select({ username: users.username }).from(users).where(eq2(users.email, username)).get();
+    const userByEmail = db.select({ username: users.username }).from(users).where(eq3(users.email, username)).get();
     if (!userByEmail) {
       return c3.json({
         code: -1000,
@@ -21597,7 +21614,7 @@ var login = async (c3) => {
     });
   }
   let enPass = enPassword(actualUsername, password);
-  const user = db.select().from(users).where(and(eq2(users.username, actualUsername), eq2(users.password, enPass), eq2(users.status, "active"))).get();
+  const user = db.select().from(users).where(and(eq3(users.username, actualUsername), eq3(users.password, enPass), eq3(users.status, "active"))).get();
   if (!user) {
     return c3.json({
       code: -1000,
@@ -21642,7 +21659,7 @@ var userInfo = async (c3) => {
     email: users.email,
     role: users.role,
     avatar: users.avatar
-  }).from(users).where(eq2(users.id, uid)).get();
+  }).from(users).where(eq3(users.id, uid)).get();
   if (!user) {
     return c3.json({
       code: -1000,
@@ -21660,7 +21677,7 @@ var logout = async (c3) => {
   const uid = c3.get("uid");
   const revokedSessions = db.update(sessions).set({
     status: "revoked"
-  }).where(and(eq2(sessions.uid, uid), eq2(sessions.status, "active"))).returning({
+  }).where(and(eq3(sessions.uid, uid), eq3(sessions.status, "active"))).returning({
     id: sessions.id
   });
   return c3.json({
@@ -21693,7 +21710,7 @@ var changePassword = async (c3) => {
   const oldEncryptedPassword = enPassword(username, old_password);
   const user = db.select({
     id: users.id
-  }).from(users).where(and(eq2(users.id, uid), eq2(users.password, oldEncryptedPassword), eq2(users.status, "active"))).get();
+  }).from(users).where(and(eq3(users.id, uid), eq3(users.password, oldEncryptedPassword), eq3(users.status, "active"))).get();
   if (!user) {
     return c3.json({
       code: -1000,
@@ -21705,7 +21722,7 @@ var changePassword = async (c3) => {
   db.update(users).set({
     password: newEncryptedPassword,
     updated_at: new Date
-  }).where(eq2(users.id, uid)).run();
+  }).where(eq3(users.id, uid)).run();
   return c3.json({
     code: 200,
     msg: "user.password.update.success",
@@ -21739,7 +21756,7 @@ var updateAvatar = async (c3) => {
     });
   }
   const currentUser = await db.query.users.findFirst({
-    where: eq2(users.id, uid),
+    where: eq3(users.id, uid),
     columns: {
       avatar: true
     }
@@ -21756,7 +21773,7 @@ var updateAvatar = async (c3) => {
   const [row] = await db.update(users).set({
     avatar: relativeAvatarPath,
     updated_at: new Date
-  }).where(eq2(users.id, uid)).returning({
+  }).where(eq3(users.id, uid)).returning({
     id: users.id,
     avatar: users.avatar
   });
@@ -21804,7 +21821,7 @@ var resetUserPassword = async (c3) => {
     id: users.id,
     username: users.username,
     role: users.role
-  }).from(users).where(eq2(users.id, id)).get();
+  }).from(users).where(eq3(users.id, id)).get();
   if (!user) {
     return c3.json({
       code: -1000,
@@ -21824,10 +21841,10 @@ var resetUserPassword = async (c3) => {
   db.update(users).set({
     password: encryptedPassword,
     updated_at: new Date
-  }).where(eq2(users.id, user.id)).run();
+  }).where(eq3(users.id, user.id)).run();
   db.update(sessions).set({
     status: "revoked"
-  }).where(and(eq2(sessions.uid, user.id), eq2(sessions.status, "active"))).run();
+  }).where(and(eq3(sessions.uid, user.id), eq3(sessions.status, "active"))).run();
   return c3.json({
     code: 200,
     msg: "user.password.reset.success",
@@ -21842,7 +21859,7 @@ var resetUserPassword = async (c3) => {
 // src/api/category.ts
 import { rm as rm3 } from "fs/promises";
 import { join as join4 } from "path";
-import { eq as eq3, and as and2, asc, desc as desc2, inArray, or } from "drizzle-orm";
+import { eq as eq4, and as and2, asc, desc as desc2, inArray, or } from "drizzle-orm";
 var existsCategory = async (uid, categoryType, categoryId) => {
   if (!Number.isInteger(uid) || uid <= 0) {
     return false;
@@ -21852,12 +21869,12 @@ var existsCategory = async (uid, categoryType, categoryId) => {
   }
   if (categoryType === "l1") {
     const category2 = await db.query.categories_l1.findFirst({
-      where: and2(eq3(categories_l1.id, categoryId), eq3(categories_l1.uid, uid))
+      where: and2(eq4(categories_l1.id, categoryId), eq4(categories_l1.uid, uid))
     });
     return !!category2;
   }
   const category = await db.query.categories_l2.findFirst({
-    where: and2(eq3(categories_l2.id, categoryId), eq3(categories_l2.uid, uid))
+    where: and2(eq4(categories_l2.id, categoryId), eq4(categories_l2.uid, uid))
   });
   return !!category;
 };
@@ -21892,7 +21909,7 @@ var addCategory = async (c3) => {
   }
   if (parent_id) {
     const parentCategory = await db.query.categories_l1.findFirst({
-      where: and2(eq3(categories_l1.id, parent_id), eq3(categories_l1.uid, uid))
+      where: and2(eq4(categories_l1.id, parent_id), eq4(categories_l1.uid, uid))
     });
     if (!parentCategory) {
       return c3.json({
@@ -21902,7 +21919,7 @@ var addCategory = async (c3) => {
       });
     }
     const existingCategory2 = await db.query.categories_l2.findFirst({
-      where: and2(eq3(categories_l2.name, name), eq3(categories_l2.uid, uid))
+      where: and2(eq4(categories_l2.name, name), eq4(categories_l2.uid, uid))
     });
     if (existingCategory2) {
       return c3.json({
@@ -21930,7 +21947,7 @@ var addCategory = async (c3) => {
     });
   }
   const existingCategory = await db.query.categories_l1.findFirst({
-    where: and2(eq3(categories_l1.name, name), eq3(categories_l1.uid, uid))
+    where: and2(eq4(categories_l1.name, name), eq4(categories_l1.uid, uid))
   });
   if (existingCategory) {
     return c3.json({
@@ -22020,7 +22037,7 @@ var updateCategory = async (c3) => {
       });
     }
     const currentCategory2 = await db.query.categories_l1.findFirst({
-      where: and2(eq3(categories_l1.id, id), eq3(categories_l1.uid, uid))
+      where: and2(eq4(categories_l1.id, id), eq4(categories_l1.uid, uid))
     });
     if (!currentCategory2) {
       return c3.json({
@@ -22030,7 +22047,7 @@ var updateCategory = async (c3) => {
       });
     }
     const existingCategory2 = await db.query.categories_l1.findFirst({
-      where: and2(eq3(categories_l1.name, name), eq3(categories_l1.uid, uid))
+      where: and2(eq4(categories_l1.name, name), eq4(categories_l1.uid, uid))
     });
     if (existingCategory2 && existingCategory2.id !== id) {
       return c3.json({
@@ -22046,7 +22063,7 @@ var updateCategory = async (c3) => {
       ...hasIconColor ? { icon_color } : {},
       sort_order,
       updated_at: new Date
-    }).where(and2(eq3(categories_l1.id, id), eq3(categories_l1.uid, uid))).returning();
+    }).where(and2(eq4(categories_l1.id, id), eq4(categories_l1.uid, uid))).returning();
     return c3.json({
       code: 200,
       msg: "success",
@@ -22064,7 +22081,7 @@ var updateCategory = async (c3) => {
     });
   }
   const parentCategory = await db.query.categories_l1.findFirst({
-    where: and2(eq3(categories_l1.id, parent_id), eq3(categories_l1.uid, uid))
+    where: and2(eq4(categories_l1.id, parent_id), eq4(categories_l1.uid, uid))
   });
   if (!parentCategory) {
     return c3.json({
@@ -22074,7 +22091,7 @@ var updateCategory = async (c3) => {
     });
   }
   const currentCategory = await db.query.categories_l2.findFirst({
-    where: and2(eq3(categories_l2.id, id), eq3(categories_l2.uid, uid))
+    where: and2(eq4(categories_l2.id, id), eq4(categories_l2.uid, uid))
   });
   if (!currentCategory) {
     return c3.json({
@@ -22084,7 +22101,7 @@ var updateCategory = async (c3) => {
     });
   }
   const existingCategory = await db.query.categories_l2.findFirst({
-    where: and2(eq3(categories_l2.name, name), eq3(categories_l2.uid, uid))
+    where: and2(eq4(categories_l2.name, name), eq4(categories_l2.uid, uid))
   });
   if (existingCategory && existingCategory.id !== id) {
     return c3.json({
@@ -22101,7 +22118,7 @@ var updateCategory = async (c3) => {
     ...hasIconColor ? { icon_color } : {},
     sort_order,
     updated_at: new Date
-  }).where(and2(eq3(categories_l2.id, id), eq3(categories_l2.uid, uid))).returning();
+  }).where(and2(eq4(categories_l2.id, id), eq4(categories_l2.uid, uid))).returning();
   return c3.json({
     code: 200,
     msg: "success",
@@ -22193,7 +22210,7 @@ var sortCategories = async (c3) => {
           const [row] = await tx.update(categories_l1).set({
             sort_order: item.sort_order,
             updated_at: updatedAt2
-          }).where(and2(eq3(categories_l1.id, item.id), eq3(categories_l1.uid, uid))).returning({
+          }).where(and2(eq4(categories_l1.id, item.id), eq4(categories_l1.uid, uid))).returning({
             id: categories_l1.id
           });
           if (!row) {
@@ -22218,7 +22235,7 @@ var sortCategories = async (c3) => {
     });
   }
   const parentCategory = await db.query.categories_l1.findFirst({
-    where: and2(eq3(categories_l1.id, parent_id), eq3(categories_l1.uid, uid)),
+    where: and2(eq4(categories_l1.id, parent_id), eq4(categories_l1.uid, uid)),
     columns: {
       id: true
     }
@@ -22252,7 +22269,7 @@ var sortCategories = async (c3) => {
         const [row] = await tx.update(categories_l2).set({
           sort_order: item.sort_order,
           updated_at: updatedAt
-        }).where(and2(eq3(categories_l2.id, item.id), eq3(categories_l2.uid, uid), eq3(categories_l2.l1_id, parent_id))).returning({
+        }).where(and2(eq4(categories_l2.id, item.id), eq4(categories_l2.uid, uid), eq4(categories_l2.l1_id, parent_id))).returning({
           id: categories_l2.id
         });
         if (!row) {
@@ -22316,13 +22333,13 @@ var deleteCategory = async (c3) => {
     });
   }
   const currentCategory = category_type === "l1" ? await db.query.categories_l1.findFirst({
-    where: and2(eq3(categories_l1.id, category_id), eq3(categories_l1.uid, uid)),
+    where: and2(eq4(categories_l1.id, category_id), eq4(categories_l1.uid, uid)),
     columns: {
       id: true,
       name: true
     }
   }) : await db.query.categories_l2.findFirst({
-    where: and2(eq3(categories_l2.id, category_id), eq3(categories_l2.uid, uid)),
+    where: and2(eq4(categories_l2.id, category_id), eq4(categories_l2.uid, uid)),
     columns: {
       id: true,
       name: true
@@ -22343,14 +22360,14 @@ var deleteCategory = async (c3) => {
     });
   }
   const childCategories = category_type === "l1" ? await db.query.categories_l2.findMany({
-    where: and2(eq3(categories_l2.uid, uid), eq3(categories_l2.l1_id, category_id)),
+    where: and2(eq4(categories_l2.uid, uid), eq4(categories_l2.l1_id, category_id)),
     columns: {
       id: true
     }
   }) : [];
   const childCategoryIds = childCategories.map((item) => item.id);
   const links2 = await db.query.links.findMany({
-    where: and2(eq3(links.uid, uid), category_type === "l1" ? childCategoryIds.length > 0 ? or(and2(eq3(links.category_type, "l1"), eq3(links.category_id, category_id)), and2(eq3(links.category_type, "l2"), inArray(links.category_id, childCategoryIds))) : and2(eq3(links.category_type, "l1"), eq3(links.category_id, category_id)) : and2(eq3(links.category_type, "l2"), eq3(links.category_id, category_id))),
+    where: and2(eq4(links.uid, uid), category_type === "l1" ? childCategoryIds.length > 0 ? or(and2(eq4(links.category_type, "l1"), eq4(links.category_id, category_id)), and2(eq4(links.category_type, "l2"), inArray(links.category_id, childCategoryIds))) : and2(eq4(links.category_type, "l1"), eq4(links.category_id, category_id)) : and2(eq4(links.category_type, "l2"), eq4(links.category_id, category_id))),
     columns: {
       id: true,
       icon: true
@@ -22360,16 +22377,16 @@ var deleteCategory = async (c3) => {
   const iconPaths = links2.map((item) => item.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
   await db.transaction(async (tx) => {
     if (linkIds.length > 0) {
-      await tx.delete(links).where(and2(eq3(links.uid, uid), inArray(links.id, linkIds)));
+      await tx.delete(links).where(and2(eq4(links.uid, uid), inArray(links.id, linkIds)));
     }
     if (category_type === "l1") {
       if (childCategoryIds.length > 0) {
-        await tx.delete(categories_l2).where(and2(eq3(categories_l2.uid, uid), inArray(categories_l2.id, childCategoryIds)));
+        await tx.delete(categories_l2).where(and2(eq4(categories_l2.uid, uid), inArray(categories_l2.id, childCategoryIds)));
       }
-      await tx.delete(categories_l1).where(and2(eq3(categories_l1.id, category_id), eq3(categories_l1.uid, uid)));
+      await tx.delete(categories_l1).where(and2(eq4(categories_l1.id, category_id), eq4(categories_l1.uid, uid)));
       return;
     }
-    await tx.delete(categories_l2).where(and2(eq3(categories_l2.id, category_id), eq3(categories_l2.uid, uid)));
+    await tx.delete(categories_l2).where(and2(eq4(categories_l2.id, category_id), eq4(categories_l2.uid, uid)));
   });
   await Promise.allSettled(iconPaths.map((iconPath) => {
     const filePath = join4(process.cwd(), "data", iconPath.replace(/^\//, ""));
@@ -22389,7 +22406,7 @@ var deleteCategory = async (c3) => {
 var listCategories = async (c3) => {
   const uid = c3.get("uid");
   const l1Categories = await db.query.categories_l1.findMany({
-    where: eq3(categories_l1.uid, uid),
+    where: eq4(categories_l1.uid, uid),
     columns: {
       id: true,
       name: true,
@@ -22406,7 +22423,7 @@ var listCategories = async (c3) => {
     ]
   });
   const l2Categories = await db.query.categories_l2.findMany({
-    where: eq3(categories_l2.uid, uid),
+    where: eq4(categories_l2.uid, uid),
     columns: {
       id: true,
       l1_id: true,
@@ -22459,19 +22476,19 @@ var listCategories = async (c3) => {
 // src/api/nav_category.ts
 import { rm as rm4 } from "fs/promises";
 import { join as join5 } from "path";
-import { eq as eq4, and as and3, asc as asc2, desc as desc3, inArray as inArray2, or as or2, sql as sql2 } from "drizzle-orm";
+import { eq as eq5, and as and3, asc as asc2, desc as desc3, inArray as inArray2, or as or2, sql as sql2 } from "drizzle-orm";
 var existsNavCategory = async (categoryType, categoryId) => {
   if (!Number.isInteger(categoryId) || categoryId <= 0) {
     return false;
   }
   if (categoryType === "l1") {
     const category2 = await db.query.nav_categories_l1.findFirst({
-      where: eq4(nav_categories_l1.id, categoryId)
+      where: eq5(nav_categories_l1.id, categoryId)
     });
     return !!category2;
   }
   const category = await db.query.nav_categories_l2.findFirst({
-    where: eq4(nav_categories_l2.id, categoryId)
+    where: eq5(nav_categories_l2.id, categoryId)
   });
   return !!category;
 };
@@ -22509,7 +22526,7 @@ var addNavCategory = async (c3) => {
   }
   if (parent_id) {
     const parentCategory = await db.query.nav_categories_l1.findFirst({
-      where: eq4(nav_categories_l1.id, parent_id)
+      where: eq5(nav_categories_l1.id, parent_id)
     });
     if (!parentCategory) {
       return c3.json({
@@ -22519,7 +22536,7 @@ var addNavCategory = async (c3) => {
       });
     }
     const existingCategory2 = await db.query.nav_categories_l2.findFirst({
-      where: eq4(nav_categories_l2.name, name)
+      where: eq5(nav_categories_l2.name, name)
     });
     if (existingCategory2) {
       return c3.json({
@@ -22548,7 +22565,7 @@ var addNavCategory = async (c3) => {
     });
   }
   const existingCategory = await db.query.nav_categories_l1.findFirst({
-    where: eq4(nav_categories_l1.name, name)
+    where: eq5(nav_categories_l1.name, name)
   });
   if (existingCategory) {
     return c3.json({
@@ -22644,7 +22661,7 @@ var updateNavCategory = async (c3) => {
       });
     }
     const currentCategory2 = await db.query.nav_categories_l1.findFirst({
-      where: eq4(nav_categories_l1.id, id)
+      where: eq5(nav_categories_l1.id, id)
     });
     if (!currentCategory2) {
       return c3.json({
@@ -22654,7 +22671,7 @@ var updateNavCategory = async (c3) => {
       });
     }
     const existingCategory2 = await db.query.nav_categories_l1.findFirst({
-      where: eq4(nav_categories_l1.name, name)
+      where: eq5(nav_categories_l1.name, name)
     });
     if (existingCategory2 && existingCategory2.id !== id) {
       return c3.json({
@@ -22672,7 +22689,7 @@ var updateNavCategory = async (c3) => {
       sort_order,
       visibility,
       updated_at: new Date
-    }).where(eq4(nav_categories_l1.id, id)).returning();
+    }).where(eq5(nav_categories_l1.id, id)).returning();
     return c3.json({
       code: 200,
       msg: "success",
@@ -22690,7 +22707,7 @@ var updateNavCategory = async (c3) => {
     });
   }
   const parentCategory = await db.query.nav_categories_l1.findFirst({
-    where: eq4(nav_categories_l1.id, parent_id)
+    where: eq5(nav_categories_l1.id, parent_id)
   });
   if (!parentCategory) {
     return c3.json({
@@ -22700,7 +22717,7 @@ var updateNavCategory = async (c3) => {
     });
   }
   const currentCategory = await db.query.nav_categories_l2.findFirst({
-    where: eq4(nav_categories_l2.id, id)
+    where: eq5(nav_categories_l2.id, id)
   });
   if (!currentCategory) {
     return c3.json({
@@ -22710,7 +22727,7 @@ var updateNavCategory = async (c3) => {
     });
   }
   const existingCategory = await db.query.nav_categories_l2.findFirst({
-    where: eq4(nav_categories_l2.name, name)
+    where: eq5(nav_categories_l2.name, name)
   });
   if (existingCategory && existingCategory.id !== id) {
     return c3.json({
@@ -22729,7 +22746,7 @@ var updateNavCategory = async (c3) => {
     sort_order,
     visibility,
     updated_at: new Date
-  }).where(eq4(nav_categories_l2.id, id)).returning();
+  }).where(eq5(nav_categories_l2.id, id)).returning();
   return c3.json({
     code: 200,
     msg: "success",
@@ -22819,7 +22836,7 @@ var sortNavCategories = async (c3) => {
           const [row] = await tx.update(nav_categories_l1).set({
             sort_order: item.sort_order,
             updated_at: updatedAt
-          }).where(eq4(nav_categories_l1.id, item.id)).returning({
+          }).where(eq5(nav_categories_l1.id, item.id)).returning({
             id: nav_categories_l1.id
           });
           if (!row) {
@@ -22844,7 +22861,7 @@ var sortNavCategories = async (c3) => {
     });
   }
   const parentCategory = await db.query.nav_categories_l1.findFirst({
-    where: eq4(nav_categories_l1.id, parent_id),
+    where: eq5(nav_categories_l1.id, parent_id),
     columns: {
       id: true
     }
@@ -22876,7 +22893,7 @@ var sortNavCategories = async (c3) => {
         const [row] = await tx.update(nav_categories_l2).set({
           sort_order: item.sort_order,
           updated_at: updatedAt
-        }).where(and3(eq4(nav_categories_l2.id, item.id), eq4(nav_categories_l2.l1_id, parent_id))).returning({
+        }).where(and3(eq5(nav_categories_l2.id, item.id), eq5(nav_categories_l2.l1_id, parent_id))).returning({
           id: nav_categories_l2.id
         });
         if (!row) {
@@ -22939,13 +22956,13 @@ var deleteNavCategory = async (c3) => {
     });
   }
   const currentCategory = category_type === "l1" ? await db.query.nav_categories_l1.findFirst({
-    where: eq4(nav_categories_l1.id, category_id),
+    where: eq5(nav_categories_l1.id, category_id),
     columns: {
       id: true,
       name: true
     }
   }) : await db.query.nav_categories_l2.findFirst({
-    where: eq4(nav_categories_l2.id, category_id),
+    where: eq5(nav_categories_l2.id, category_id),
     columns: {
       id: true,
       name: true
@@ -22966,14 +22983,14 @@ var deleteNavCategory = async (c3) => {
     });
   }
   const childCategories = category_type === "l1" ? await db.query.nav_categories_l2.findMany({
-    where: eq4(nav_categories_l2.l1_id, category_id),
+    where: eq5(nav_categories_l2.l1_id, category_id),
     columns: {
       id: true
     }
   }) : [];
   const childCategoryIds = childCategories.map((item) => item.id);
   const links2 = await db.query.nav_links.findMany({
-    where: category_type === "l1" ? childCategoryIds.length > 0 ? or2(and3(eq4(nav_links.category_type, "l1"), eq4(nav_links.category_id, category_id)), and3(eq4(nav_links.category_type, "l2"), inArray2(nav_links.category_id, childCategoryIds))) : and3(eq4(nav_links.category_type, "l1"), eq4(nav_links.category_id, category_id)) : and3(eq4(nav_links.category_type, "l2"), eq4(nav_links.category_id, category_id)),
+    where: category_type === "l1" ? childCategoryIds.length > 0 ? or2(and3(eq5(nav_links.category_type, "l1"), eq5(nav_links.category_id, category_id)), and3(eq5(nav_links.category_type, "l2"), inArray2(nav_links.category_id, childCategoryIds))) : and3(eq5(nav_links.category_type, "l1"), eq5(nav_links.category_id, category_id)) : and3(eq5(nav_links.category_type, "l2"), eq5(nav_links.category_id, category_id)),
     columns: {
       id: true,
       icon: true
@@ -22989,10 +23006,10 @@ var deleteNavCategory = async (c3) => {
       if (childCategoryIds.length > 0) {
         await tx.delete(nav_categories_l2).where(inArray2(nav_categories_l2.id, childCategoryIds));
       }
-      await tx.delete(nav_categories_l1).where(eq4(nav_categories_l1.id, category_id));
+      await tx.delete(nav_categories_l1).where(eq5(nav_categories_l1.id, category_id));
       return;
     }
-    await tx.delete(nav_categories_l2).where(eq4(nav_categories_l2.id, category_id));
+    await tx.delete(nav_categories_l2).where(eq5(nav_categories_l2.id, category_id));
   });
   await Promise.allSettled(iconPaths.map((iconPath) => {
     const filePath = join5(process.cwd(), "data", iconPath.replace(/^\//, ""));
@@ -23077,7 +23094,7 @@ var moveNavData = async (c3) => {
     category_type: target_category_type,
     category_id: target_category_id,
     updated_at: new Date
-  }).where(and3(eq4(nav_links.category_type, source_category_type), eq4(nav_links.category_id, source_category_id))).returning({ id: nav_links.id });
+  }).where(and3(eq5(nav_links.category_type, source_category_type), eq5(nav_links.category_id, source_category_id))).returning({ id: nav_links.id });
   return c3.json({
     code: 200,
     msg: "success",
@@ -23133,11 +23150,11 @@ var listNavCategories = async (c3) => {
   const l1LinkCountRows = await db.select({
     category_id: nav_links.category_id,
     count: sql2`count(*)`
-  }).from(nav_links).where(and3(eq4(nav_links.category_type, "l1"), inArray2(nav_links.visibility, allowedVisibility))).groupBy(nav_links.category_id);
+  }).from(nav_links).where(and3(eq5(nav_links.category_type, "l1"), inArray2(nav_links.visibility, allowedVisibility))).groupBy(nav_links.category_id);
   const l2LinkCountRows = await db.select({
     category_id: nav_links.category_id,
     count: sql2`count(*)`
-  }).from(nav_links).where(and3(eq4(nav_links.category_type, "l2"), inArray2(nav_links.visibility, allowedVisibility))).groupBy(nav_links.category_id);
+  }).from(nav_links).where(and3(eq5(nav_links.category_type, "l2"), inArray2(nav_links.visibility, allowedVisibility))).groupBy(nav_links.category_id);
   const l1DirectLinkCountMap = new Map(l1LinkCountRows.map((row) => [row.category_id, Number(row.count) || 0]));
   const l2LinkCountMap = new Map(l2LinkCountRows.map((row) => [row.category_id, Number(row.count) || 0]));
   const childrenMap = new Map;
@@ -23183,7 +23200,7 @@ var listNavCategories = async (c3) => {
 // src/api/nav_link.ts
 import { mkdir as mkdir3, rm as rm5, writeFile as writeFile3 } from "fs/promises";
 import { dirname as dirname4, join as join6 } from "path";
-import { and as and4, desc as desc4, asc as asc3, eq as eq5, inArray as inArray3, like, ne, or as or3, sql as sql3 } from "drizzle-orm";
+import { and as and4, desc as desc4, asc as asc3, eq as eq6, inArray as inArray3, like, ne, or as or3, sql as sql3 } from "drizzle-orm";
 
 // src/utils/icon.ts
 var ALLOWED_ICON_MIME_MAP = {
@@ -23207,7 +23224,7 @@ var findDuplicateNavLinkByUrl = async (url2, excludeId) => {
     columns: {
       id: true
     },
-    where: typeof excludeId === "number" ? and4(eq5(nav_links.url, url2), ne(nav_links.id, excludeId)) : eq5(nav_links.url, url2)
+    where: typeof excludeId === "number" ? and4(eq6(nav_links.url, url2), ne(nav_links.id, excludeId)) : eq6(nav_links.url, url2)
   });
 };
 var getAllowedVisibilityByRole = (role) => role === "admin" ? ["public", "user", "admin"] : role === "user" ? ["public", "user"] : ["public"];
@@ -23246,7 +23263,7 @@ var canAccessNavCategory = async (categoryType, categoryId, role) => {
       columns: {
         visibility: true
       },
-      where: eq5(nav_categories_l1.id, categoryId)
+      where: eq6(nav_categories_l1.id, categoryId)
     });
     return !!category2 && isNavVisibilityAllowed(category2.visibility, role);
   }
@@ -23255,7 +23272,7 @@ var canAccessNavCategory = async (categoryType, categoryId, role) => {
       l1_id: true,
       visibility: true
     },
-    where: eq5(nav_categories_l2.id, categoryId)
+    where: eq6(nav_categories_l2.id, categoryId)
   });
   if (!category || !isNavVisibilityAllowed(category.visibility, role)) {
     return false;
@@ -23264,7 +23281,7 @@ var canAccessNavCategory = async (categoryType, categoryId, role) => {
     columns: {
       visibility: true
     },
-    where: eq5(nav_categories_l1.id, category.l1_id)
+    where: eq6(nav_categories_l1.id, category.l1_id)
   });
   return !!parentCategory && isNavVisibilityAllowed(parentCategory.visibility, role);
 };
@@ -23274,12 +23291,12 @@ var existsNavCategory2 = async (categoryType, categoryId) => {
   }
   if (categoryType === "l1") {
     const category2 = await db.query.nav_categories_l1.findFirst({
-      where: eq5(nav_categories_l1.id, categoryId)
+      where: eq6(nav_categories_l1.id, categoryId)
     });
     return !!category2;
   }
   const category = await db.query.nav_categories_l2.findFirst({
-    where: eq5(nav_categories_l2.id, categoryId)
+    where: eq6(nav_categories_l2.id, categoryId)
   });
   return !!category;
 };
@@ -23498,7 +23515,7 @@ var updateNavLink = async (c3) => {
     });
   }
   const currentLink = await db.query.nav_links.findFirst({
-    where: eq5(nav_links.id, id)
+    where: eq6(nav_links.id, id)
   });
   if (!currentLink) {
     return c3.json({
@@ -23553,7 +23570,7 @@ var updateNavLink = async (c3) => {
   if (!hasOptionalField("description")) {
     delete updateData.description;
   }
-  const [row] = await db.update(nav_links).set(updateData).where(eq5(nav_links.id, id)).returning();
+  const [row] = await db.update(nav_links).set(updateData).where(eq6(nav_links.id, id)).returning();
   return c3.json({
     code: 200,
     msg: "success",
@@ -23610,7 +23627,7 @@ var getNavCategoryLinks = async (c3) => {
     });
   }
   const links2 = await db.query.nav_links.findMany({
-    where: and4(eq5(nav_links.category_type, categoryType), eq5(nav_links.category_id, categoryId), inArray3(nav_links.visibility, allowedVisibility)),
+    where: and4(eq6(nav_links.category_type, categoryType), eq6(nav_links.category_id, categoryId), inArray3(nav_links.visibility, allowedVisibility)),
     orderBy: [
       asc3(nav_links.sort_order),
       desc4(nav_links.created_at)
@@ -23634,7 +23651,7 @@ var getNavLinkDetail = async (c3) => {
   const role = await getRequestUserRole(c3);
   const allowedVisibility = getAllowedVisibilityByRole(role);
   const link = await db.query.nav_links.findFirst({
-    where: and4(eq5(nav_links.id, id), inArray3(nav_links.visibility, allowedVisibility))
+    where: and4(eq6(nav_links.id, id), inArray3(nav_links.visibility, allowedVisibility))
   });
   if (!link) {
     return c3.json({
@@ -23649,7 +23666,7 @@ var getNavLinkDetail = async (c3) => {
         id: true,
         name: true
       },
-      where: and4(eq5(nav_categories_l1.id, link.category_id), inArray3(nav_categories_l1.visibility, allowedVisibility))
+      where: and4(eq6(nav_categories_l1.id, link.category_id), inArray3(nav_categories_l1.visibility, allowedVisibility))
     });
     if (!l1Category2) {
       return c3.json({
@@ -23673,7 +23690,7 @@ var getNavLinkDetail = async (c3) => {
       name: true,
       l1_id: true
     },
-    where: and4(eq5(nav_categories_l2.id, link.category_id), inArray3(nav_categories_l2.visibility, allowedVisibility))
+    where: and4(eq6(nav_categories_l2.id, link.category_id), inArray3(nav_categories_l2.visibility, allowedVisibility))
   });
   if (!l2Category) {
     return c3.json({
@@ -23687,7 +23704,7 @@ var getNavLinkDetail = async (c3) => {
       id: true,
       name: true
     },
-    where: and4(eq5(nav_categories_l1.id, l2Category.l1_id), inArray3(nav_categories_l1.visibility, allowedVisibility))
+    where: and4(eq6(nav_categories_l1.id, l2Category.l1_id), inArray3(nav_categories_l1.visibility, allowedVisibility))
   });
   if (!l1Category) {
     return c3.json({
@@ -23843,7 +23860,7 @@ var updateNavLinkIcon = async (c3) => {
     });
   }
   const currentLink = await db.query.nav_links.findFirst({
-    where: eq5(nav_links.id, id),
+    where: eq6(nav_links.id, id),
     columns: {
       id: true,
       icon: true
@@ -23885,7 +23902,7 @@ var updateNavLinkIcon = async (c3) => {
   const [row] = await db.update(nav_links).set({
     icon: relativeIconPath,
     updated_at: new Date
-  }).where(eq5(nav_links.id, id)).returning({
+  }).where(eq6(nav_links.id, id)).returning({
     id: nav_links.id,
     icon: nav_links.icon
   });
@@ -23906,7 +23923,7 @@ var deleteNavLinkIcon = async (c3) => {
     });
   }
   const currentLink = await db.query.nav_links.findFirst({
-    where: eq5(nav_links.id, id),
+    where: eq6(nav_links.id, id),
     columns: {
       id: true,
       icon: true
@@ -23927,7 +23944,7 @@ var deleteNavLinkIcon = async (c3) => {
   const [row] = await db.update(nav_links).set({
     icon: "",
     updated_at: new Date
-  }).where(eq5(nav_links.id, id)).returning({
+  }).where(eq6(nav_links.id, id)).returning({
     id: nav_links.id,
     icon: nav_links.icon
   });
@@ -24002,7 +24019,7 @@ var sortNavLinks = async (c3) => {
         const [row] = await tx.update(nav_links).set({
           sort_order: item.sort_order,
           updated_at: updatedAt
-        }).where(eq5(nav_links.id, item.id)).returning({
+        }).where(eq6(nav_links.id, item.id)).returning({
           id: nav_links.id
         });
         if (!row) {
@@ -24049,11 +24066,11 @@ var searchNavLinks = async (c3) => {
   const { accessibleL1Ids, accessibleL2Ids, allowedVisibility } = await getAccessibleNavCategoryIds(role);
   let categoryScope;
   if (accessibleL1Ids.length > 0 && accessibleL2Ids.length > 0) {
-    categoryScope = or3(and4(eq5(nav_links.category_type, "l1"), inArray3(nav_links.category_id, accessibleL1Ids)), and4(eq5(nav_links.category_type, "l2"), inArray3(nav_links.category_id, accessibleL2Ids)));
+    categoryScope = or3(and4(eq6(nav_links.category_type, "l1"), inArray3(nav_links.category_id, accessibleL1Ids)), and4(eq6(nav_links.category_type, "l2"), inArray3(nav_links.category_id, accessibleL2Ids)));
   } else if (accessibleL1Ids.length > 0) {
-    categoryScope = and4(eq5(nav_links.category_type, "l1"), inArray3(nav_links.category_id, accessibleL1Ids));
+    categoryScope = and4(eq6(nav_links.category_type, "l1"), inArray3(nav_links.category_id, accessibleL1Ids));
   } else if (accessibleL2Ids.length > 0) {
-    categoryScope = and4(eq5(nav_links.category_type, "l2"), inArray3(nav_links.category_id, accessibleL2Ids));
+    categoryScope = and4(eq6(nav_links.category_type, "l2"), inArray3(nav_links.category_id, accessibleL2Ids));
   } else {
     return c3.json({
       code: 200,
@@ -24078,7 +24095,7 @@ var searchNavLinks = async (c3) => {
 };
 
 // src/api/import.ts
-import { eq as eq7 } from "drizzle-orm";
+import { eq as eq8 } from "drizzle-orm";
 
 // node_modules/cheerio/dist/esm/options.js
 var defaultOpts = {
@@ -27341,7 +27358,7 @@ __export(exports_traversing, {
   find: () => find3,
   filterArray: () => filterArray,
   filter: () => filter3,
-  eq: () => eq6,
+  eq: () => eq7,
   end: () => end,
   each: () => each,
   contents: () => contents,
@@ -29048,7 +29065,7 @@ function first() {
 function last() {
   return this.length > 0 ? this._make(this[this.length - 1]) : this;
 }
-function eq6(i) {
+function eq7(i) {
   var _a4;
   i = +i;
   if (i === 0 && this.length <= 1)
@@ -37948,17 +37965,28 @@ var countParsedCategories = (bookmarks) => {
   const l2_count = bookmarks.categories.reduce((total, category) => total + category.children.length, 0);
   return { l1_count, l2_count };
 };
+var MAX_IMPORT_LINKS = 2000;
+var countTotalLinks = (bookmarks) => {
+  let total = 0;
+  for (const l1 of bookmarks.categories) {
+    total += l1.links.length;
+    for (const l2 of l1.children) {
+      total += l2.links.length;
+    }
+  }
+  return total;
+};
 var ensureCategoriesExist = async (uid, bookmarks) => {
   const [l1Rows, l2Rows] = await Promise.all([
     db.query.categories_l1.findMany({
-      where: eq7(categories_l1.uid, uid),
+      where: eq8(categories_l1.uid, uid),
       columns: {
         id: true,
         name: true
       }
     }),
     db.query.categories_l2.findMany({
-      where: eq7(categories_l2.uid, uid),
+      where: eq8(categories_l2.uid, uid),
       columns: {
         id: true,
         l1_id: true,
@@ -38025,14 +38053,14 @@ var ensureCategoriesExist = async (uid, bookmarks) => {
 var loadCategoryMaps = async (uid) => {
   const [l1Rows, l2Rows] = await Promise.all([
     db.query.categories_l1.findMany({
-      where: eq7(categories_l1.uid, uid),
+      where: eq8(categories_l1.uid, uid),
       columns: {
         id: true,
         name: true
       }
     }),
     db.query.categories_l2.findMany({
-      where: eq7(categories_l2.uid, uid),
+      where: eq8(categories_l2.uid, uid),
       columns: {
         id: true,
         l1_id: true,
@@ -38407,6 +38435,14 @@ var importHTML = async (c3) => {
     }
     const html4 = await file2.text();
     const bookmarks = parseHTML2(html4);
+    const totalLinks = countTotalLinks(bookmarks);
+    if (totalLinks > MAX_IMPORT_LINKS) {
+      return c3.json({
+        code: 400,
+        msg: "import.link.limit",
+        data: null
+      });
+    }
     const stats = await importParsedBookmarks(uid, bookmarks);
     return c3.json({
       code: 200,
@@ -38445,6 +38481,14 @@ var importJSON = async (c3) => {
     }
     const json2 = await file2.text();
     const bookmarks = parseJSON(json2);
+    const totalLinks = countTotalLinks(bookmarks);
+    if (totalLinks > MAX_IMPORT_LINKS) {
+      return c3.json({
+        code: 400,
+        msg: "import.link.limit",
+        data: null
+      });
+    }
     const stats = await importParsedBookmarks(uid, bookmarks);
     return c3.json({
       code: 200,
@@ -38489,6 +38533,14 @@ var importNavHTML = async (c3) => {
     }
     const html4 = await file2.text();
     const bookmarks = parseHTML2(html4);
+    const totalLinks = countTotalLinks(bookmarks);
+    if (totalLinks > MAX_IMPORT_LINKS) {
+      return c3.json({
+        code: 400,
+        msg: "import.link.limit",
+        data: null
+      });
+    }
     const stats = await importParsedNavBookmarks(bookmarks);
     return c3.json({
       code: 200,
@@ -38526,6 +38578,14 @@ var importNavJSON = async (c3) => {
     }
     const json2 = await file2.text();
     const bookmarks = parseJSON(json2);
+    const totalLinks = countTotalLinks(bookmarks);
+    if (totalLinks > MAX_IMPORT_LINKS) {
+      return c3.json({
+        code: 400,
+        msg: "import.link.limit",
+        data: null
+      });
+    }
     const stats = await importParsedNavBookmarks(bookmarks);
     return c3.json({
       code: 200,
@@ -38550,7 +38610,7 @@ var importNavJSON = async (c3) => {
 };
 
 // src/api/export.ts
-import { asc as asc4, desc as desc5, eq as eq8 } from "drizzle-orm";
+import { asc as asc4, desc as desc5, eq as eq9 } from "drizzle-orm";
 var DEFAULT_L1_CATEGORY_NAME2 = "\u9ED8\u8BA4\u5206\u7C7B";
 var buildDatedExportFileName = (prefix, extension = "json") => {
   const date5 = new Date;
@@ -38631,7 +38691,7 @@ var toExportLink = (link) => {
 var loadJsonExportPayload = async (uid) => {
   const [l1Rows, l2Rows, linkRows] = await Promise.all([
     db.query.categories_l1.findMany({
-      where: eq8(categories_l1.uid, uid),
+      where: eq9(categories_l1.uid, uid),
       columns: {
         id: true,
         name: true,
@@ -38645,7 +38705,7 @@ var loadJsonExportPayload = async (uid) => {
       ]
     }),
     db.query.categories_l2.findMany({
-      where: eq8(categories_l2.uid, uid),
+      where: eq9(categories_l2.uid, uid),
       columns: {
         id: true,
         l1_id: true,
@@ -38660,7 +38720,7 @@ var loadJsonExportPayload = async (uid) => {
       ]
     }),
     db.query.links.findMany({
-      where: eq8(links.uid, uid),
+      where: eq9(links.uid, uid),
       columns: {
         title: true,
         url: true,
@@ -38928,7 +38988,7 @@ var loadNavHtmlExportTree = async () => {
 var loadHtmlExportTree = async (uid) => {
   const [l1Rows, l2Rows, linkRows] = await Promise.all([
     db.query.categories_l1.findMany({
-      where: eq8(categories_l1.uid, uid),
+      where: eq9(categories_l1.uid, uid),
       columns: {
         id: true,
         name: true
@@ -38939,7 +38999,7 @@ var loadHtmlExportTree = async (uid) => {
       ]
     }),
     db.query.categories_l2.findMany({
-      where: eq8(categories_l2.uid, uid),
+      where: eq9(categories_l2.uid, uid),
       columns: {
         id: true,
         l1_id: true,
@@ -38951,7 +39011,7 @@ var loadHtmlExportTree = async (uid) => {
       ]
     }),
     db.query.links.findMany({
-      where: eq8(links.uid, uid),
+      where: eq9(links.uid, uid),
       columns: {
         title: true,
         url: true,
@@ -39086,7 +39146,7 @@ var exportNavHTML = async (c3) => {
 // src/api/link.ts
 import { mkdir as mkdir4, rm as rm6, writeFile as writeFile4 } from "fs/promises";
 import { dirname as dirname5, join as join7 } from "path";
-import { and as and5, asc as asc5, desc as desc6, eq as eq9, inArray as inArray4, like as like2, ne as ne2, or as or4, sql as sql4 } from "drizzle-orm";
+import { and as and5, asc as asc5, desc as desc6, eq as eq10, inArray as inArray4, like as like2, ne as ne2, or as or4, sql as sql4 } from "drizzle-orm";
 var MAX_LINK_ICON_SIZE = 100 * 1024;
 var HTML_CHARSET_SNIFF_BYTES = 8 * 1024;
 var normalizeHtmlCharset = (charset) => {
@@ -39168,7 +39228,7 @@ var findDuplicateUserLinkByUrl = async (uid, url2, excludeId) => {
     columns: {
       id: true
     },
-    where: typeof excludeId === "number" ? and5(eq9(links.uid, uid), eq9(links.url, url2), ne2(links.id, excludeId)) : and5(eq9(links.uid, uid), eq9(links.url, url2))
+    where: typeof excludeId === "number" ? and5(eq10(links.uid, uid), eq10(links.url, url2), ne2(links.id, excludeId)) : and5(eq10(links.uid, uid), eq10(links.url, url2))
   });
 };
 var validateBatchLinkIds = async (ids, uid) => {
@@ -39383,7 +39443,7 @@ var updateLink = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq9(links.id, id)
+    where: eq10(links.id, id)
   });
   if (!currentLink) {
     return c3.json({
@@ -39444,7 +39504,7 @@ var updateLink = async (c3) => {
   if (hasOptionalField("http_code")) {
     updateData.http_code = body.http_code;
   }
-  const [row] = await db.update(links).set(updateData).where(and5(eq9(links.id, id), eq9(links.uid, uid))).returning();
+  const [row] = await db.update(links).set(updateData).where(and5(eq10(links.id, id), eq10(links.uid, uid))).returning();
   return c3.json({
     code: 200,
     msg: "success",
@@ -39477,7 +39537,7 @@ var updateLinkIcon = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq9(links.id, id),
+    where: eq10(links.id, id),
     columns: {
       id: true,
       uid: true,
@@ -39527,7 +39587,7 @@ var updateLinkIcon = async (c3) => {
   const [row] = await db.update(links).set({
     icon: relativeIconPath,
     updated_at: new Date
-  }).where(and5(eq9(links.id, id), eq9(links.uid, uid))).returning({
+  }).where(and5(eq10(links.id, id), eq10(links.uid, uid))).returning({
     id: links.id,
     icon: links.icon
   });
@@ -39549,7 +39609,7 @@ var deleteLinkIcon = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq9(links.id, id),
+    where: eq10(links.id, id),
     columns: {
       id: true,
       uid: true,
@@ -39578,7 +39638,7 @@ var deleteLinkIcon = async (c3) => {
   const [row] = await db.update(links).set({
     icon: "",
     updated_at: new Date
-  }).where(and5(eq9(links.id, id), eq9(links.uid, uid))).returning({
+  }).where(and5(eq10(links.id, id), eq10(links.uid, uid))).returning({
     id: links.id,
     icon: links.icon
   });
@@ -39633,7 +39693,7 @@ var updateLinksCategory = async (c3) => {
     category_type,
     category_id,
     updated_at: new Date
-  }).where(and5(eq9(links.uid, uid), inArray4(links.id, validatedIds.ids)));
+  }).where(and5(eq10(links.uid, uid), inArray4(links.id, validatedIds.ids)));
   return c3.json({
     code: 200,
     msg: "success",
@@ -39658,7 +39718,7 @@ var deleteLinks = async (c3) => {
     });
   }
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
-  await db.delete(links).where(and5(eq9(links.uid, uid), inArray4(links.id, validatedIds.ids)));
+  await db.delete(links).where(and5(eq10(links.uid, uid), inArray4(links.id, validatedIds.ids)));
   await Promise.allSettled(iconPaths.map((iconPath) => {
     const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
     return rm6(filePath, { force: true });
@@ -39675,7 +39735,7 @@ var deleteLinks = async (c3) => {
 var removeDuplicateUserLinks = async (c3) => {
   const uid = c3.get("uid");
   const rows = await db.query.links.findMany({
-    where: eq9(links.uid, uid),
+    where: eq10(links.uid, uid),
     columns: {
       id: true,
       url: true,
@@ -39701,7 +39761,7 @@ var removeDuplicateUserLinks = async (c3) => {
     }
   }
   if (duplicateIds.length > 0) {
-    await db.delete(links).where(and5(eq9(links.uid, uid), inArray4(links.id, duplicateIds)));
+    await db.delete(links).where(and5(eq10(links.uid, uid), inArray4(links.id, duplicateIds)));
     await Promise.allSettled(duplicateIconPaths.map((iconPath) => {
       const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
       return rm6(filePath, { force: true });
@@ -39818,7 +39878,7 @@ var sortLinks = async (c3) => {
         const [row] = await tx.update(links).set({
           sort_order: item.sort_order,
           updated_at: updatedAt
-        }).where(and5(eq9(links.id, item.id), eq9(links.uid, uid))).returning({
+        }).where(and5(eq10(links.id, item.id), eq10(links.uid, uid))).returning({
           id: links.id
         });
         if (!row) {
@@ -39882,7 +39942,7 @@ var listLinksByAdmin = async (c3) => {
     last_checked_at: links.last_checked_at,
     created_at: links.created_at,
     updated_at: links.updated_at
-  }).from(links).leftJoin(users, eq9(links.uid, users.id)).orderBy(desc6(links.id)).limit(limit).offset(offset);
+  }).from(links).leftJoin(users, eq10(links.uid, users.id)).orderBy(desc6(links.id)).limit(limit).offset(offset);
   return c3.json({
     code: 200,
     msg: "success",
@@ -39914,7 +39974,7 @@ var searchLinks = async (c3) => {
     });
   }
   const keywordPattern = `%${normalizedKeyword}%`;
-  const userLinksSubquery = db.select().from(links).where(eq9(links.uid, uid)).as("user_links");
+  const userLinksSubquery = db.select().from(links).where(eq10(links.uid, uid)).as("user_links");
   const links2 = await db.select().from(userLinksSubquery).where(or4(like2(userLinksSubquery.title, keywordPattern), like2(userLinksSubquery.url, keywordPattern), like2(userLinksSubquery.backup_url, keywordPattern), like2(userLinksSubquery.description, keywordPattern))).orderBy(desc6(userLinksSubquery.updated_at), desc6(userLinksSubquery.created_at), desc6(sql4`${userLinksSubquery.id}`)).limit(20);
   return c3.json({
     code: 200,
@@ -39956,7 +40016,7 @@ var getCategoryLinks = async (c3) => {
     });
   }
   const links2 = await db.query.links.findMany({
-    where: and5(eq9(links.uid, uid), eq9(links.category_type, categoryType), eq9(links.category_id, categoryId)),
+    where: and5(eq10(links.uid, uid), eq10(links.category_type, categoryType), eq10(links.category_id, categoryId)),
     orderBy: [asc5(links.sort_order), desc6(links.created_at)]
   });
   return c3.json({
@@ -40035,7 +40095,7 @@ import { mkdir as mkdir5, writeFile as writeFile5 } from "fs/promises";
 import { dirname as dirname6, join as join8 } from "path";
 
 // src/utils/jobs.ts
-import { and as and6, asc as asc6, desc as desc7, eq as eq10, isNotNull, isNull, lt } from "drizzle-orm";
+import { and as and6, asc as asc6, desc as desc7, eq as eq11, isNotNull, isNull, lt } from "drizzle-orm";
 
 // node_modules/croner/dist/croner.js
 function T(s) {
@@ -40901,7 +40961,7 @@ var updateNavLinkCheckResults = async (results) => {
       await tx.update(nav_links).set({
         http_code: item.httpCode,
         last_checked_at: checkedAt
-      }).where(eq10(nav_links.id, item.id));
+      }).where(eq11(nav_links.id, item.id));
     }
   });
 };
@@ -40915,7 +40975,7 @@ var updateLinkCheckResults = async (results) => {
       await tx.update(links).set({
         http_code: item.httpCode,
         last_checked_at: checkedAt
-      }).where(eq10(links.id, item.id));
+      }).where(eq11(links.id, item.id));
     }
   });
 };
@@ -41702,7 +41762,7 @@ var listBackups = async (c3) => {
 };
 
 // src/api/token.ts
-import { eq as eq11 } from "drizzle-orm";
+import { eq as eq12 } from "drizzle-orm";
 var tokenFields = {
   token: apiTokens.token,
   status: apiTokens.status,
@@ -41719,7 +41779,7 @@ var createUserToken = (uid) => {
   }).returning(tokenFields).get();
 };
 var getUserToken = (uid) => {
-  return db.select(tokenFields).from(apiTokens).where(eq11(apiTokens.uid, uid)).get();
+  return db.select(tokenFields).from(apiTokens).where(eq12(apiTokens.uid, uid)).get();
 };
 var getToken = async (c3) => {
   const uid = c3.get("uid");
@@ -41754,7 +41814,7 @@ var updateTokenStatus = async (c3) => {
     const updatedToken2 = db.update(apiTokens).set({
       status,
       updated_at: new Date
-    }).where(eq11(apiTokens.uid, uid)).returning(tokenFields).get();
+    }).where(eq12(apiTokens.uid, uid)).returning(tokenFields).get();
     return c3.json({
       code: 200,
       msg: "success",
@@ -41764,7 +41824,7 @@ var updateTokenStatus = async (c3) => {
   const updatedToken = db.update(apiTokens).set({
     status,
     updated_at: new Date
-  }).where(eq11(apiTokens.uid, uid)).returning(tokenFields).get();
+  }).where(eq12(apiTokens.uid, uid)).returning(tokenFields).get();
   return c3.json({
     code: 200,
     msg: "success",
@@ -41786,7 +41846,7 @@ var regenerateToken = async (c3) => {
     token: createTokenValue(),
     status: "active",
     updated_at: new Date
-  }).where(eq11(apiTokens.uid, uid)).returning(tokenFields).get();
+  }).where(eq12(apiTokens.uid, uid)).returning(tokenFields).get();
   return c3.json({
     code: 200,
     msg: "success",
@@ -41933,18 +41993,18 @@ var bearerAuth = (options2) => {
 };
 
 // src/middleware/auth.ts
-import { and as and7, eq as eq12 } from "drizzle-orm";
+import { and as and7, eq as eq13 } from "drizzle-orm";
 var verifyApiToken = async (token, c3, role = "user") => {
   if (!token || token.length < 32) {
     return false;
   }
   try {
-    const session = db.select().from(sessions).where(and7(eq12(sessions.token, token), eq12(sessions.status, "active"))).get();
+    const session = db.select().from(sessions).where(and7(eq13(sessions.token, token), eq13(sessions.status, "active"))).get();
     if (!session) {
       return false;
     }
     if (session.expires_at.getTime() <= Date.now()) {
-      db.update(sessions).set({ status: "expired" }).where(eq12(sessions.id, session.id)).run();
+      db.update(sessions).set({ status: "expired" }).where(eq13(sessions.id, session.id)).run();
       return false;
     }
     if (role === "admin" && session.role !== "admin") {
@@ -41953,7 +42013,7 @@ var verifyApiToken = async (token, c3, role = "user") => {
     const userInfo2 = db.select({
       id: users.id,
       username: users.username
-    }).from(users).where(and7(eq12(users.id, session.uid), eq12(users.status, "active"))).get();
+    }).from(users).where(and7(eq13(users.id, session.uid), eq13(users.status, "active"))).get();
     if (!userInfo2) {
       return false;
     }
@@ -41982,7 +42042,7 @@ var verifyV1ApiToken = async (token, c3) => {
       role: users.role,
       userStatus: users.status,
       tokenStatus: apiTokens.status
-    }).from(apiTokens).innerJoin(users, eq12(users.id, apiTokens.uid)).where(eq12(apiTokens.token, token)).get();
+    }).from(apiTokens).innerJoin(users, eq13(users.id, apiTokens.uid)).where(eq13(apiTokens.token, token)).get();
     if (!result) {
       return false;
     }
