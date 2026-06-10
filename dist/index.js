@@ -4203,6 +4203,2148 @@ var require_mime_type = __commonJS((exports, module) => {
   };
 });
 
+// node_modules/@vercel/oidc/dist/get-context.js
+var require_get_context = __commonJS((exports, module) => {
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var get_context_exports = {};
+  __export2(get_context_exports, {
+    SYMBOL_FOR_REQ_CONTEXT: () => SYMBOL_FOR_REQ_CONTEXT,
+    getContext: () => getContext2
+  });
+  module.exports = __toCommonJS(get_context_exports);
+  var SYMBOL_FOR_REQ_CONTEXT = Symbol.for("@vercel/request-context");
+  function getContext2() {
+    const fromSymbol = globalThis;
+    return fromSymbol[SYMBOL_FOR_REQ_CONTEXT]?.get?.() ?? {};
+  }
+});
+
+// node_modules/@vercel/oidc/dist/token-error.js
+var require_token_error = __commonJS((exports, module) => {
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var token_error_exports = {};
+  __export2(token_error_exports, {
+    VercelOidcTokenError: () => VercelOidcTokenError
+  });
+  module.exports = __toCommonJS(token_error_exports);
+
+  class VercelOidcTokenError extends Error {
+    constructor(message, cause) {
+      super(message);
+      this.name = "VercelOidcTokenError";
+      this.cause = cause;
+    }
+    toString() {
+      if (this.cause) {
+        return `${this.name}: ${this.message}: ${this.cause}`;
+      }
+      return `${this.name}: ${this.message}`;
+    }
+  }
+});
+
+// node_modules/@vercel/oidc/dist/token-io.js
+var require_token_io = __commonJS((exports, module) => {
+  var __create2 = Object.create;
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __getProtoOf2 = Object.getPrototypeOf;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toESM2 = (mod, isNodeMode, target) => (target = mod != null ? __create2(__getProtoOf2(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", { value: mod, enumerable: true }) : target, mod));
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var token_io_exports = {};
+  __export2(token_io_exports, {
+    findRootDir: () => findRootDir,
+    getUserDataDir: () => getUserDataDir
+  });
+  module.exports = __toCommonJS(token_io_exports);
+  var import_path2 = __toESM2(__require("path"));
+  var import_fs = __toESM2(__require("fs"));
+  var import_os = __toESM2(__require("os"));
+  var import_token_error = require_token_error();
+  function findRootDir() {
+    try {
+      let dir = process.cwd();
+      while (dir !== import_path2.default.dirname(dir)) {
+        const pkgPath = import_path2.default.join(dir, ".vercel");
+        if (import_fs.default.existsSync(pkgPath)) {
+          return dir;
+        }
+        dir = import_path2.default.dirname(dir);
+      }
+    } catch (e) {
+      throw new import_token_error.VercelOidcTokenError("Token refresh only supported in node server environments");
+    }
+    return null;
+  }
+  function getUserDataDir() {
+    if (process.env.XDG_DATA_HOME) {
+      return process.env.XDG_DATA_HOME;
+    }
+    switch (import_os.default.platform()) {
+      case "darwin":
+        return import_path2.default.join(import_os.default.homedir(), "Library/Application Support");
+      case "linux":
+        return import_path2.default.join(import_os.default.homedir(), ".local/share");
+      case "win32":
+        if (process.env.LOCALAPPDATA) {
+          return process.env.LOCALAPPDATA;
+        }
+        return null;
+      default:
+        return null;
+    }
+  }
+});
+
+// node_modules/@vercel/oidc/dist/auth-config.js
+var require_auth_config = __commonJS((exports, module) => {
+  var __create2 = Object.create;
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __getProtoOf2 = Object.getPrototypeOf;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toESM2 = (mod, isNodeMode, target) => (target = mod != null ? __create2(__getProtoOf2(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", { value: mod, enumerable: true }) : target, mod));
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var auth_config_exports = {};
+  __export2(auth_config_exports, {
+    isValidAccessToken: () => isValidAccessToken,
+    readAuthConfig: () => readAuthConfig,
+    writeAuthConfig: () => writeAuthConfig
+  });
+  module.exports = __toCommonJS(auth_config_exports);
+  var fs = __toESM2(__require("fs"));
+  var path = __toESM2(__require("path"));
+  var import_token_util = require_token_util();
+  function getAuthConfigPath() {
+    const dataDir = (0, import_token_util.getVercelDataDir)();
+    if (!dataDir) {
+      throw new Error(`Unable to find Vercel CLI data directory. Your platform: ${process.platform}. Supported: darwin, linux, win32.`);
+    }
+    return path.join(dataDir, "auth.json");
+  }
+  function readAuthConfig() {
+    try {
+      const authPath = getAuthConfigPath();
+      if (!fs.existsSync(authPath)) {
+        return null;
+      }
+      const content = fs.readFileSync(authPath, "utf8");
+      if (!content) {
+        return null;
+      }
+      return JSON.parse(content);
+    } catch (error48) {
+      return null;
+    }
+  }
+  function writeAuthConfig(config2) {
+    const authPath = getAuthConfigPath();
+    const authDir = path.dirname(authPath);
+    if (!fs.existsSync(authDir)) {
+      fs.mkdirSync(authDir, { mode: 504, recursive: true });
+    }
+    fs.writeFileSync(authPath, JSON.stringify(config2, null, 2), { mode: 384 });
+  }
+  function isValidAccessToken(authConfig, expirationBufferMs = 0) {
+    if (!authConfig.token)
+      return false;
+    if (typeof authConfig.expiresAt !== "number")
+      return true;
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+    const bufferInSeconds = expirationBufferMs / 1000;
+    return authConfig.expiresAt >= nowInSeconds + bufferInSeconds;
+  }
+});
+
+// node_modules/@vercel/oidc/dist/oauth.js
+var require_oauth = __commonJS((exports, module) => {
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var oauth_exports = {};
+  __export2(oauth_exports, {
+    processTokenResponse: () => processTokenResponse,
+    refreshTokenRequest: () => refreshTokenRequest
+  });
+  module.exports = __toCommonJS(oauth_exports);
+  var import_os = __require("os");
+  var VERCEL_ISSUER = "https://vercel.com";
+  var VERCEL_CLI_CLIENT_ID = "cl_HYyOPBNtFMfHhaUn9L4QPfTZz6TP47bp";
+  var userAgent = `@vercel/oidc node-${process.version} ${(0, import_os.platform)()} (${(0, import_os.arch)()}) ${(0, import_os.hostname)()}`;
+  var _tokenEndpoint = null;
+  async function getTokenEndpoint() {
+    if (_tokenEndpoint) {
+      return _tokenEndpoint;
+    }
+    const discoveryUrl = `${VERCEL_ISSUER}/.well-known/openid-configuration`;
+    const response = await fetch(discoveryUrl, {
+      headers: { "user-agent": userAgent }
+    });
+    if (!response.ok) {
+      throw new Error("Failed to discover OAuth endpoints");
+    }
+    const metadata = await response.json();
+    if (!metadata || typeof metadata.token_endpoint !== "string") {
+      throw new Error("Invalid OAuth discovery response");
+    }
+    const endpoint = metadata.token_endpoint;
+    _tokenEndpoint = endpoint;
+    return endpoint;
+  }
+  async function refreshTokenRequest(options2) {
+    const tokenEndpoint = await getTokenEndpoint();
+    return await fetch(tokenEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "user-agent": userAgent
+      },
+      body: new URLSearchParams({
+        client_id: VERCEL_CLI_CLIENT_ID,
+        grant_type: "refresh_token",
+        ...options2
+      })
+    });
+  }
+  async function processTokenResponse(response) {
+    const json2 = await response.json();
+    if (!response.ok) {
+      const errorMsg = typeof json2 === "object" && json2 && "error" in json2 ? String(json2.error) : "Token refresh failed";
+      return [new Error(errorMsg)];
+    }
+    if (typeof json2 !== "object" || json2 === null) {
+      return [new Error("Invalid token response")];
+    }
+    if (typeof json2.access_token !== "string") {
+      return [new Error("Missing access_token in response")];
+    }
+    if (json2.token_type !== "Bearer") {
+      return [new Error("Invalid token_type in response")];
+    }
+    if (typeof json2.expires_in !== "number") {
+      return [new Error("Missing expires_in in response")];
+    }
+    return [null, json2];
+  }
+});
+
+// node_modules/@vercel/oidc/dist/auth-errors.js
+var require_auth_errors = __commonJS((exports, module) => {
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var auth_errors_exports = {};
+  __export2(auth_errors_exports, {
+    AccessTokenMissingError: () => AccessTokenMissingError2,
+    RefreshAccessTokenFailedError: () => RefreshAccessTokenFailedError2
+  });
+  module.exports = __toCommonJS(auth_errors_exports);
+
+  class AccessTokenMissingError2 extends Error {
+    constructor() {
+      super("No authentication found. Please log in with the Vercel CLI (vercel login).");
+      this.name = "AccessTokenMissingError";
+    }
+  }
+
+  class RefreshAccessTokenFailedError2 extends Error {
+    constructor(cause) {
+      super("Failed to refresh authentication token.", { cause });
+      this.name = "RefreshAccessTokenFailedError";
+    }
+  }
+});
+
+// node_modules/@vercel/oidc/dist/token-util.js
+var require_token_util = __commonJS((exports, module) => {
+  var __create2 = Object.create;
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __getProtoOf2 = Object.getPrototypeOf;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toESM2 = (mod, isNodeMode, target) => (target = mod != null ? __create2(__getProtoOf2(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", { value: mod, enumerable: true }) : target, mod));
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var token_util_exports = {};
+  __export2(token_util_exports, {
+    assertVercelOidcTokenResponse: () => assertVercelOidcTokenResponse,
+    findProjectInfo: () => findProjectInfo,
+    getTokenPayload: () => getTokenPayload,
+    getVercelDataDir: () => getVercelDataDir,
+    getVercelOidcToken: () => getVercelOidcToken2,
+    getVercelToken: () => getVercelToken2,
+    isExpired: () => isExpired,
+    loadToken: () => loadToken,
+    saveToken: () => saveToken
+  });
+  module.exports = __toCommonJS(token_util_exports);
+  var path = __toESM2(__require("path"));
+  var fs = __toESM2(__require("fs"));
+  var import_token_error = require_token_error();
+  var import_token_io = require_token_io();
+  var import_auth_config = require_auth_config();
+  var import_oauth = require_oauth();
+  var import_auth_errors = require_auth_errors();
+  function getVercelDataDir() {
+    const vercelFolder = "com.vercel.cli";
+    const dataDir = (0, import_token_io.getUserDataDir)();
+    if (!dataDir) {
+      return null;
+    }
+    return path.join(dataDir, vercelFolder);
+  }
+  async function getVercelToken2(options2) {
+    const authConfig = (0, import_auth_config.readAuthConfig)();
+    if (!authConfig?.token) {
+      throw new import_auth_errors.AccessTokenMissingError;
+    }
+    if ((0, import_auth_config.isValidAccessToken)(authConfig, options2?.expirationBufferMs)) {
+      return authConfig.token;
+    }
+    if (!authConfig.refreshToken) {
+      (0, import_auth_config.writeAuthConfig)({});
+      throw new import_auth_errors.RefreshAccessTokenFailedError("No refresh token available");
+    }
+    try {
+      const tokenResponse = await (0, import_oauth.refreshTokenRequest)({
+        refresh_token: authConfig.refreshToken
+      });
+      const [tokensError, tokens] = await (0, import_oauth.processTokenResponse)(tokenResponse);
+      if (tokensError || !tokens) {
+        (0, import_auth_config.writeAuthConfig)({});
+        throw new import_auth_errors.RefreshAccessTokenFailedError(tokensError);
+      }
+      const updatedConfig = {
+        token: tokens.access_token,
+        expiresAt: Math.floor(Date.now() / 1000) + tokens.expires_in
+      };
+      if (tokens.refresh_token) {
+        updatedConfig.refreshToken = tokens.refresh_token;
+      }
+      (0, import_auth_config.writeAuthConfig)(updatedConfig);
+      return updatedConfig.token;
+    } catch (error48) {
+      (0, import_auth_config.writeAuthConfig)({});
+      if (error48 instanceof import_auth_errors.AccessTokenMissingError || error48 instanceof import_auth_errors.RefreshAccessTokenFailedError) {
+        throw error48;
+      }
+      throw new import_auth_errors.RefreshAccessTokenFailedError(error48);
+    }
+  }
+  async function getVercelOidcToken2(authToken, projectId, teamId) {
+    const url2 = `https://api.vercel.com/v1/projects/${projectId}/token?source=vercel-oidc-refresh${teamId ? `&teamId=${teamId}` : ""}`;
+    const res = await fetch(url2, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${authToken}`
+      }
+    });
+    if (!res.ok) {
+      throw new import_token_error.VercelOidcTokenError(`Failed to refresh OIDC token: ${res.statusText}`);
+    }
+    const tokenRes = await res.json();
+    assertVercelOidcTokenResponse(tokenRes);
+    return tokenRes;
+  }
+  function assertVercelOidcTokenResponse(res) {
+    if (!res || typeof res !== "object") {
+      throw new TypeError("Vercel OIDC token is malformed. Expected an object. Please run `vc env pull` and try again");
+    }
+    if (!("token" in res) || typeof res.token !== "string") {
+      throw new TypeError("Vercel OIDC token is malformed. Expected a string-valued token property. Please run `vc env pull` and try again");
+    }
+  }
+  function findProjectInfo() {
+    const dir = (0, import_token_io.findRootDir)();
+    if (!dir) {
+      throw new import_token_error.VercelOidcTokenError("Unable to find project root directory. Have you linked your project with `vc link?`");
+    }
+    const prjPath = path.join(dir, ".vercel", "project.json");
+    if (!fs.existsSync(prjPath)) {
+      throw new import_token_error.VercelOidcTokenError("project.json not found, have you linked your project with `vc link?`");
+    }
+    const prj = JSON.parse(fs.readFileSync(prjPath, "utf8"));
+    if (typeof prj.projectId !== "string" && typeof prj.orgId !== "string") {
+      throw new TypeError("Expected a string-valued projectId property. Try running `vc link` to re-link your project.");
+    }
+    return { projectId: prj.projectId, teamId: prj.orgId };
+  }
+  function saveToken(token, projectId) {
+    const dir = (0, import_token_io.getUserDataDir)();
+    if (!dir) {
+      throw new import_token_error.VercelOidcTokenError("Unable to find user data directory. Please reach out to Vercel support.");
+    }
+    const tokenPath = path.join(dir, "com.vercel.token", `${projectId}.json`);
+    const tokenJson = JSON.stringify(token);
+    fs.mkdirSync(path.dirname(tokenPath), { mode: 504, recursive: true });
+    fs.writeFileSync(tokenPath, tokenJson);
+    fs.chmodSync(tokenPath, 432);
+    return;
+  }
+  function loadToken(projectId) {
+    const dir = (0, import_token_io.getUserDataDir)();
+    if (!dir) {
+      throw new import_token_error.VercelOidcTokenError("Unable to find user data directory. Please reach out to Vercel support.");
+    }
+    const tokenPath = path.join(dir, "com.vercel.token", `${projectId}.json`);
+    if (!fs.existsSync(tokenPath)) {
+      return null;
+    }
+    const token = JSON.parse(fs.readFileSync(tokenPath, "utf8"));
+    assertVercelOidcTokenResponse(token);
+    return token;
+  }
+  function getTokenPayload(token) {
+    const tokenParts = token.split(".");
+    if (tokenParts.length !== 3) {
+      throw new import_token_error.VercelOidcTokenError("Invalid token. Please run `vc env pull` and try again");
+    }
+    const base643 = tokenParts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base643.padEnd(base643.length + (4 - base643.length % 4) % 4, "=");
+    return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
+  }
+  function isExpired(token, bufferMs = 0) {
+    return token.exp * 1000 < Date.now() + bufferMs;
+  }
+});
+
+// node_modules/@vercel/oidc/dist/token.js
+var require_token = __commonJS((exports, module) => {
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var token_exports = {};
+  __export2(token_exports, {
+    refreshToken: () => refreshToken
+  });
+  module.exports = __toCommonJS(token_exports);
+  var import_token_error = require_token_error();
+  var import_token_util = require_token_util();
+  async function refreshToken(options2) {
+    let projectId = options2?.project;
+    let teamId = options2?.team;
+    if (!projectId && !teamId) {
+      const projectInfo = (0, import_token_util.findProjectInfo)();
+      projectId = projectInfo.projectId;
+      teamId = projectInfo.teamId;
+    } else if (!projectId || !teamId) {
+      const projectInfo = (0, import_token_util.findProjectInfo)();
+      projectId = projectId ?? projectInfo.projectId;
+      teamId = teamId ?? projectInfo.teamId;
+    }
+    if (!projectId) {
+      throw new import_token_error.VercelOidcTokenError("Failed to refresh OIDC token: No project specified. Try re-linking your project with `vc link`");
+    }
+    let maybeToken = (0, import_token_util.loadToken)(projectId);
+    if (!maybeToken || (0, import_token_util.isExpired)((0, import_token_util.getTokenPayload)(maybeToken.token), options2?.expirationBufferMs)) {
+      const authToken = await (0, import_token_util.getVercelToken)({
+        expirationBufferMs: options2?.expirationBufferMs
+      });
+      maybeToken = await (0, import_token_util.getVercelOidcToken)(authToken, projectId, teamId);
+      if (!maybeToken) {
+        throw new import_token_error.VercelOidcTokenError("Failed to refresh OIDC token");
+      }
+      (0, import_token_util.saveToken)(maybeToken, projectId);
+    }
+    process.env.VERCEL_OIDC_TOKEN = maybeToken.token;
+    return;
+  }
+});
+
+// node_modules/@vercel/oidc/dist/get-vercel-oidc-token.js
+var require_get_vercel_oidc_token = __commonJS((exports, module) => {
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var get_vercel_oidc_token_exports = {};
+  __export2(get_vercel_oidc_token_exports, {
+    getVercelOidcToken: () => getVercelOidcToken2,
+    getVercelOidcTokenSync: () => getVercelOidcTokenSync2
+  });
+  module.exports = __toCommonJS(get_vercel_oidc_token_exports);
+  var import_get_context = require_get_context();
+  var import_token_error = require_token_error();
+  async function getVercelOidcToken2(options2) {
+    let token = "";
+    let err;
+    try {
+      token = getVercelOidcTokenSync2();
+    } catch (error48) {
+      err = error48;
+    }
+    try {
+      const [{ getTokenPayload, isExpired }, { refreshToken }] = await Promise.all([
+        await Promise.resolve().then(() => __toESM(require_token_util())),
+        await Promise.resolve().then(() => __toESM(require_token()))
+      ]);
+      if (!token || isExpired(getTokenPayload(token), options2?.expirationBufferMs)) {
+        await refreshToken(options2);
+        token = getVercelOidcTokenSync2();
+      }
+    } catch (error48) {
+      let message = err instanceof Error ? err.message : "";
+      if (error48 instanceof Error) {
+        message = `${message}
+${error48.message}`;
+      }
+      if (message) {
+        throw new import_token_error.VercelOidcTokenError(message);
+      }
+      throw error48;
+    }
+    return token;
+  }
+  function getVercelOidcTokenSync2() {
+    const token = (0, import_get_context.getContext)().headers?.["x-vercel-oidc-token"] ?? process.env.VERCEL_OIDC_TOKEN;
+    if (!token) {
+      throw new Error(`The 'x-vercel-oidc-token' header is missing from the request. Do you have the OIDC option enabled in the Vercel project settings?`);
+    }
+    return token;
+  }
+});
+
+// node_modules/@vercel/oidc/dist/index.js
+var require_dist = __commonJS((exports, module) => {
+  var __defProp2 = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames2 = Object.getOwnPropertyNames;
+  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+  var __export2 = (target, all) => {
+    for (var name15 in all)
+      __defProp2(target, name15, { get: all[name15], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc6) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames2(from))
+        if (!__hasOwnProp2.call(to, key) && key !== except)
+          __defProp2(to, key, { get: () => from[key], enumerable: !(desc6 = __getOwnPropDesc(from, key)) || desc6.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp2({}, "__esModule", { value: true }), mod);
+  var src_exports = {};
+  __export2(src_exports, {
+    AccessTokenMissingError: () => import_auth_errors.AccessTokenMissingError,
+    RefreshAccessTokenFailedError: () => import_auth_errors.RefreshAccessTokenFailedError,
+    getContext: () => import_get_context.getContext,
+    getVercelOidcToken: () => import_get_vercel_oidc_token.getVercelOidcToken,
+    getVercelOidcTokenSync: () => import_get_vercel_oidc_token.getVercelOidcTokenSync,
+    getVercelToken: () => import_token_util.getVercelToken
+  });
+  module.exports = __toCommonJS(src_exports);
+  var import_get_vercel_oidc_token = require_get_vercel_oidc_token();
+  var import_get_context = require_get_context();
+  var import_auth_errors = require_auth_errors();
+  var import_token_util = require_token_util();
+});
+
+// node_modules/@opentelemetry/api/build/src/version.js
+var require_version = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.VERSION = undefined;
+  exports.VERSION = "1.9.1";
+});
+
+// node_modules/@opentelemetry/api/build/src/internal/semver.js
+var require_semver = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.isCompatible = exports._makeCompatibilityCheck = undefined;
+  var version_1 = require_version();
+  var re = /^(\d+)\.(\d+)\.(\d+)(-(.+))?$/;
+  function _makeCompatibilityCheck(ownVersion) {
+    const acceptedVersions = new Set([ownVersion]);
+    const rejectedVersions = new Set;
+    const myVersionMatch = ownVersion.match(re);
+    if (!myVersionMatch) {
+      return () => false;
+    }
+    const ownVersionParsed = {
+      major: +myVersionMatch[1],
+      minor: +myVersionMatch[2],
+      patch: +myVersionMatch[3],
+      prerelease: myVersionMatch[4]
+    };
+    if (ownVersionParsed.prerelease != null) {
+      return function isExactmatch(globalVersion) {
+        return globalVersion === ownVersion;
+      };
+    }
+    function _reject(v) {
+      rejectedVersions.add(v);
+      return false;
+    }
+    function _accept(v) {
+      acceptedVersions.add(v);
+      return true;
+    }
+    return function isCompatible(globalVersion) {
+      if (acceptedVersions.has(globalVersion)) {
+        return true;
+      }
+      if (rejectedVersions.has(globalVersion)) {
+        return false;
+      }
+      const globalVersionMatch = globalVersion.match(re);
+      if (!globalVersionMatch) {
+        return _reject(globalVersion);
+      }
+      const globalVersionParsed = {
+        major: +globalVersionMatch[1],
+        minor: +globalVersionMatch[2],
+        patch: +globalVersionMatch[3],
+        prerelease: globalVersionMatch[4]
+      };
+      if (globalVersionParsed.prerelease != null) {
+        return _reject(globalVersion);
+      }
+      if (ownVersionParsed.major !== globalVersionParsed.major) {
+        return _reject(globalVersion);
+      }
+      if (ownVersionParsed.major === 0) {
+        if (ownVersionParsed.minor === globalVersionParsed.minor && ownVersionParsed.patch <= globalVersionParsed.patch) {
+          return _accept(globalVersion);
+        }
+        return _reject(globalVersion);
+      }
+      if (ownVersionParsed.minor <= globalVersionParsed.minor) {
+        return _accept(globalVersion);
+      }
+      return _reject(globalVersion);
+    };
+  }
+  exports._makeCompatibilityCheck = _makeCompatibilityCheck;
+  exports.isCompatible = _makeCompatibilityCheck(version_1.VERSION);
+});
+
+// node_modules/@opentelemetry/api/build/src/internal/global-utils.js
+var require_global_utils = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.unregisterGlobal = exports.getGlobal = exports.registerGlobal = undefined;
+  var version_1 = require_version();
+  var semver_1 = require_semver();
+  var major = version_1.VERSION.split(".")[0];
+  var GLOBAL_OPENTELEMETRY_API_KEY = Symbol.for(`opentelemetry.js.api.${major}`);
+  var _global = typeof globalThis === "object" ? globalThis : typeof self === "object" ? self : typeof window === "object" ? window : typeof global === "object" ? global : {};
+  function registerGlobal(type, instance, diag, allowOverride = false) {
+    var _a16;
+    const api2 = _global[GLOBAL_OPENTELEMETRY_API_KEY] = (_a16 = _global[GLOBAL_OPENTELEMETRY_API_KEY]) !== null && _a16 !== undefined ? _a16 : {
+      version: version_1.VERSION
+    };
+    if (!allowOverride && api2[type]) {
+      const err = new Error(`@opentelemetry/api: Attempted duplicate registration of API: ${type}`);
+      diag.error(err.stack || err.message);
+      return false;
+    }
+    if (api2.version !== version_1.VERSION) {
+      const err = new Error(`@opentelemetry/api: Registration of version v${api2.version} for ${type} does not match previously registered API v${version_1.VERSION}`);
+      diag.error(err.stack || err.message);
+      return false;
+    }
+    api2[type] = instance;
+    diag.debug(`@opentelemetry/api: Registered a global for ${type} v${version_1.VERSION}.`);
+    return true;
+  }
+  exports.registerGlobal = registerGlobal;
+  function getGlobal(type) {
+    var _a16, _b16;
+    const globalVersion = (_a16 = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _a16 === undefined ? undefined : _a16.version;
+    if (!globalVersion || !(0, semver_1.isCompatible)(globalVersion)) {
+      return;
+    }
+    return (_b16 = _global[GLOBAL_OPENTELEMETRY_API_KEY]) === null || _b16 === undefined ? undefined : _b16[type];
+  }
+  exports.getGlobal = getGlobal;
+  function unregisterGlobal(type, diag) {
+    diag.debug(`@opentelemetry/api: Unregistering a global for ${type} v${version_1.VERSION}.`);
+    const api2 = _global[GLOBAL_OPENTELEMETRY_API_KEY];
+    if (api2) {
+      delete api2[type];
+    }
+  }
+  exports.unregisterGlobal = unregisterGlobal;
+});
+
+// node_modules/@opentelemetry/api/build/src/diag/ComponentLogger.js
+var require_ComponentLogger = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.DiagComponentLogger = undefined;
+  var global_utils_1 = require_global_utils();
+
+  class DiagComponentLogger {
+    constructor(props) {
+      this._namespace = props.namespace || "DiagComponentLogger";
+    }
+    debug(...args) {
+      return logProxy("debug", this._namespace, args);
+    }
+    error(...args) {
+      return logProxy("error", this._namespace, args);
+    }
+    info(...args) {
+      return logProxy("info", this._namespace, args);
+    }
+    warn(...args) {
+      return logProxy("warn", this._namespace, args);
+    }
+    verbose(...args) {
+      return logProxy("verbose", this._namespace, args);
+    }
+  }
+  exports.DiagComponentLogger = DiagComponentLogger;
+  function logProxy(funcName, namespace, args) {
+    const logger = (0, global_utils_1.getGlobal)("diag");
+    if (!logger) {
+      return;
+    }
+    return logger[funcName](namespace, ...args);
+  }
+});
+
+// node_modules/@opentelemetry/api/build/src/diag/types.js
+var require_types = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.DiagLogLevel = undefined;
+  var DiagLogLevel;
+  (function(DiagLogLevel2) {
+    DiagLogLevel2[DiagLogLevel2["NONE"] = 0] = "NONE";
+    DiagLogLevel2[DiagLogLevel2["ERROR"] = 30] = "ERROR";
+    DiagLogLevel2[DiagLogLevel2["WARN"] = 50] = "WARN";
+    DiagLogLevel2[DiagLogLevel2["INFO"] = 60] = "INFO";
+    DiagLogLevel2[DiagLogLevel2["DEBUG"] = 70] = "DEBUG";
+    DiagLogLevel2[DiagLogLevel2["VERBOSE"] = 80] = "VERBOSE";
+    DiagLogLevel2[DiagLogLevel2["ALL"] = 9999] = "ALL";
+  })(DiagLogLevel = exports.DiagLogLevel || (exports.DiagLogLevel = {}));
+});
+
+// node_modules/@opentelemetry/api/build/src/diag/internal/logLevelLogger.js
+var require_logLevelLogger = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.createLogLevelDiagLogger = undefined;
+  var types_1 = require_types();
+  function createLogLevelDiagLogger(maxLevel, logger) {
+    if (maxLevel < types_1.DiagLogLevel.NONE) {
+      maxLevel = types_1.DiagLogLevel.NONE;
+    } else if (maxLevel > types_1.DiagLogLevel.ALL) {
+      maxLevel = types_1.DiagLogLevel.ALL;
+    }
+    logger = logger || {};
+    function _filterFunc(funcName, theLevel) {
+      const theFunc = logger[funcName];
+      if (typeof theFunc === "function" && maxLevel >= theLevel) {
+        return theFunc.bind(logger);
+      }
+      return function() {};
+    }
+    return {
+      error: _filterFunc("error", types_1.DiagLogLevel.ERROR),
+      warn: _filterFunc("warn", types_1.DiagLogLevel.WARN),
+      info: _filterFunc("info", types_1.DiagLogLevel.INFO),
+      debug: _filterFunc("debug", types_1.DiagLogLevel.DEBUG),
+      verbose: _filterFunc("verbose", types_1.DiagLogLevel.VERBOSE)
+    };
+  }
+  exports.createLogLevelDiagLogger = createLogLevelDiagLogger;
+});
+
+// node_modules/@opentelemetry/api/build/src/api/diag.js
+var require_diag = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.DiagAPI = undefined;
+  var ComponentLogger_1 = require_ComponentLogger();
+  var logLevelLogger_1 = require_logLevelLogger();
+  var types_1 = require_types();
+  var global_utils_1 = require_global_utils();
+  var API_NAME = "diag";
+
+  class DiagAPI {
+    static instance() {
+      if (!this._instance) {
+        this._instance = new DiagAPI;
+      }
+      return this._instance;
+    }
+    constructor() {
+      function _logProxy(funcName) {
+        return function(...args) {
+          const logger = (0, global_utils_1.getGlobal)("diag");
+          if (!logger)
+            return;
+          return logger[funcName](...args);
+        };
+      }
+      const self2 = this;
+      const setLogger = (logger, optionsOrLogLevel = { logLevel: types_1.DiagLogLevel.INFO }) => {
+        var _a16, _b16, _c;
+        if (logger === self2) {
+          const err = new Error("Cannot use diag as the logger for itself. Please use a DiagLogger implementation like ConsoleDiagLogger or a custom implementation");
+          self2.error((_a16 = err.stack) !== null && _a16 !== undefined ? _a16 : err.message);
+          return false;
+        }
+        if (typeof optionsOrLogLevel === "number") {
+          optionsOrLogLevel = {
+            logLevel: optionsOrLogLevel
+          };
+        }
+        const oldLogger = (0, global_utils_1.getGlobal)("diag");
+        const newLogger = (0, logLevelLogger_1.createLogLevelDiagLogger)((_b16 = optionsOrLogLevel.logLevel) !== null && _b16 !== undefined ? _b16 : types_1.DiagLogLevel.INFO, logger);
+        if (oldLogger && !optionsOrLogLevel.suppressOverrideMessage) {
+          const stack = (_c = new Error().stack) !== null && _c !== undefined ? _c : "<failed to generate stacktrace>";
+          oldLogger.warn(`Current logger will be overwritten from ${stack}`);
+          newLogger.warn(`Current logger will overwrite one already registered from ${stack}`);
+        }
+        return (0, global_utils_1.registerGlobal)("diag", newLogger, self2, true);
+      };
+      self2.setLogger = setLogger;
+      self2.disable = () => {
+        (0, global_utils_1.unregisterGlobal)(API_NAME, self2);
+      };
+      self2.createComponentLogger = (options2) => {
+        return new ComponentLogger_1.DiagComponentLogger(options2);
+      };
+      self2.verbose = _logProxy("verbose");
+      self2.debug = _logProxy("debug");
+      self2.info = _logProxy("info");
+      self2.warn = _logProxy("warn");
+      self2.error = _logProxy("error");
+    }
+  }
+  exports.DiagAPI = DiagAPI;
+});
+
+// node_modules/@opentelemetry/api/build/src/baggage/internal/baggage-impl.js
+var require_baggage_impl = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.BaggageImpl = undefined;
+
+  class BaggageImpl {
+    constructor(entries) {
+      this._entries = entries ? new Map(entries) : new Map;
+    }
+    getEntry(key) {
+      const entry = this._entries.get(key);
+      if (!entry) {
+        return;
+      }
+      return Object.assign({}, entry);
+    }
+    getAllEntries() {
+      return Array.from(this._entries.entries());
+    }
+    setEntry(key, entry) {
+      const newBaggage = new BaggageImpl(this._entries);
+      newBaggage._entries.set(key, entry);
+      return newBaggage;
+    }
+    removeEntry(key) {
+      const newBaggage = new BaggageImpl(this._entries);
+      newBaggage._entries.delete(key);
+      return newBaggage;
+    }
+    removeEntries(...keys) {
+      const newBaggage = new BaggageImpl(this._entries);
+      for (const key of keys) {
+        newBaggage._entries.delete(key);
+      }
+      return newBaggage;
+    }
+    clear() {
+      return new BaggageImpl;
+    }
+  }
+  exports.BaggageImpl = BaggageImpl;
+});
+
+// node_modules/@opentelemetry/api/build/src/baggage/internal/symbol.js
+var require_symbol = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.baggageEntryMetadataSymbol = undefined;
+  exports.baggageEntryMetadataSymbol = Symbol("BaggageEntryMetadata");
+});
+
+// node_modules/@opentelemetry/api/build/src/baggage/utils.js
+var require_utils2 = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.baggageEntryMetadataFromString = exports.createBaggage = undefined;
+  var diag_1 = require_diag();
+  var baggage_impl_1 = require_baggage_impl();
+  var symbol_1 = require_symbol();
+  var diag = diag_1.DiagAPI.instance();
+  function createBaggage(entries = {}) {
+    return new baggage_impl_1.BaggageImpl(new Map(Object.entries(entries)));
+  }
+  exports.createBaggage = createBaggage;
+  function baggageEntryMetadataFromString(str) {
+    if (typeof str !== "string") {
+      diag.error(`Cannot create baggage metadata from unknown type: ${typeof str}`);
+      str = "";
+    }
+    return {
+      __TYPE__: symbol_1.baggageEntryMetadataSymbol,
+      toString() {
+        return str;
+      }
+    };
+  }
+  exports.baggageEntryMetadataFromString = baggageEntryMetadataFromString;
+});
+
+// node_modules/@opentelemetry/api/build/src/context/context.js
+var require_context = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.ROOT_CONTEXT = exports.createContextKey = undefined;
+  function createContextKey(description) {
+    return Symbol.for(description);
+  }
+  exports.createContextKey = createContextKey;
+
+  class BaseContext {
+    constructor(parentContext) {
+      const self2 = this;
+      self2._currentContext = parentContext ? new Map(parentContext) : new Map;
+      self2.getValue = (key) => self2._currentContext.get(key);
+      self2.setValue = (key, value) => {
+        const context = new BaseContext(self2._currentContext);
+        context._currentContext.set(key, value);
+        return context;
+      };
+      self2.deleteValue = (key) => {
+        const context = new BaseContext(self2._currentContext);
+        context._currentContext.delete(key);
+        return context;
+      };
+    }
+  }
+  exports.ROOT_CONTEXT = new BaseContext;
+});
+
+// node_modules/@opentelemetry/api/build/src/diag/consoleLogger.js
+var require_consoleLogger = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.DiagConsoleLogger = exports._originalConsoleMethods = undefined;
+  var consoleMap = [
+    { n: "error", c: "error" },
+    { n: "warn", c: "warn" },
+    { n: "info", c: "info" },
+    { n: "debug", c: "debug" },
+    { n: "verbose", c: "trace" }
+  ];
+  exports._originalConsoleMethods = {};
+  if (typeof console !== "undefined") {
+    const keys = [
+      "error",
+      "warn",
+      "info",
+      "debug",
+      "trace",
+      "log"
+    ];
+    for (const key of keys) {
+      if (typeof console[key] === "function") {
+        exports._originalConsoleMethods[key] = console[key];
+      }
+    }
+  }
+
+  class DiagConsoleLogger {
+    constructor() {
+      function _consoleFunc(funcName) {
+        return function(...args) {
+          let theFunc = exports._originalConsoleMethods[funcName];
+          if (typeof theFunc !== "function") {
+            theFunc = exports._originalConsoleMethods["log"];
+          }
+          if (typeof theFunc !== "function" && console) {
+            theFunc = console[funcName];
+            if (typeof theFunc !== "function") {
+              theFunc = console.log;
+            }
+          }
+          if (typeof theFunc === "function") {
+            return theFunc.apply(console, args);
+          }
+        };
+      }
+      for (let i = 0;i < consoleMap.length; i++) {
+        this[consoleMap[i].n] = _consoleFunc(consoleMap[i].c);
+      }
+    }
+  }
+  exports.DiagConsoleLogger = DiagConsoleLogger;
+});
+
+// node_modules/@opentelemetry/api/build/src/metrics/NoopMeter.js
+var require_NoopMeter = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.createNoopMeter = exports.NOOP_OBSERVABLE_UP_DOWN_COUNTER_METRIC = exports.NOOP_OBSERVABLE_GAUGE_METRIC = exports.NOOP_OBSERVABLE_COUNTER_METRIC = exports.NOOP_UP_DOWN_COUNTER_METRIC = exports.NOOP_HISTOGRAM_METRIC = exports.NOOP_GAUGE_METRIC = exports.NOOP_COUNTER_METRIC = exports.NOOP_METER = exports.NoopObservableUpDownCounterMetric = exports.NoopObservableGaugeMetric = exports.NoopObservableCounterMetric = exports.NoopObservableMetric = exports.NoopHistogramMetric = exports.NoopGaugeMetric = exports.NoopUpDownCounterMetric = exports.NoopCounterMetric = exports.NoopMetric = exports.NoopMeter = undefined;
+
+  class NoopMeter {
+    constructor() {}
+    createGauge(_name, _options) {
+      return exports.NOOP_GAUGE_METRIC;
+    }
+    createHistogram(_name, _options) {
+      return exports.NOOP_HISTOGRAM_METRIC;
+    }
+    createCounter(_name, _options) {
+      return exports.NOOP_COUNTER_METRIC;
+    }
+    createUpDownCounter(_name, _options) {
+      return exports.NOOP_UP_DOWN_COUNTER_METRIC;
+    }
+    createObservableGauge(_name, _options) {
+      return exports.NOOP_OBSERVABLE_GAUGE_METRIC;
+    }
+    createObservableCounter(_name, _options) {
+      return exports.NOOP_OBSERVABLE_COUNTER_METRIC;
+    }
+    createObservableUpDownCounter(_name, _options) {
+      return exports.NOOP_OBSERVABLE_UP_DOWN_COUNTER_METRIC;
+    }
+    addBatchObservableCallback(_callback, _observables) {}
+    removeBatchObservableCallback(_callback) {}
+  }
+  exports.NoopMeter = NoopMeter;
+
+  class NoopMetric {
+  }
+  exports.NoopMetric = NoopMetric;
+
+  class NoopCounterMetric extends NoopMetric {
+    add(_value, _attributes) {}
+  }
+  exports.NoopCounterMetric = NoopCounterMetric;
+
+  class NoopUpDownCounterMetric extends NoopMetric {
+    add(_value, _attributes) {}
+  }
+  exports.NoopUpDownCounterMetric = NoopUpDownCounterMetric;
+
+  class NoopGaugeMetric extends NoopMetric {
+    record(_value, _attributes) {}
+  }
+  exports.NoopGaugeMetric = NoopGaugeMetric;
+
+  class NoopHistogramMetric extends NoopMetric {
+    record(_value, _attributes) {}
+  }
+  exports.NoopHistogramMetric = NoopHistogramMetric;
+
+  class NoopObservableMetric {
+    addCallback(_callback) {}
+    removeCallback(_callback) {}
+  }
+  exports.NoopObservableMetric = NoopObservableMetric;
+
+  class NoopObservableCounterMetric extends NoopObservableMetric {
+  }
+  exports.NoopObservableCounterMetric = NoopObservableCounterMetric;
+
+  class NoopObservableGaugeMetric extends NoopObservableMetric {
+  }
+  exports.NoopObservableGaugeMetric = NoopObservableGaugeMetric;
+
+  class NoopObservableUpDownCounterMetric extends NoopObservableMetric {
+  }
+  exports.NoopObservableUpDownCounterMetric = NoopObservableUpDownCounterMetric;
+  exports.NOOP_METER = new NoopMeter;
+  exports.NOOP_COUNTER_METRIC = new NoopCounterMetric;
+  exports.NOOP_GAUGE_METRIC = new NoopGaugeMetric;
+  exports.NOOP_HISTOGRAM_METRIC = new NoopHistogramMetric;
+  exports.NOOP_UP_DOWN_COUNTER_METRIC = new NoopUpDownCounterMetric;
+  exports.NOOP_OBSERVABLE_COUNTER_METRIC = new NoopObservableCounterMetric;
+  exports.NOOP_OBSERVABLE_GAUGE_METRIC = new NoopObservableGaugeMetric;
+  exports.NOOP_OBSERVABLE_UP_DOWN_COUNTER_METRIC = new NoopObservableUpDownCounterMetric;
+  function createNoopMeter() {
+    return exports.NOOP_METER;
+  }
+  exports.createNoopMeter = createNoopMeter;
+});
+
+// node_modules/@opentelemetry/api/build/src/metrics/Metric.js
+var require_Metric = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.ValueType = undefined;
+  var ValueType;
+  (function(ValueType2) {
+    ValueType2[ValueType2["INT"] = 0] = "INT";
+    ValueType2[ValueType2["DOUBLE"] = 1] = "DOUBLE";
+  })(ValueType = exports.ValueType || (exports.ValueType = {}));
+});
+
+// node_modules/@opentelemetry/api/build/src/propagation/TextMapPropagator.js
+var require_TextMapPropagator = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.defaultTextMapSetter = exports.defaultTextMapGetter = undefined;
+  exports.defaultTextMapGetter = {
+    get(carrier, key) {
+      if (carrier == null) {
+        return;
+      }
+      return carrier[key];
+    },
+    keys(carrier) {
+      if (carrier == null) {
+        return [];
+      }
+      return Object.keys(carrier);
+    }
+  };
+  exports.defaultTextMapSetter = {
+    set(carrier, key, value) {
+      if (carrier == null) {
+        return;
+      }
+      carrier[key] = value;
+    }
+  };
+});
+
+// node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js
+var require_NoopContextManager = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.NoopContextManager = undefined;
+  var context_1 = require_context();
+
+  class NoopContextManager {
+    active() {
+      return context_1.ROOT_CONTEXT;
+    }
+    with(_context, fn, thisArg, ...args) {
+      return fn.call(thisArg, ...args);
+    }
+    bind(_context, target) {
+      return target;
+    }
+    enable() {
+      return this;
+    }
+    disable() {
+      return this;
+    }
+  }
+  exports.NoopContextManager = NoopContextManager;
+});
+
+// node_modules/@opentelemetry/api/build/src/api/context.js
+var require_context2 = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.ContextAPI = undefined;
+  var NoopContextManager_1 = require_NoopContextManager();
+  var global_utils_1 = require_global_utils();
+  var diag_1 = require_diag();
+  var API_NAME = "context";
+  var NOOP_CONTEXT_MANAGER = new NoopContextManager_1.NoopContextManager;
+
+  class ContextAPI {
+    constructor() {}
+    static getInstance() {
+      if (!this._instance) {
+        this._instance = new ContextAPI;
+      }
+      return this._instance;
+    }
+    setGlobalContextManager(contextManager) {
+      return (0, global_utils_1.registerGlobal)(API_NAME, contextManager, diag_1.DiagAPI.instance());
+    }
+    active() {
+      return this._getContextManager().active();
+    }
+    with(context, fn, thisArg, ...args) {
+      return this._getContextManager().with(context, fn, thisArg, ...args);
+    }
+    bind(context, target) {
+      return this._getContextManager().bind(context, target);
+    }
+    _getContextManager() {
+      return (0, global_utils_1.getGlobal)(API_NAME) || NOOP_CONTEXT_MANAGER;
+    }
+    disable() {
+      this._getContextManager().disable();
+      (0, global_utils_1.unregisterGlobal)(API_NAME, diag_1.DiagAPI.instance());
+    }
+  }
+  exports.ContextAPI = ContextAPI;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/trace_flags.js
+var require_trace_flags = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.TraceFlags = undefined;
+  var TraceFlags;
+  (function(TraceFlags2) {
+    TraceFlags2[TraceFlags2["NONE"] = 0] = "NONE";
+    TraceFlags2[TraceFlags2["SAMPLED"] = 1] = "SAMPLED";
+  })(TraceFlags = exports.TraceFlags || (exports.TraceFlags = {}));
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/invalid-span-constants.js
+var require_invalid_span_constants = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.INVALID_SPAN_CONTEXT = exports.INVALID_TRACEID = exports.INVALID_SPANID = undefined;
+  var trace_flags_1 = require_trace_flags();
+  exports.INVALID_SPANID = "0000000000000000";
+  exports.INVALID_TRACEID = "00000000000000000000000000000000";
+  exports.INVALID_SPAN_CONTEXT = {
+    traceId: exports.INVALID_TRACEID,
+    spanId: exports.INVALID_SPANID,
+    traceFlags: trace_flags_1.TraceFlags.NONE
+  };
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/NonRecordingSpan.js
+var require_NonRecordingSpan = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.NonRecordingSpan = undefined;
+  var invalid_span_constants_1 = require_invalid_span_constants();
+
+  class NonRecordingSpan {
+    constructor(spanContext = invalid_span_constants_1.INVALID_SPAN_CONTEXT) {
+      this._spanContext = spanContext;
+    }
+    spanContext() {
+      return this._spanContext;
+    }
+    setAttribute(_key, _value) {
+      return this;
+    }
+    setAttributes(_attributes) {
+      return this;
+    }
+    addEvent(_name, _attributes) {
+      return this;
+    }
+    addLink(_link) {
+      return this;
+    }
+    addLinks(_links) {
+      return this;
+    }
+    setStatus(_status) {
+      return this;
+    }
+    updateName(_name) {
+      return this;
+    }
+    end(_endTime) {}
+    isRecording() {
+      return false;
+    }
+    recordException(_exception, _time) {}
+  }
+  exports.NonRecordingSpan = NonRecordingSpan;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/context-utils.js
+var require_context_utils = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.getSpanContext = exports.setSpanContext = exports.deleteSpan = exports.setSpan = exports.getActiveSpan = exports.getSpan = undefined;
+  var context_1 = require_context();
+  var NonRecordingSpan_1 = require_NonRecordingSpan();
+  var context_2 = require_context2();
+  var SPAN_KEY = (0, context_1.createContextKey)("OpenTelemetry Context Key SPAN");
+  function getSpan(context) {
+    return context.getValue(SPAN_KEY) || undefined;
+  }
+  exports.getSpan = getSpan;
+  function getActiveSpan() {
+    return getSpan(context_2.ContextAPI.getInstance().active());
+  }
+  exports.getActiveSpan = getActiveSpan;
+  function setSpan(context, span) {
+    return context.setValue(SPAN_KEY, span);
+  }
+  exports.setSpan = setSpan;
+  function deleteSpan(context) {
+    return context.deleteValue(SPAN_KEY);
+  }
+  exports.deleteSpan = deleteSpan;
+  function setSpanContext(context, spanContext) {
+    return setSpan(context, new NonRecordingSpan_1.NonRecordingSpan(spanContext));
+  }
+  exports.setSpanContext = setSpanContext;
+  function getSpanContext(context) {
+    var _a16;
+    return (_a16 = getSpan(context)) === null || _a16 === undefined ? undefined : _a16.spanContext();
+  }
+  exports.getSpanContext = getSpanContext;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/spancontext-utils.js
+var require_spancontext_utils = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.wrapSpanContext = exports.isSpanContextValid = exports.isValidSpanId = exports.isValidTraceId = undefined;
+  var invalid_span_constants_1 = require_invalid_span_constants();
+  var NonRecordingSpan_1 = require_NonRecordingSpan();
+  var isHex = new Uint8Array([
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ]);
+  function isValidHex(id, length) {
+    if (typeof id !== "string" || id.length !== length)
+      return false;
+    let r = 0;
+    for (let i = 0;i < id.length; i += 4) {
+      r += (isHex[id.charCodeAt(i)] | 0) + (isHex[id.charCodeAt(i + 1)] | 0) + (isHex[id.charCodeAt(i + 2)] | 0) + (isHex[id.charCodeAt(i + 3)] | 0);
+    }
+    return r === length;
+  }
+  function isValidTraceId(traceId) {
+    return isValidHex(traceId, 32) && traceId !== invalid_span_constants_1.INVALID_TRACEID;
+  }
+  exports.isValidTraceId = isValidTraceId;
+  function isValidSpanId(spanId) {
+    return isValidHex(spanId, 16) && spanId !== invalid_span_constants_1.INVALID_SPANID;
+  }
+  exports.isValidSpanId = isValidSpanId;
+  function isSpanContextValid(spanContext) {
+    return isValidTraceId(spanContext.traceId) && isValidSpanId(spanContext.spanId);
+  }
+  exports.isSpanContextValid = isSpanContextValid;
+  function wrapSpanContext(spanContext) {
+    return new NonRecordingSpan_1.NonRecordingSpan(spanContext);
+  }
+  exports.wrapSpanContext = wrapSpanContext;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js
+var require_NoopTracer = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.NoopTracer = undefined;
+  var context_1 = require_context2();
+  var context_utils_1 = require_context_utils();
+  var NonRecordingSpan_1 = require_NonRecordingSpan();
+  var spancontext_utils_1 = require_spancontext_utils();
+  var contextApi = context_1.ContextAPI.getInstance();
+
+  class NoopTracer {
+    startSpan(name15, options2, context = contextApi.active()) {
+      const root2 = Boolean(options2 === null || options2 === undefined ? undefined : options2.root);
+      if (root2) {
+        return new NonRecordingSpan_1.NonRecordingSpan;
+      }
+      const parentFromContext = context && (0, context_utils_1.getSpanContext)(context);
+      if (isSpanContext(parentFromContext) && (0, spancontext_utils_1.isSpanContextValid)(parentFromContext)) {
+        return new NonRecordingSpan_1.NonRecordingSpan(parentFromContext);
+      } else {
+        return new NonRecordingSpan_1.NonRecordingSpan;
+      }
+    }
+    startActiveSpan(name15, arg2, arg3, arg4) {
+      let opts;
+      let ctx;
+      let fn;
+      if (arguments.length < 2) {
+        return;
+      } else if (arguments.length === 2) {
+        fn = arg2;
+      } else if (arguments.length === 3) {
+        opts = arg2;
+        fn = arg3;
+      } else {
+        opts = arg2;
+        ctx = arg3;
+        fn = arg4;
+      }
+      const parentContext = ctx !== null && ctx !== undefined ? ctx : contextApi.active();
+      const span = this.startSpan(name15, opts, parentContext);
+      const contextWithSpanSet = (0, context_utils_1.setSpan)(parentContext, span);
+      return contextApi.with(contextWithSpanSet, fn, undefined, span);
+    }
+  }
+  exports.NoopTracer = NoopTracer;
+  function isSpanContext(spanContext) {
+    return spanContext !== null && typeof spanContext === "object" && "spanId" in spanContext && typeof spanContext["spanId"] === "string" && "traceId" in spanContext && typeof spanContext["traceId"] === "string" && "traceFlags" in spanContext && typeof spanContext["traceFlags"] === "number";
+  }
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js
+var require_ProxyTracer = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.ProxyTracer = undefined;
+  var NoopTracer_1 = require_NoopTracer();
+  var NOOP_TRACER = new NoopTracer_1.NoopTracer;
+
+  class ProxyTracer {
+    constructor(provider, name15, version2, options2) {
+      this._provider = provider;
+      this.name = name15;
+      this.version = version2;
+      this.options = options2;
+    }
+    startSpan(name15, options2, context) {
+      return this._getTracer().startSpan(name15, options2, context);
+    }
+    startActiveSpan(_name, _options, _context, _fn) {
+      const tracer = this._getTracer();
+      return Reflect.apply(tracer.startActiveSpan, tracer, arguments);
+    }
+    _getTracer() {
+      if (this._delegate) {
+        return this._delegate;
+      }
+      const tracer = this._provider.getDelegateTracer(this.name, this.version, this.options);
+      if (!tracer) {
+        return NOOP_TRACER;
+      }
+      this._delegate = tracer;
+      return this._delegate;
+    }
+  }
+  exports.ProxyTracer = ProxyTracer;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/NoopTracerProvider.js
+var require_NoopTracerProvider = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.NoopTracerProvider = undefined;
+  var NoopTracer_1 = require_NoopTracer();
+
+  class NoopTracerProvider {
+    getTracer(_name, _version, _options) {
+      return new NoopTracer_1.NoopTracer;
+    }
+  }
+  exports.NoopTracerProvider = NoopTracerProvider;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/ProxyTracerProvider.js
+var require_ProxyTracerProvider = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.ProxyTracerProvider = undefined;
+  var ProxyTracer_1 = require_ProxyTracer();
+  var NoopTracerProvider_1 = require_NoopTracerProvider();
+  var NOOP_TRACER_PROVIDER = new NoopTracerProvider_1.NoopTracerProvider;
+
+  class ProxyTracerProvider {
+    getTracer(name15, version2, options2) {
+      var _a16;
+      return (_a16 = this.getDelegateTracer(name15, version2, options2)) !== null && _a16 !== undefined ? _a16 : new ProxyTracer_1.ProxyTracer(this, name15, version2, options2);
+    }
+    getDelegate() {
+      var _a16;
+      return (_a16 = this._delegate) !== null && _a16 !== undefined ? _a16 : NOOP_TRACER_PROVIDER;
+    }
+    setDelegate(delegate) {
+      this._delegate = delegate;
+    }
+    getDelegateTracer(name15, version2, options2) {
+      var _a16;
+      return (_a16 = this._delegate) === null || _a16 === undefined ? undefined : _a16.getTracer(name15, version2, options2);
+    }
+  }
+  exports.ProxyTracerProvider = ProxyTracerProvider;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/SamplingResult.js
+var require_SamplingResult = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SamplingDecision = undefined;
+  var SamplingDecision;
+  (function(SamplingDecision2) {
+    SamplingDecision2[SamplingDecision2["NOT_RECORD"] = 0] = "NOT_RECORD";
+    SamplingDecision2[SamplingDecision2["RECORD"] = 1] = "RECORD";
+    SamplingDecision2[SamplingDecision2["RECORD_AND_SAMPLED"] = 2] = "RECORD_AND_SAMPLED";
+  })(SamplingDecision = exports.SamplingDecision || (exports.SamplingDecision = {}));
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/span_kind.js
+var require_span_kind = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SpanKind = undefined;
+  var SpanKind;
+  (function(SpanKind2) {
+    SpanKind2[SpanKind2["INTERNAL"] = 0] = "INTERNAL";
+    SpanKind2[SpanKind2["SERVER"] = 1] = "SERVER";
+    SpanKind2[SpanKind2["CLIENT"] = 2] = "CLIENT";
+    SpanKind2[SpanKind2["PRODUCER"] = 3] = "PRODUCER";
+    SpanKind2[SpanKind2["CONSUMER"] = 4] = "CONSUMER";
+  })(SpanKind = exports.SpanKind || (exports.SpanKind = {}));
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/status.js
+var require_status = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.SpanStatusCode = undefined;
+  var SpanStatusCode;
+  (function(SpanStatusCode2) {
+    SpanStatusCode2[SpanStatusCode2["UNSET"] = 0] = "UNSET";
+    SpanStatusCode2[SpanStatusCode2["OK"] = 1] = "OK";
+    SpanStatusCode2[SpanStatusCode2["ERROR"] = 2] = "ERROR";
+  })(SpanStatusCode = exports.SpanStatusCode || (exports.SpanStatusCode = {}));
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/internal/tracestate-validators.js
+var require_tracestate_validators = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.validateValue = exports.validateKey = undefined;
+  var VALID_KEY_CHAR_RANGE = "[_0-9a-z-*/]";
+  var VALID_KEY = `[a-z]${VALID_KEY_CHAR_RANGE}{0,255}`;
+  var VALID_VENDOR_KEY = `[a-z0-9]${VALID_KEY_CHAR_RANGE}{0,240}@[a-z]${VALID_KEY_CHAR_RANGE}{0,13}`;
+  var VALID_KEY_REGEX = new RegExp(`^(?:${VALID_KEY}|${VALID_VENDOR_KEY})$`);
+  var VALID_VALUE_BASE_REGEX = /^[ -~]{0,255}[!-~]$/;
+  var INVALID_VALUE_COMMA_EQUAL_REGEX = /,|=/;
+  function validateKey(key) {
+    return VALID_KEY_REGEX.test(key);
+  }
+  exports.validateKey = validateKey;
+  function validateValue(value) {
+    return VALID_VALUE_BASE_REGEX.test(value) && !INVALID_VALUE_COMMA_EQUAL_REGEX.test(value);
+  }
+  exports.validateValue = validateValue;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/internal/tracestate-impl.js
+var require_tracestate_impl = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.TraceStateImpl = undefined;
+  var tracestate_validators_1 = require_tracestate_validators();
+  var MAX_TRACE_STATE_ITEMS = 32;
+  var MAX_TRACE_STATE_LEN = 512;
+  var LIST_MEMBERS_SEPARATOR = ",";
+  var LIST_MEMBER_KEY_VALUE_SPLITTER = "=";
+
+  class TraceStateImpl {
+    constructor(rawTraceState) {
+      this._internalState = new Map;
+      if (rawTraceState)
+        this._parse(rawTraceState);
+    }
+    set(key, value) {
+      const traceState = this._clone();
+      if (traceState._internalState.has(key)) {
+        traceState._internalState.delete(key);
+      }
+      traceState._internalState.set(key, value);
+      return traceState;
+    }
+    unset(key) {
+      const traceState = this._clone();
+      traceState._internalState.delete(key);
+      return traceState;
+    }
+    get(key) {
+      return this._internalState.get(key);
+    }
+    serialize() {
+      return Array.from(this._internalState.keys()).reduceRight((agg, key) => {
+        agg.push(key + LIST_MEMBER_KEY_VALUE_SPLITTER + this.get(key));
+        return agg;
+      }, []).join(LIST_MEMBERS_SEPARATOR);
+    }
+    _parse(rawTraceState) {
+      if (rawTraceState.length > MAX_TRACE_STATE_LEN)
+        return;
+      this._internalState = rawTraceState.split(LIST_MEMBERS_SEPARATOR).reduceRight((agg, part) => {
+        const listMember = part.trim();
+        const i = listMember.indexOf(LIST_MEMBER_KEY_VALUE_SPLITTER);
+        if (i !== -1) {
+          const key = listMember.slice(0, i);
+          const value = listMember.slice(i + 1, part.length);
+          if ((0, tracestate_validators_1.validateKey)(key) && (0, tracestate_validators_1.validateValue)(value)) {
+            agg.set(key, value);
+          } else {}
+        }
+        return agg;
+      }, new Map);
+      if (this._internalState.size > MAX_TRACE_STATE_ITEMS) {
+        this._internalState = new Map(Array.from(this._internalState.entries()).reverse().slice(0, MAX_TRACE_STATE_ITEMS));
+      }
+    }
+    _keys() {
+      return Array.from(this._internalState.keys()).reverse();
+    }
+    _clone() {
+      const traceState = new TraceStateImpl;
+      traceState._internalState = new Map(this._internalState);
+      return traceState;
+    }
+  }
+  exports.TraceStateImpl = TraceStateImpl;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace/internal/utils.js
+var require_utils3 = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.createTraceState = undefined;
+  var tracestate_impl_1 = require_tracestate_impl();
+  function createTraceState(rawTraceState) {
+    return new tracestate_impl_1.TraceStateImpl(rawTraceState);
+  }
+  exports.createTraceState = createTraceState;
+});
+
+// node_modules/@opentelemetry/api/build/src/context-api.js
+var require_context_api = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.context = undefined;
+  var context_1 = require_context2();
+  exports.context = context_1.ContextAPI.getInstance();
+});
+
+// node_modules/@opentelemetry/api/build/src/diag-api.js
+var require_diag_api = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.diag = undefined;
+  var diag_1 = require_diag();
+  exports.diag = diag_1.DiagAPI.instance();
+});
+
+// node_modules/@opentelemetry/api/build/src/metrics/NoopMeterProvider.js
+var require_NoopMeterProvider = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.NOOP_METER_PROVIDER = exports.NoopMeterProvider = undefined;
+  var NoopMeter_1 = require_NoopMeter();
+
+  class NoopMeterProvider {
+    getMeter(_name, _version, _options) {
+      return NoopMeter_1.NOOP_METER;
+    }
+  }
+  exports.NoopMeterProvider = NoopMeterProvider;
+  exports.NOOP_METER_PROVIDER = new NoopMeterProvider;
+});
+
+// node_modules/@opentelemetry/api/build/src/api/metrics.js
+var require_metrics = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.MetricsAPI = undefined;
+  var NoopMeterProvider_1 = require_NoopMeterProvider();
+  var global_utils_1 = require_global_utils();
+  var diag_1 = require_diag();
+  var API_NAME = "metrics";
+
+  class MetricsAPI {
+    constructor() {}
+    static getInstance() {
+      if (!this._instance) {
+        this._instance = new MetricsAPI;
+      }
+      return this._instance;
+    }
+    setGlobalMeterProvider(provider) {
+      return (0, global_utils_1.registerGlobal)(API_NAME, provider, diag_1.DiagAPI.instance());
+    }
+    getMeterProvider() {
+      return (0, global_utils_1.getGlobal)(API_NAME) || NoopMeterProvider_1.NOOP_METER_PROVIDER;
+    }
+    getMeter(name15, version2, options2) {
+      return this.getMeterProvider().getMeter(name15, version2, options2);
+    }
+    disable() {
+      (0, global_utils_1.unregisterGlobal)(API_NAME, diag_1.DiagAPI.instance());
+    }
+  }
+  exports.MetricsAPI = MetricsAPI;
+});
+
+// node_modules/@opentelemetry/api/build/src/metrics-api.js
+var require_metrics_api = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.metrics = undefined;
+  var metrics_1 = require_metrics();
+  exports.metrics = metrics_1.MetricsAPI.getInstance();
+});
+
+// node_modules/@opentelemetry/api/build/src/propagation/NoopTextMapPropagator.js
+var require_NoopTextMapPropagator = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.NoopTextMapPropagator = undefined;
+
+  class NoopTextMapPropagator {
+    inject(_context, _carrier) {}
+    extract(context, _carrier) {
+      return context;
+    }
+    fields() {
+      return [];
+    }
+  }
+  exports.NoopTextMapPropagator = NoopTextMapPropagator;
+});
+
+// node_modules/@opentelemetry/api/build/src/baggage/context-helpers.js
+var require_context_helpers = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.deleteBaggage = exports.setBaggage = exports.getActiveBaggage = exports.getBaggage = undefined;
+  var context_1 = require_context2();
+  var context_2 = require_context();
+  var BAGGAGE_KEY = (0, context_2.createContextKey)("OpenTelemetry Baggage Key");
+  function getBaggage(context) {
+    return context.getValue(BAGGAGE_KEY) || undefined;
+  }
+  exports.getBaggage = getBaggage;
+  function getActiveBaggage() {
+    return getBaggage(context_1.ContextAPI.getInstance().active());
+  }
+  exports.getActiveBaggage = getActiveBaggage;
+  function setBaggage(context, baggage) {
+    return context.setValue(BAGGAGE_KEY, baggage);
+  }
+  exports.setBaggage = setBaggage;
+  function deleteBaggage(context) {
+    return context.deleteValue(BAGGAGE_KEY);
+  }
+  exports.deleteBaggage = deleteBaggage;
+});
+
+// node_modules/@opentelemetry/api/build/src/api/propagation.js
+var require_propagation = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.PropagationAPI = undefined;
+  var global_utils_1 = require_global_utils();
+  var NoopTextMapPropagator_1 = require_NoopTextMapPropagator();
+  var TextMapPropagator_1 = require_TextMapPropagator();
+  var context_helpers_1 = require_context_helpers();
+  var utils_1 = require_utils2();
+  var diag_1 = require_diag();
+  var API_NAME = "propagation";
+  var NOOP_TEXT_MAP_PROPAGATOR = new NoopTextMapPropagator_1.NoopTextMapPropagator;
+
+  class PropagationAPI {
+    constructor() {
+      this.createBaggage = utils_1.createBaggage;
+      this.getBaggage = context_helpers_1.getBaggage;
+      this.getActiveBaggage = context_helpers_1.getActiveBaggage;
+      this.setBaggage = context_helpers_1.setBaggage;
+      this.deleteBaggage = context_helpers_1.deleteBaggage;
+    }
+    static getInstance() {
+      if (!this._instance) {
+        this._instance = new PropagationAPI;
+      }
+      return this._instance;
+    }
+    setGlobalPropagator(propagator) {
+      return (0, global_utils_1.registerGlobal)(API_NAME, propagator, diag_1.DiagAPI.instance());
+    }
+    inject(context, carrier, setter = TextMapPropagator_1.defaultTextMapSetter) {
+      return this._getGlobalPropagator().inject(context, carrier, setter);
+    }
+    extract(context, carrier, getter = TextMapPropagator_1.defaultTextMapGetter) {
+      return this._getGlobalPropagator().extract(context, carrier, getter);
+    }
+    fields() {
+      return this._getGlobalPropagator().fields();
+    }
+    disable() {
+      (0, global_utils_1.unregisterGlobal)(API_NAME, diag_1.DiagAPI.instance());
+    }
+    _getGlobalPropagator() {
+      return (0, global_utils_1.getGlobal)(API_NAME) || NOOP_TEXT_MAP_PROPAGATOR;
+    }
+  }
+  exports.PropagationAPI = PropagationAPI;
+});
+
+// node_modules/@opentelemetry/api/build/src/propagation-api.js
+var require_propagation_api = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.propagation = undefined;
+  var propagation_1 = require_propagation();
+  exports.propagation = propagation_1.PropagationAPI.getInstance();
+});
+
+// node_modules/@opentelemetry/api/build/src/api/trace.js
+var require_trace = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.TraceAPI = undefined;
+  var global_utils_1 = require_global_utils();
+  var ProxyTracerProvider_1 = require_ProxyTracerProvider();
+  var spancontext_utils_1 = require_spancontext_utils();
+  var context_utils_1 = require_context_utils();
+  var diag_1 = require_diag();
+  var API_NAME = "trace";
+
+  class TraceAPI {
+    constructor() {
+      this._proxyTracerProvider = new ProxyTracerProvider_1.ProxyTracerProvider;
+      this.wrapSpanContext = spancontext_utils_1.wrapSpanContext;
+      this.isSpanContextValid = spancontext_utils_1.isSpanContextValid;
+      this.deleteSpan = context_utils_1.deleteSpan;
+      this.getSpan = context_utils_1.getSpan;
+      this.getActiveSpan = context_utils_1.getActiveSpan;
+      this.getSpanContext = context_utils_1.getSpanContext;
+      this.setSpan = context_utils_1.setSpan;
+      this.setSpanContext = context_utils_1.setSpanContext;
+    }
+    static getInstance() {
+      if (!this._instance) {
+        this._instance = new TraceAPI;
+      }
+      return this._instance;
+    }
+    setGlobalTracerProvider(provider) {
+      const success2 = (0, global_utils_1.registerGlobal)(API_NAME, this._proxyTracerProvider, diag_1.DiagAPI.instance());
+      if (success2) {
+        this._proxyTracerProvider.setDelegate(provider);
+      }
+      return success2;
+    }
+    getTracerProvider() {
+      return (0, global_utils_1.getGlobal)(API_NAME) || this._proxyTracerProvider;
+    }
+    getTracer(name15, version2) {
+      return this.getTracerProvider().getTracer(name15, version2);
+    }
+    disable() {
+      (0, global_utils_1.unregisterGlobal)(API_NAME, diag_1.DiagAPI.instance());
+      this._proxyTracerProvider = new ProxyTracerProvider_1.ProxyTracerProvider;
+    }
+  }
+  exports.TraceAPI = TraceAPI;
+});
+
+// node_modules/@opentelemetry/api/build/src/trace-api.js
+var require_trace_api = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.trace = undefined;
+  var trace_1 = require_trace();
+  exports.trace = trace_1.TraceAPI.getInstance();
+});
+
+// node_modules/@opentelemetry/api/build/src/index.js
+var require_src = __commonJS((exports) => {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.trace = exports.propagation = exports.metrics = exports.diag = exports.context = exports.INVALID_SPAN_CONTEXT = exports.INVALID_TRACEID = exports.INVALID_SPANID = exports.isValidSpanId = exports.isValidTraceId = exports.isSpanContextValid = exports.createTraceState = exports.TraceFlags = exports.SpanStatusCode = exports.SpanKind = exports.SamplingDecision = exports.ProxyTracerProvider = exports.ProxyTracer = exports.defaultTextMapSetter = exports.defaultTextMapGetter = exports.ValueType = exports.createNoopMeter = exports.DiagLogLevel = exports.DiagConsoleLogger = exports.ROOT_CONTEXT = exports.createContextKey = exports.baggageEntryMetadataFromString = undefined;
+  var utils_1 = require_utils2();
+  Object.defineProperty(exports, "baggageEntryMetadataFromString", { enumerable: true, get: function() {
+    return utils_1.baggageEntryMetadataFromString;
+  } });
+  var context_1 = require_context();
+  Object.defineProperty(exports, "createContextKey", { enumerable: true, get: function() {
+    return context_1.createContextKey;
+  } });
+  Object.defineProperty(exports, "ROOT_CONTEXT", { enumerable: true, get: function() {
+    return context_1.ROOT_CONTEXT;
+  } });
+  var consoleLogger_1 = require_consoleLogger();
+  Object.defineProperty(exports, "DiagConsoleLogger", { enumerable: true, get: function() {
+    return consoleLogger_1.DiagConsoleLogger;
+  } });
+  var types_1 = require_types();
+  Object.defineProperty(exports, "DiagLogLevel", { enumerable: true, get: function() {
+    return types_1.DiagLogLevel;
+  } });
+  var NoopMeter_1 = require_NoopMeter();
+  Object.defineProperty(exports, "createNoopMeter", { enumerable: true, get: function() {
+    return NoopMeter_1.createNoopMeter;
+  } });
+  var Metric_1 = require_Metric();
+  Object.defineProperty(exports, "ValueType", { enumerable: true, get: function() {
+    return Metric_1.ValueType;
+  } });
+  var TextMapPropagator_1 = require_TextMapPropagator();
+  Object.defineProperty(exports, "defaultTextMapGetter", { enumerable: true, get: function() {
+    return TextMapPropagator_1.defaultTextMapGetter;
+  } });
+  Object.defineProperty(exports, "defaultTextMapSetter", { enumerable: true, get: function() {
+    return TextMapPropagator_1.defaultTextMapSetter;
+  } });
+  var ProxyTracer_1 = require_ProxyTracer();
+  Object.defineProperty(exports, "ProxyTracer", { enumerable: true, get: function() {
+    return ProxyTracer_1.ProxyTracer;
+  } });
+  var ProxyTracerProvider_1 = require_ProxyTracerProvider();
+  Object.defineProperty(exports, "ProxyTracerProvider", { enumerable: true, get: function() {
+    return ProxyTracerProvider_1.ProxyTracerProvider;
+  } });
+  var SamplingResult_1 = require_SamplingResult();
+  Object.defineProperty(exports, "SamplingDecision", { enumerable: true, get: function() {
+    return SamplingResult_1.SamplingDecision;
+  } });
+  var span_kind_1 = require_span_kind();
+  Object.defineProperty(exports, "SpanKind", { enumerable: true, get: function() {
+    return span_kind_1.SpanKind;
+  } });
+  var status_1 = require_status();
+  Object.defineProperty(exports, "SpanStatusCode", { enumerable: true, get: function() {
+    return status_1.SpanStatusCode;
+  } });
+  var trace_flags_1 = require_trace_flags();
+  Object.defineProperty(exports, "TraceFlags", { enumerable: true, get: function() {
+    return trace_flags_1.TraceFlags;
+  } });
+  var utils_2 = require_utils3();
+  Object.defineProperty(exports, "createTraceState", { enumerable: true, get: function() {
+    return utils_2.createTraceState;
+  } });
+  var spancontext_utils_1 = require_spancontext_utils();
+  Object.defineProperty(exports, "isSpanContextValid", { enumerable: true, get: function() {
+    return spancontext_utils_1.isSpanContextValid;
+  } });
+  Object.defineProperty(exports, "isValidTraceId", { enumerable: true, get: function() {
+    return spancontext_utils_1.isValidTraceId;
+  } });
+  Object.defineProperty(exports, "isValidSpanId", { enumerable: true, get: function() {
+    return spancontext_utils_1.isValidSpanId;
+  } });
+  var invalid_span_constants_1 = require_invalid_span_constants();
+  Object.defineProperty(exports, "INVALID_SPANID", { enumerable: true, get: function() {
+    return invalid_span_constants_1.INVALID_SPANID;
+  } });
+  Object.defineProperty(exports, "INVALID_TRACEID", { enumerable: true, get: function() {
+    return invalid_span_constants_1.INVALID_TRACEID;
+  } });
+  Object.defineProperty(exports, "INVALID_SPAN_CONTEXT", { enumerable: true, get: function() {
+    return invalid_span_constants_1.INVALID_SPAN_CONTEXT;
+  } });
+  var context_api_1 = require_context_api();
+  Object.defineProperty(exports, "context", { enumerable: true, get: function() {
+    return context_api_1.context;
+  } });
+  var diag_api_1 = require_diag_api();
+  Object.defineProperty(exports, "diag", { enumerable: true, get: function() {
+    return diag_api_1.diag;
+  } });
+  var metrics_api_1 = require_metrics_api();
+  Object.defineProperty(exports, "metrics", { enumerable: true, get: function() {
+    return metrics_api_1.metrics;
+  } });
+  var propagation_api_1 = require_propagation_api();
+  Object.defineProperty(exports, "propagation", { enumerable: true, get: function() {
+    return propagation_api_1.propagation;
+  } });
+  var trace_api_1 = require_trace_api();
+  Object.defineProperty(exports, "trace", { enumerable: true, get: function() {
+    return trace_api_1.trace;
+  } });
+  exports.default = {
+    context: context_api_1.context,
+    diag: diag_api_1.diag,
+    metrics: metrics_api_1.metrics,
+    propagation: propagation_api_1.propagation,
+    trace: trace_api_1.trace
+  };
+});
+
 // node_modules/hono/dist/compose.js
 var compose = (middleware, onError, onNotFound) => {
   return (context, next) => {
@@ -6197,11 +8339,14 @@ var nav_links = sqliteTable("zm_nav_links", {
   visibility: text("visibility", { enum: ["public", "user", "admin"] }).default("public").notNull(),
   http_code: integer("http_code").default(0).notNull(),
   last_checked_at: integer("last_checked_at", { mode: "timestamp" }),
+  vectorized: integer("vectorized").default(0),
+  vectorized_at: integer("vectorized_at", { mode: "timestamp" }),
   created_at: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date),
   updated_at: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date)
 }, (table) => ({
   categoryIdx: index("idx_zm_nav_links_category").on(table.category_type, table.category_id, table.visibility),
-  checkedIdIdx: index("idx_zm_nav_links_checked_id").on(table.last_checked_at, table.id)
+  checkedIdIdx: index("idx_zm_nav_links_checked_id").on(table.last_checked_at, table.id),
+  vectorizedIdx: index("idx_zm_nav_links_vectorized").on(table.vectorized)
 }));
 var categories_l1 = sqliteTable("zm_categories_l1", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -6248,12 +8393,15 @@ var links = sqliteTable("zm_links", {
   is_public: integer("is_public").default(0).notNull(),
   http_code: integer("http_code").default(0).notNull(),
   last_checked_at: integer("last_checked_at", { mode: "timestamp" }),
+  vectorized: integer("vectorized").default(0),
+  vectorized_at: integer("vectorized_at", { mode: "timestamp" }),
   created_at: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date),
   updated_at: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date)
 }, (table) => {
   return {
     uidIdx: index("idx_zm_links_uid").on(table.uid),
-    checkedIdIdx: index("idx_zm_links_checked_id").on(table.last_checked_at, table.id)
+    checkedIdIdx: index("idx_zm_links_checked_id").on(table.last_checked_at, table.id),
+    vectorizedIdx: index("idx_zm_links_vectorized").on(table.vectorized)
   };
 });
 var sessions = sqliteTable("zm_sessions", {
@@ -20591,6 +22739,18 @@ var DEFAULT_SETTINGS = {
     nav_link_detail: false,
     top_ad: "",
     bottom_ad: ""
+  },
+  ai_embedding_setting: {
+    enabled: false,
+    provider: "siliconflow",
+    model: "BAAI/bge-m3",
+    api_key: ""
+  },
+  ai_chat_setting: {
+    provider: "siliconflow",
+    base_url: "https://api.siliconflow.cn/v1",
+    model: "deepseek-ai/DeepSeek-V4-Flash",
+    api_key: ""
   }
 };
 var ENTITLEMENT_GATEWAY_B64 = "aHR0cHM6Ly9zaG9wLnhpdXBpbmcubmV0L3ptYXJrL3F1ZXJ5";
@@ -21111,8 +23271,8 @@ var getUserSetting = async (c3) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "0.9.2";
-var APP_DATE = "2026051504";
+var APP_VERSION = "1.0.0";
+var APP_DATE = "2026061007";
 var getAppInfo = async (c3) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -39146,7 +41306,20956 @@ var exportNavHTML = async (c3) => {
 // src/api/link.ts
 import { mkdir as mkdir4, rm as rm6, writeFile as writeFile4 } from "fs/promises";
 import { dirname as dirname5, join as join7 } from "path";
-import { and as and5, asc as asc5, desc as desc6, eq as eq10, inArray as inArray4, like as like2, ne as ne2, or as or4, sql as sql4 } from "drizzle-orm";
+
+// node_modules/@ai-sdk/provider/dist/index.mjs
+var marker = "vercel.ai.error";
+var symbol2 = Symbol.for(marker);
+var _a5;
+var _b;
+var AISDKError = class _AISDKError extends (_b = Error, _a5 = symbol2, _b) {
+  constructor({
+    name: name14,
+    message,
+    cause
+  }) {
+    super(message);
+    this[_a5] = true;
+    this.name = name14;
+    this.cause = cause;
+  }
+  static isInstance(error48) {
+    return _AISDKError.hasMarker(error48, marker);
+  }
+  static hasMarker(error48, marker15) {
+    const markerSymbol = Symbol.for(marker15);
+    return error48 != null && typeof error48 === "object" && markerSymbol in error48 && typeof error48[markerSymbol] === "boolean" && error48[markerSymbol] === true;
+  }
+};
+var name = "AI_APICallError";
+var marker2 = `vercel.ai.error.${name}`;
+var symbol22 = Symbol.for(marker2);
+var _a22;
+var _b2;
+var APICallError = class extends (_b2 = AISDKError, _a22 = symbol22, _b2) {
+  constructor({
+    message,
+    url: url2,
+    requestBodyValues,
+    statusCode,
+    responseHeaders,
+    responseBody,
+    cause,
+    isRetryable = statusCode != null && (statusCode === 408 || statusCode === 409 || statusCode === 429 || statusCode >= 500),
+    data: data2
+  }) {
+    super({ name, message, cause });
+    this[_a22] = true;
+    this.url = url2;
+    this.requestBodyValues = requestBodyValues;
+    this.statusCode = statusCode;
+    this.responseHeaders = responseHeaders;
+    this.responseBody = responseBody;
+    this.isRetryable = isRetryable;
+    this.data = data2;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker2);
+  }
+};
+var name2 = "AI_EmptyResponseBodyError";
+var marker3 = `vercel.ai.error.${name2}`;
+var symbol3 = Symbol.for(marker3);
+var _a32;
+var _b3;
+var EmptyResponseBodyError = class extends (_b3 = AISDKError, _a32 = symbol3, _b3) {
+  constructor({ message = "Empty response body" } = {}) {
+    super({ name: name2, message });
+    this[_a32] = true;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker3);
+  }
+};
+function getErrorMessage(error48) {
+  if (error48 == null) {
+    return "unknown error";
+  }
+  if (typeof error48 === "string") {
+    return error48;
+  }
+  if (error48 instanceof Error) {
+    return error48.message;
+  }
+  return JSON.stringify(error48);
+}
+var name3 = "AI_InvalidArgumentError";
+var marker4 = `vercel.ai.error.${name3}`;
+var symbol4 = Symbol.for(marker4);
+var _a42;
+var _b4;
+var InvalidArgumentError = class extends (_b4 = AISDKError, _a42 = symbol4, _b4) {
+  constructor({
+    message,
+    cause,
+    argument
+  }) {
+    super({ name: name3, message, cause });
+    this[_a42] = true;
+    this.argument = argument;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker4);
+  }
+};
+var name4 = "AI_InvalidPromptError";
+var marker5 = `vercel.ai.error.${name4}`;
+var symbol5 = Symbol.for(marker5);
+var _a52;
+var _b5;
+var InvalidPromptError = class extends (_b5 = AISDKError, _a52 = symbol5, _b5) {
+  constructor({
+    prompt,
+    message,
+    cause
+  }) {
+    super({ name: name4, message: `Invalid prompt: ${message}`, cause });
+    this[_a52] = true;
+    this.prompt = prompt;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker5);
+  }
+};
+var name5 = "AI_InvalidResponseDataError";
+var marker6 = `vercel.ai.error.${name5}`;
+var symbol6 = Symbol.for(marker6);
+var _a6;
+var _b6;
+var InvalidResponseDataError = class extends (_b6 = AISDKError, _a6 = symbol6, _b6) {
+  constructor({
+    data: data2,
+    message = `Invalid response data: ${JSON.stringify(data2)}.`
+  }) {
+    super({ name: name5, message });
+    this[_a6] = true;
+    this.data = data2;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker6);
+  }
+};
+var name6 = "AI_JSONParseError";
+var marker7 = `vercel.ai.error.${name6}`;
+var symbol7 = Symbol.for(marker7);
+var _a7;
+var _b7;
+var JSONParseError = class extends (_b7 = AISDKError, _a7 = symbol7, _b7) {
+  constructor({ text: text4, cause }) {
+    super({
+      name: name6,
+      message: `JSON parsing failed: Text: ${text4}.
+Error message: ${getErrorMessage(cause)}`,
+      cause
+    });
+    this[_a7] = true;
+    this.text = text4;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker7);
+  }
+};
+var name7 = "AI_LoadAPIKeyError";
+var marker8 = `vercel.ai.error.${name7}`;
+var symbol8 = Symbol.for(marker8);
+var _a8;
+var _b8;
+var LoadAPIKeyError = class extends (_b8 = AISDKError, _a8 = symbol8, _b8) {
+  constructor({ message }) {
+    super({ name: name7, message });
+    this[_a8] = true;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker8);
+  }
+};
+var name8 = "AI_LoadSettingError";
+var marker9 = `vercel.ai.error.${name8}`;
+var symbol9 = Symbol.for(marker9);
+var _a9;
+var _b9;
+var LoadSettingError = class extends (_b9 = AISDKError, _a9 = symbol9, _b9) {
+  constructor({ message }) {
+    super({ name: name8, message });
+    this[_a9] = true;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker9);
+  }
+};
+var name9 = "AI_NoContentGeneratedError";
+var marker10 = `vercel.ai.error.${name9}`;
+var symbol10 = Symbol.for(marker10);
+var _a10;
+var _b10;
+var NoContentGeneratedError = class extends (_b10 = AISDKError, _a10 = symbol10, _b10) {
+  constructor({
+    message = "No content generated."
+  } = {}) {
+    super({ name: name9, message });
+    this[_a10] = true;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker10);
+  }
+};
+var name10 = "AI_NoSuchModelError";
+var marker11 = `vercel.ai.error.${name10}`;
+var symbol11 = Symbol.for(marker11);
+var _a11;
+var _b11;
+var NoSuchModelError = class extends (_b11 = AISDKError, _a11 = symbol11, _b11) {
+  constructor({
+    errorName = name10,
+    modelId,
+    modelType,
+    message = `No such ${modelType}: ${modelId}`
+  }) {
+    super({ name: errorName, message });
+    this[_a11] = true;
+    this.modelId = modelId;
+    this.modelType = modelType;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker11);
+  }
+};
+var name11 = "AI_TooManyEmbeddingValuesForCallError";
+var marker12 = `vercel.ai.error.${name11}`;
+var symbol12 = Symbol.for(marker12);
+var _a12;
+var _b12;
+var TooManyEmbeddingValuesForCallError = class extends (_b12 = AISDKError, _a12 = symbol12, _b12) {
+  constructor(options2) {
+    super({
+      name: name11,
+      message: `Too many values for a single embedding call. The ${options2.provider} model "${options2.modelId}" can only embed up to ${options2.maxEmbeddingsPerCall} values per call, but ${options2.values.length} values were provided.`
+    });
+    this[_a12] = true;
+    this.provider = options2.provider;
+    this.modelId = options2.modelId;
+    this.maxEmbeddingsPerCall = options2.maxEmbeddingsPerCall;
+    this.values = options2.values;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker12);
+  }
+};
+var name12 = "AI_TypeValidationError";
+var marker13 = `vercel.ai.error.${name12}`;
+var symbol13 = Symbol.for(marker13);
+var _a13;
+var _b13;
+var TypeValidationError = class _TypeValidationError extends (_b13 = AISDKError, _a13 = symbol13, _b13) {
+  constructor({
+    value,
+    cause,
+    context
+  }) {
+    let contextPrefix = "Type validation failed";
+    if (context == null ? undefined : context.field) {
+      contextPrefix += ` for ${context.field}`;
+    }
+    if ((context == null ? undefined : context.entityName) || (context == null ? undefined : context.entityId)) {
+      contextPrefix += " (";
+      const parts = [];
+      if (context.entityName) {
+        parts.push(context.entityName);
+      }
+      if (context.entityId) {
+        parts.push(`id: "${context.entityId}"`);
+      }
+      contextPrefix += parts.join(", ");
+      contextPrefix += ")";
+    }
+    super({
+      name: name12,
+      message: `${contextPrefix}: Value: ${JSON.stringify(value)}.
+Error message: ${getErrorMessage(cause)}`,
+      cause
+    });
+    this[_a13] = true;
+    this.value = value;
+    this.context = context;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker13);
+  }
+  static wrap({
+    value,
+    cause,
+    context
+  }) {
+    var _a15, _b15, _c;
+    if (_TypeValidationError.isInstance(cause) && cause.value === value && ((_a15 = cause.context) == null ? undefined : _a15.field) === (context == null ? undefined : context.field) && ((_b15 = cause.context) == null ? undefined : _b15.entityName) === (context == null ? undefined : context.entityName) && ((_c = cause.context) == null ? undefined : _c.entityId) === (context == null ? undefined : context.entityId)) {
+      return cause;
+    }
+    return new _TypeValidationError({ value, cause, context });
+  }
+};
+var name13 = "AI_UnsupportedFunctionalityError";
+var marker14 = `vercel.ai.error.${name13}`;
+var symbol14 = Symbol.for(marker14);
+var _a14;
+var _b14;
+var UnsupportedFunctionalityError = class extends (_b14 = AISDKError, _a14 = symbol14, _b14) {
+  constructor({
+    functionality,
+    message = `'${functionality}' functionality not supported.`
+  }) {
+    super({ name: name13, message });
+    this[_a14] = true;
+    this.functionality = functionality;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker14);
+  }
+};
+// node_modules/zod/v3/helpers/util.js
+var util;
+(function(util2) {
+  util2.assertEqual = (_) => {};
+  function assertIs2(_arg) {}
+  util2.assertIs = assertIs2;
+  function assertNever2(_x) {
+    throw new Error;
+  }
+  util2.assertNever = assertNever2;
+  util2.arrayToEnum = (items) => {
+    const obj = {};
+    for (const item of items) {
+      obj[item] = item;
+    }
+    return obj;
+  };
+  util2.getValidEnumValues = (obj) => {
+    const validKeys = util2.objectKeys(obj).filter((k) => typeof obj[obj[k]] !== "number");
+    const filtered = {};
+    for (const k of validKeys) {
+      filtered[k] = obj[k];
+    }
+    return util2.objectValues(filtered);
+  };
+  util2.objectValues = (obj) => {
+    return util2.objectKeys(obj).map(function(e) {
+      return obj[e];
+    });
+  };
+  util2.objectKeys = typeof Object.keys === "function" ? (obj) => Object.keys(obj) : (object2) => {
+    const keys = [];
+    for (const key in object2) {
+      if (Object.prototype.hasOwnProperty.call(object2, key)) {
+        keys.push(key);
+      }
+    }
+    return keys;
+  };
+  util2.find = (arr, checker) => {
+    for (const item of arr) {
+      if (checker(item))
+        return item;
+    }
+    return;
+  };
+  util2.isInteger = typeof Number.isInteger === "function" ? (val2) => Number.isInteger(val2) : (val2) => typeof val2 === "number" && Number.isFinite(val2) && Math.floor(val2) === val2;
+  function joinValues2(array2, separator = " | ") {
+    return array2.map((val2) => typeof val2 === "string" ? `'${val2}'` : val2).join(separator);
+  }
+  util2.joinValues = joinValues2;
+  util2.jsonStringifyReplacer = (_, value) => {
+    if (typeof value === "bigint") {
+      return value.toString();
+    }
+    return value;
+  };
+})(util || (util = {}));
+var objectUtil;
+(function(objectUtil2) {
+  objectUtil2.mergeShapes = (first2, second) => {
+    return {
+      ...first2,
+      ...second
+    };
+  };
+})(objectUtil || (objectUtil = {}));
+var ZodParsedType = util.arrayToEnum([
+  "string",
+  "nan",
+  "number",
+  "integer",
+  "float",
+  "boolean",
+  "date",
+  "bigint",
+  "symbol",
+  "function",
+  "undefined",
+  "null",
+  "array",
+  "object",
+  "unknown",
+  "promise",
+  "void",
+  "never",
+  "map",
+  "set"
+]);
+var getParsedType2 = (data2) => {
+  const t = typeof data2;
+  switch (t) {
+    case "undefined":
+      return ZodParsedType.undefined;
+    case "string":
+      return ZodParsedType.string;
+    case "number":
+      return Number.isNaN(data2) ? ZodParsedType.nan : ZodParsedType.number;
+    case "boolean":
+      return ZodParsedType.boolean;
+    case "function":
+      return ZodParsedType.function;
+    case "bigint":
+      return ZodParsedType.bigint;
+    case "symbol":
+      return ZodParsedType.symbol;
+    case "object":
+      if (Array.isArray(data2)) {
+        return ZodParsedType.array;
+      }
+      if (data2 === null) {
+        return ZodParsedType.null;
+      }
+      if (data2.then && typeof data2.then === "function" && data2.catch && typeof data2.catch === "function") {
+        return ZodParsedType.promise;
+      }
+      if (typeof Map !== "undefined" && data2 instanceof Map) {
+        return ZodParsedType.map;
+      }
+      if (typeof Set !== "undefined" && data2 instanceof Set) {
+        return ZodParsedType.set;
+      }
+      if (typeof Date !== "undefined" && data2 instanceof Date) {
+        return ZodParsedType.date;
+      }
+      return ZodParsedType.object;
+    default:
+      return ZodParsedType.unknown;
+  }
+};
+
+// node_modules/zod/v3/ZodError.js
+var ZodIssueCode2 = util.arrayToEnum([
+  "invalid_type",
+  "invalid_literal",
+  "custom",
+  "invalid_union",
+  "invalid_union_discriminator",
+  "invalid_enum_value",
+  "unrecognized_keys",
+  "invalid_arguments",
+  "invalid_return_type",
+  "invalid_date",
+  "invalid_string",
+  "too_small",
+  "too_big",
+  "invalid_intersection_types",
+  "not_multiple_of",
+  "not_finite"
+]);
+class ZodError2 extends Error {
+  get errors() {
+    return this.issues;
+  }
+  constructor(issues) {
+    super();
+    this.issues = [];
+    this.addIssue = (sub) => {
+      this.issues = [...this.issues, sub];
+    };
+    this.addIssues = (subs = []) => {
+      this.issues = [...this.issues, ...subs];
+    };
+    const actualProto = new.target.prototype;
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(this, actualProto);
+    } else {
+      this.__proto__ = actualProto;
+    }
+    this.name = "ZodError";
+    this.issues = issues;
+  }
+  format(_mapper) {
+    const mapper = _mapper || function(issue2) {
+      return issue2.message;
+    };
+    const fieldErrors = { _errors: [] };
+    const processError = (error48) => {
+      for (const issue2 of error48.issues) {
+        if (issue2.code === "invalid_union") {
+          issue2.unionErrors.map(processError);
+        } else if (issue2.code === "invalid_return_type") {
+          processError(issue2.returnTypeError);
+        } else if (issue2.code === "invalid_arguments") {
+          processError(issue2.argumentsError);
+        } else if (issue2.path.length === 0) {
+          fieldErrors._errors.push(mapper(issue2));
+        } else {
+          let curr = fieldErrors;
+          let i = 0;
+          while (i < issue2.path.length) {
+            const el = issue2.path[i];
+            const terminal = i === issue2.path.length - 1;
+            if (!terminal) {
+              curr[el] = curr[el] || { _errors: [] };
+            } else {
+              curr[el] = curr[el] || { _errors: [] };
+              curr[el]._errors.push(mapper(issue2));
+            }
+            curr = curr[el];
+            i++;
+          }
+        }
+      }
+    };
+    processError(this);
+    return fieldErrors;
+  }
+  static assert(value) {
+    if (!(value instanceof ZodError2)) {
+      throw new Error(`Not a ZodError: ${value}`);
+    }
+  }
+  toString() {
+    return this.message;
+  }
+  get message() {
+    return JSON.stringify(this.issues, util.jsonStringifyReplacer, 2);
+  }
+  get isEmpty() {
+    return this.issues.length === 0;
+  }
+  flatten(mapper = (issue2) => issue2.message) {
+    const fieldErrors = Object.create(null);
+    const formErrors = [];
+    for (const sub of this.issues) {
+      if (sub.path.length > 0) {
+        const firstEl = sub.path[0];
+        fieldErrors[firstEl] = fieldErrors[firstEl] || [];
+        fieldErrors[firstEl].push(mapper(sub));
+      } else {
+        formErrors.push(mapper(sub));
+      }
+    }
+    return { formErrors, fieldErrors };
+  }
+  get formErrors() {
+    return this.flatten();
+  }
+}
+ZodError2.create = (issues) => {
+  const error48 = new ZodError2(issues);
+  return error48;
+};
+
+// node_modules/zod/v3/locales/en.js
+var errorMap = (issue2, _ctx) => {
+  let message;
+  switch (issue2.code) {
+    case ZodIssueCode2.invalid_type:
+      if (issue2.received === ZodParsedType.undefined) {
+        message = "Required";
+      } else {
+        message = `Expected ${issue2.expected}, received ${issue2.received}`;
+      }
+      break;
+    case ZodIssueCode2.invalid_literal:
+      message = `Invalid literal value, expected ${JSON.stringify(issue2.expected, util.jsonStringifyReplacer)}`;
+      break;
+    case ZodIssueCode2.unrecognized_keys:
+      message = `Unrecognized key(s) in object: ${util.joinValues(issue2.keys, ", ")}`;
+      break;
+    case ZodIssueCode2.invalid_union:
+      message = `Invalid input`;
+      break;
+    case ZodIssueCode2.invalid_union_discriminator:
+      message = `Invalid discriminator value. Expected ${util.joinValues(issue2.options)}`;
+      break;
+    case ZodIssueCode2.invalid_enum_value:
+      message = `Invalid enum value. Expected ${util.joinValues(issue2.options)}, received '${issue2.received}'`;
+      break;
+    case ZodIssueCode2.invalid_arguments:
+      message = `Invalid function arguments`;
+      break;
+    case ZodIssueCode2.invalid_return_type:
+      message = `Invalid function return type`;
+      break;
+    case ZodIssueCode2.invalid_date:
+      message = `Invalid date`;
+      break;
+    case ZodIssueCode2.invalid_string:
+      if (typeof issue2.validation === "object") {
+        if ("includes" in issue2.validation) {
+          message = `Invalid input: must include "${issue2.validation.includes}"`;
+          if (typeof issue2.validation.position === "number") {
+            message = `${message} at one or more positions greater than or equal to ${issue2.validation.position}`;
+          }
+        } else if ("startsWith" in issue2.validation) {
+          message = `Invalid input: must start with "${issue2.validation.startsWith}"`;
+        } else if ("endsWith" in issue2.validation) {
+          message = `Invalid input: must end with "${issue2.validation.endsWith}"`;
+        } else {
+          util.assertNever(issue2.validation);
+        }
+      } else if (issue2.validation !== "regex") {
+        message = `Invalid ${issue2.validation}`;
+      } else {
+        message = "Invalid";
+      }
+      break;
+    case ZodIssueCode2.too_small:
+      if (issue2.type === "array")
+        message = `Array must contain ${issue2.exact ? "exactly" : issue2.inclusive ? `at least` : `more than`} ${issue2.minimum} element(s)`;
+      else if (issue2.type === "string")
+        message = `String must contain ${issue2.exact ? "exactly" : issue2.inclusive ? `at least` : `over`} ${issue2.minimum} character(s)`;
+      else if (issue2.type === "number")
+        message = `Number must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${issue2.minimum}`;
+      else if (issue2.type === "bigint")
+        message = `Number must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${issue2.minimum}`;
+      else if (issue2.type === "date")
+        message = `Date must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${new Date(Number(issue2.minimum))}`;
+      else
+        message = "Invalid input";
+      break;
+    case ZodIssueCode2.too_big:
+      if (issue2.type === "array")
+        message = `Array must contain ${issue2.exact ? `exactly` : issue2.inclusive ? `at most` : `less than`} ${issue2.maximum} element(s)`;
+      else if (issue2.type === "string")
+        message = `String must contain ${issue2.exact ? `exactly` : issue2.inclusive ? `at most` : `under`} ${issue2.maximum} character(s)`;
+      else if (issue2.type === "number")
+        message = `Number must be ${issue2.exact ? `exactly` : issue2.inclusive ? `less than or equal to` : `less than`} ${issue2.maximum}`;
+      else if (issue2.type === "bigint")
+        message = `BigInt must be ${issue2.exact ? `exactly` : issue2.inclusive ? `less than or equal to` : `less than`} ${issue2.maximum}`;
+      else if (issue2.type === "date")
+        message = `Date must be ${issue2.exact ? `exactly` : issue2.inclusive ? `smaller than or equal to` : `smaller than`} ${new Date(Number(issue2.maximum))}`;
+      else
+        message = "Invalid input";
+      break;
+    case ZodIssueCode2.custom:
+      message = `Invalid input`;
+      break;
+    case ZodIssueCode2.invalid_intersection_types:
+      message = `Intersection results could not be merged`;
+      break;
+    case ZodIssueCode2.not_multiple_of:
+      message = `Number must be a multiple of ${issue2.multipleOf}`;
+      break;
+    case ZodIssueCode2.not_finite:
+      message = "Number must be finite";
+      break;
+    default:
+      message = _ctx.defaultError;
+      util.assertNever(issue2);
+  }
+  return { message };
+};
+var en_default2 = errorMap;
+
+// node_modules/zod/v3/errors.js
+var overrideErrorMap = en_default2;
+function getErrorMap2() {
+  return overrideErrorMap;
+}
+
+// node_modules/zod/v3/helpers/parseUtil.js
+var makeIssue = (params) => {
+  const { data: data2, path, errorMaps, issueData } = params;
+  const fullPath = [...path, ...issueData.path || []];
+  const fullIssue = {
+    ...issueData,
+    path: fullPath
+  };
+  if (issueData.message !== undefined) {
+    return {
+      ...issueData,
+      path: fullPath,
+      message: issueData.message
+    };
+  }
+  let errorMessage = "";
+  const maps = errorMaps.filter((m) => !!m).slice().reverse();
+  for (const map3 of maps) {
+    errorMessage = map3(fullIssue, { data: data2, defaultError: errorMessage }).message;
+  }
+  return {
+    ...issueData,
+    path: fullPath,
+    message: errorMessage
+  };
+};
+function addIssueToContext(ctx, issueData) {
+  const overrideMap = getErrorMap2();
+  const issue2 = makeIssue({
+    issueData,
+    data: ctx.data,
+    path: ctx.path,
+    errorMaps: [
+      ctx.common.contextualErrorMap,
+      ctx.schemaErrorMap,
+      overrideMap,
+      overrideMap === en_default2 ? undefined : en_default2
+    ].filter((x2) => !!x2)
+  });
+  ctx.common.issues.push(issue2);
+}
+
+class ParseStatus {
+  constructor() {
+    this.value = "valid";
+  }
+  dirty() {
+    if (this.value === "valid")
+      this.value = "dirty";
+  }
+  abort() {
+    if (this.value !== "aborted")
+      this.value = "aborted";
+  }
+  static mergeArray(status, results) {
+    const arrayValue = [];
+    for (const s of results) {
+      if (s.status === "aborted")
+        return INVALID;
+      if (s.status === "dirty")
+        status.dirty();
+      arrayValue.push(s.value);
+    }
+    return { status: status.value, value: arrayValue };
+  }
+  static async mergeObjectAsync(status, pairs) {
+    const syncPairs = [];
+    for (const pair of pairs) {
+      const key = await pair.key;
+      const value = await pair.value;
+      syncPairs.push({
+        key,
+        value
+      });
+    }
+    return ParseStatus.mergeObjectSync(status, syncPairs);
+  }
+  static mergeObjectSync(status, pairs) {
+    const finalObject = {};
+    for (const pair of pairs) {
+      const { key, value } = pair;
+      if (key.status === "aborted")
+        return INVALID;
+      if (value.status === "aborted")
+        return INVALID;
+      if (key.status === "dirty")
+        status.dirty();
+      if (value.status === "dirty")
+        status.dirty();
+      if (key.value !== "__proto__" && (typeof value.value !== "undefined" || pair.alwaysSet)) {
+        finalObject[key.value] = value.value;
+      }
+    }
+    return { status: status.value, value: finalObject };
+  }
+}
+var INVALID = Object.freeze({
+  status: "aborted"
+});
+var DIRTY = (value) => ({ status: "dirty", value });
+var OK = (value) => ({ status: "valid", value });
+var isAborted = (x2) => x2.status === "aborted";
+var isDirty = (x2) => x2.status === "dirty";
+var isValid = (x2) => x2.status === "valid";
+var isAsync = (x2) => typeof Promise !== "undefined" && x2 instanceof Promise;
+
+// node_modules/zod/v3/helpers/errorUtil.js
+var errorUtil;
+(function(errorUtil2) {
+  errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
+  errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
+})(errorUtil || (errorUtil = {}));
+
+// node_modules/zod/v3/types.js
+class ParseInputLazyPath {
+  constructor(parent2, value, path, key) {
+    this._cachedPath = [];
+    this.parent = parent2;
+    this.data = value;
+    this._path = path;
+    this._key = key;
+  }
+  get path() {
+    if (!this._cachedPath.length) {
+      if (Array.isArray(this._key)) {
+        this._cachedPath.push(...this._path, ...this._key);
+      } else {
+        this._cachedPath.push(...this._path, this._key);
+      }
+    }
+    return this._cachedPath;
+  }
+}
+var handleResult = (ctx, result) => {
+  if (isValid(result)) {
+    return { success: true, data: result.value };
+  } else {
+    if (!ctx.common.issues.length) {
+      throw new Error("Validation failed but no issues detected.");
+    }
+    return {
+      success: false,
+      get error() {
+        if (this._error)
+          return this._error;
+        const error48 = new ZodError2(ctx.common.issues);
+        this._error = error48;
+        return this._error;
+      }
+    };
+  }
+};
+function processCreateParams(params) {
+  if (!params)
+    return {};
+  const { errorMap: errorMap2, invalid_type_error, required_error, description } = params;
+  if (errorMap2 && (invalid_type_error || required_error)) {
+    throw new Error(`Can't use "invalid_type_error" or "required_error" in conjunction with custom error map.`);
+  }
+  if (errorMap2)
+    return { errorMap: errorMap2, description };
+  const customMap = (iss, ctx) => {
+    const { message } = params;
+    if (iss.code === "invalid_enum_value") {
+      return { message: message ?? ctx.defaultError };
+    }
+    if (typeof ctx.data === "undefined") {
+      return { message: message ?? required_error ?? ctx.defaultError };
+    }
+    if (iss.code !== "invalid_type")
+      return { message: ctx.defaultError };
+    return { message: message ?? invalid_type_error ?? ctx.defaultError };
+  };
+  return { errorMap: customMap, description };
+}
+
+class ZodType2 {
+  get description() {
+    return this._def.description;
+  }
+  _getType(input) {
+    return getParsedType2(input.data);
+  }
+  _getOrReturnCtx(input, ctx) {
+    return ctx || {
+      common: input.parent.common,
+      data: input.data,
+      parsedType: getParsedType2(input.data),
+      schemaErrorMap: this._def.errorMap,
+      path: input.path,
+      parent: input.parent
+    };
+  }
+  _processInputParams(input) {
+    return {
+      status: new ParseStatus,
+      ctx: {
+        common: input.parent.common,
+        data: input.data,
+        parsedType: getParsedType2(input.data),
+        schemaErrorMap: this._def.errorMap,
+        path: input.path,
+        parent: input.parent
+      }
+    };
+  }
+  _parseSync(input) {
+    const result = this._parse(input);
+    if (isAsync(result)) {
+      throw new Error("Synchronous parse encountered promise.");
+    }
+    return result;
+  }
+  _parseAsync(input) {
+    const result = this._parse(input);
+    return Promise.resolve(result);
+  }
+  parse(data2, params) {
+    const result = this.safeParse(data2, params);
+    if (result.success)
+      return result.data;
+    throw result.error;
+  }
+  safeParse(data2, params) {
+    const ctx = {
+      common: {
+        issues: [],
+        async: params?.async ?? false,
+        contextualErrorMap: params?.errorMap
+      },
+      path: params?.path || [],
+      schemaErrorMap: this._def.errorMap,
+      parent: null,
+      data: data2,
+      parsedType: getParsedType2(data2)
+    };
+    const result = this._parseSync({ data: data2, path: ctx.path, parent: ctx });
+    return handleResult(ctx, result);
+  }
+  "~validate"(data2) {
+    const ctx = {
+      common: {
+        issues: [],
+        async: !!this["~standard"].async
+      },
+      path: [],
+      schemaErrorMap: this._def.errorMap,
+      parent: null,
+      data: data2,
+      parsedType: getParsedType2(data2)
+    };
+    if (!this["~standard"].async) {
+      try {
+        const result = this._parseSync({ data: data2, path: [], parent: ctx });
+        return isValid(result) ? {
+          value: result.value
+        } : {
+          issues: ctx.common.issues
+        };
+      } catch (err) {
+        if (err?.message?.toLowerCase()?.includes("encountered")) {
+          this["~standard"].async = true;
+        }
+        ctx.common = {
+          issues: [],
+          async: true
+        };
+      }
+    }
+    return this._parseAsync({ data: data2, path: [], parent: ctx }).then((result) => isValid(result) ? {
+      value: result.value
+    } : {
+      issues: ctx.common.issues
+    });
+  }
+  async parseAsync(data2, params) {
+    const result = await this.safeParseAsync(data2, params);
+    if (result.success)
+      return result.data;
+    throw result.error;
+  }
+  async safeParseAsync(data2, params) {
+    const ctx = {
+      common: {
+        issues: [],
+        contextualErrorMap: params?.errorMap,
+        async: true
+      },
+      path: params?.path || [],
+      schemaErrorMap: this._def.errorMap,
+      parent: null,
+      data: data2,
+      parsedType: getParsedType2(data2)
+    };
+    const maybeAsyncResult = this._parse({ data: data2, path: ctx.path, parent: ctx });
+    const result = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
+    return handleResult(ctx, result);
+  }
+  refine(check2, message) {
+    const getIssueProperties = (val2) => {
+      if (typeof message === "string" || typeof message === "undefined") {
+        return { message };
+      } else if (typeof message === "function") {
+        return message(val2);
+      } else {
+        return message;
+      }
+    };
+    return this._refinement((val2, ctx) => {
+      const result = check2(val2);
+      const setError = () => ctx.addIssue({
+        code: ZodIssueCode2.custom,
+        ...getIssueProperties(val2)
+      });
+      if (typeof Promise !== "undefined" && result instanceof Promise) {
+        return result.then((data2) => {
+          if (!data2) {
+            setError();
+            return false;
+          } else {
+            return true;
+          }
+        });
+      }
+      if (!result) {
+        setError();
+        return false;
+      } else {
+        return true;
+      }
+    });
+  }
+  refinement(check2, refinementData) {
+    return this._refinement((val2, ctx) => {
+      if (!check2(val2)) {
+        ctx.addIssue(typeof refinementData === "function" ? refinementData(val2, ctx) : refinementData);
+        return false;
+      } else {
+        return true;
+      }
+    });
+  }
+  _refinement(refinement) {
+    return new ZodEffects({
+      schema: this,
+      typeName: ZodFirstPartyTypeKind2.ZodEffects,
+      effect: { type: "refinement", refinement }
+    });
+  }
+  superRefine(refinement) {
+    return this._refinement(refinement);
+  }
+  constructor(def) {
+    this.spa = this.safeParseAsync;
+    this._def = def;
+    this.parse = this.parse.bind(this);
+    this.safeParse = this.safeParse.bind(this);
+    this.parseAsync = this.parseAsync.bind(this);
+    this.safeParseAsync = this.safeParseAsync.bind(this);
+    this.spa = this.spa.bind(this);
+    this.refine = this.refine.bind(this);
+    this.refinement = this.refinement.bind(this);
+    this.superRefine = this.superRefine.bind(this);
+    this.optional = this.optional.bind(this);
+    this.nullable = this.nullable.bind(this);
+    this.nullish = this.nullish.bind(this);
+    this.array = this.array.bind(this);
+    this.promise = this.promise.bind(this);
+    this.or = this.or.bind(this);
+    this.and = this.and.bind(this);
+    this.transform = this.transform.bind(this);
+    this.brand = this.brand.bind(this);
+    this.default = this.default.bind(this);
+    this.catch = this.catch.bind(this);
+    this.describe = this.describe.bind(this);
+    this.pipe = this.pipe.bind(this);
+    this.readonly = this.readonly.bind(this);
+    this.isNullable = this.isNullable.bind(this);
+    this.isOptional = this.isOptional.bind(this);
+    this["~standard"] = {
+      version: 1,
+      vendor: "zod",
+      validate: (data2) => this["~validate"](data2)
+    };
+  }
+  optional() {
+    return ZodOptional2.create(this, this._def);
+  }
+  nullable() {
+    return ZodNullable2.create(this, this._def);
+  }
+  nullish() {
+    return this.nullable().optional();
+  }
+  array() {
+    return ZodArray2.create(this);
+  }
+  promise() {
+    return ZodPromise2.create(this, this._def);
+  }
+  or(option) {
+    return ZodUnion2.create([this, option], this._def);
+  }
+  and(incoming) {
+    return ZodIntersection2.create(this, incoming, this._def);
+  }
+  transform(transform2) {
+    return new ZodEffects({
+      ...processCreateParams(this._def),
+      schema: this,
+      typeName: ZodFirstPartyTypeKind2.ZodEffects,
+      effect: { type: "transform", transform: transform2 }
+    });
+  }
+  default(def) {
+    const defaultValueFunc = typeof def === "function" ? def : () => def;
+    return new ZodDefault2({
+      ...processCreateParams(this._def),
+      innerType: this,
+      defaultValue: defaultValueFunc,
+      typeName: ZodFirstPartyTypeKind2.ZodDefault
+    });
+  }
+  brand() {
+    return new ZodBranded({
+      typeName: ZodFirstPartyTypeKind2.ZodBranded,
+      type: this,
+      ...processCreateParams(this._def)
+    });
+  }
+  catch(def) {
+    const catchValueFunc = typeof def === "function" ? def : () => def;
+    return new ZodCatch2({
+      ...processCreateParams(this._def),
+      innerType: this,
+      catchValue: catchValueFunc,
+      typeName: ZodFirstPartyTypeKind2.ZodCatch
+    });
+  }
+  describe(description) {
+    const This = this.constructor;
+    return new This({
+      ...this._def,
+      description
+    });
+  }
+  pipe(target) {
+    return ZodPipeline.create(this, target);
+  }
+  readonly() {
+    return ZodReadonly2.create(this);
+  }
+  isOptional() {
+    return this.safeParse(undefined).success;
+  }
+  isNullable() {
+    return this.safeParse(null).success;
+  }
+}
+var cuidRegex = /^c[^\s-]{8,}$/i;
+var cuid2Regex = /^[0-9a-z]+$/;
+var ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
+var uuidRegex = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i;
+var nanoidRegex = /^[a-z0-9_-]{21}$/i;
+var jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
+var durationRegex = /^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/;
+var emailRegex = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i;
+var _emojiRegex = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
+var emojiRegex;
+var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
+var ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/;
+var ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+var ipv6CidrRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
+var base64Regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+var base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/;
+var dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
+var dateRegex = new RegExp(`^${dateRegexSource}$`);
+function timeRegexSource(args) {
+  let secondsRegexSource = `[0-5]\\d`;
+  if (args.precision) {
+    secondsRegexSource = `${secondsRegexSource}\\.\\d{${args.precision}}`;
+  } else if (args.precision == null) {
+    secondsRegexSource = `${secondsRegexSource}(\\.\\d+)?`;
+  }
+  const secondsQuantifier = args.precision ? "+" : "?";
+  return `([01]\\d|2[0-3]):[0-5]\\d(:${secondsRegexSource})${secondsQuantifier}`;
+}
+function timeRegex(args) {
+  return new RegExp(`^${timeRegexSource(args)}$`);
+}
+function datetimeRegex(args) {
+  let regex = `${dateRegexSource}T${timeRegexSource(args)}`;
+  const opts = [];
+  opts.push(args.local ? `Z?` : `Z`);
+  if (args.offset)
+    opts.push(`([+-]\\d{2}:?\\d{2})`);
+  regex = `${regex}(${opts.join("|")})`;
+  return new RegExp(`^${regex}$`);
+}
+function isValidIP(ip, version2) {
+  if ((version2 === "v4" || !version2) && ipv4Regex.test(ip)) {
+    return true;
+  }
+  if ((version2 === "v6" || !version2) && ipv6Regex.test(ip)) {
+    return true;
+  }
+  return false;
+}
+function isValidJWT2(jwt2, alg) {
+  if (!jwtRegex.test(jwt2))
+    return false;
+  try {
+    const [header] = jwt2.split(".");
+    if (!header)
+      return false;
+    const base643 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
+    const decoded = JSON.parse(atob(base643));
+    if (typeof decoded !== "object" || decoded === null)
+      return false;
+    if ("typ" in decoded && decoded?.typ !== "JWT")
+      return false;
+    if (!decoded.alg)
+      return false;
+    if (alg && decoded.alg !== alg)
+      return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+function isValidCidr(ip, version2) {
+  if ((version2 === "v4" || !version2) && ipv4CidrRegex.test(ip)) {
+    return true;
+  }
+  if ((version2 === "v6" || !version2) && ipv6CidrRegex.test(ip)) {
+    return true;
+  }
+  return false;
+}
+
+class ZodString2 extends ZodType2 {
+  _parse(input) {
+    if (this._def.coerce) {
+      input.data = String(input.data);
+    }
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.string) {
+      const ctx2 = this._getOrReturnCtx(input);
+      addIssueToContext(ctx2, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.string,
+        received: ctx2.parsedType
+      });
+      return INVALID;
+    }
+    const status = new ParseStatus;
+    let ctx = undefined;
+    for (const check2 of this._def.checks) {
+      if (check2.kind === "min") {
+        if (input.data.length < check2.value) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.too_small,
+            minimum: check2.value,
+            type: "string",
+            inclusive: true,
+            exact: false,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "max") {
+        if (input.data.length > check2.value) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.too_big,
+            maximum: check2.value,
+            type: "string",
+            inclusive: true,
+            exact: false,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "length") {
+        const tooBig = input.data.length > check2.value;
+        const tooSmall = input.data.length < check2.value;
+        if (tooBig || tooSmall) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          if (tooBig) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode2.too_big,
+              maximum: check2.value,
+              type: "string",
+              inclusive: true,
+              exact: true,
+              message: check2.message
+            });
+          } else if (tooSmall) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode2.too_small,
+              minimum: check2.value,
+              type: "string",
+              inclusive: true,
+              exact: true,
+              message: check2.message
+            });
+          }
+          status.dirty();
+        }
+      } else if (check2.kind === "email") {
+        if (!emailRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "email",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "emoji") {
+        if (!emojiRegex) {
+          emojiRegex = new RegExp(_emojiRegex, "u");
+        }
+        if (!emojiRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "emoji",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "uuid") {
+        if (!uuidRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "uuid",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "nanoid") {
+        if (!nanoidRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "nanoid",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "cuid") {
+        if (!cuidRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "cuid",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "cuid2") {
+        if (!cuid2Regex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "cuid2",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "ulid") {
+        if (!ulidRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "ulid",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "url") {
+        try {
+          new URL(input.data);
+        } catch {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "url",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "regex") {
+        check2.regex.lastIndex = 0;
+        const testResult = check2.regex.test(input.data);
+        if (!testResult) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "regex",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "trim") {
+        input.data = input.data.trim();
+      } else if (check2.kind === "includes") {
+        if (!input.data.includes(check2.value, check2.position)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.invalid_string,
+            validation: { includes: check2.value, position: check2.position },
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "toLowerCase") {
+        input.data = input.data.toLowerCase();
+      } else if (check2.kind === "toUpperCase") {
+        input.data = input.data.toUpperCase();
+      } else if (check2.kind === "startsWith") {
+        if (!input.data.startsWith(check2.value)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.invalid_string,
+            validation: { startsWith: check2.value },
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "endsWith") {
+        if (!input.data.endsWith(check2.value)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.invalid_string,
+            validation: { endsWith: check2.value },
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "datetime") {
+        const regex = datetimeRegex(check2);
+        if (!regex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.invalid_string,
+            validation: "datetime",
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "date") {
+        const regex = dateRegex;
+        if (!regex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.invalid_string,
+            validation: "date",
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "time") {
+        const regex = timeRegex(check2);
+        if (!regex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.invalid_string,
+            validation: "time",
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "duration") {
+        if (!durationRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "duration",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "ip") {
+        if (!isValidIP(input.data, check2.version)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "ip",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "jwt") {
+        if (!isValidJWT2(input.data, check2.alg)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "jwt",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "cidr") {
+        if (!isValidCidr(input.data, check2.version)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "cidr",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "base64") {
+        if (!base64Regex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "base64",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "base64url") {
+        if (!base64urlRegex.test(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            validation: "base64url",
+            code: ZodIssueCode2.invalid_string,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else {
+        util.assertNever(check2);
+      }
+    }
+    return { status: status.value, value: input.data };
+  }
+  _regex(regex, validation, message) {
+    return this.refinement((data2) => regex.test(data2), {
+      validation,
+      code: ZodIssueCode2.invalid_string,
+      ...errorUtil.errToObj(message)
+    });
+  }
+  _addCheck(check2) {
+    return new ZodString2({
+      ...this._def,
+      checks: [...this._def.checks, check2]
+    });
+  }
+  email(message) {
+    return this._addCheck({ kind: "email", ...errorUtil.errToObj(message) });
+  }
+  url(message) {
+    return this._addCheck({ kind: "url", ...errorUtil.errToObj(message) });
+  }
+  emoji(message) {
+    return this._addCheck({ kind: "emoji", ...errorUtil.errToObj(message) });
+  }
+  uuid(message) {
+    return this._addCheck({ kind: "uuid", ...errorUtil.errToObj(message) });
+  }
+  nanoid(message) {
+    return this._addCheck({ kind: "nanoid", ...errorUtil.errToObj(message) });
+  }
+  cuid(message) {
+    return this._addCheck({ kind: "cuid", ...errorUtil.errToObj(message) });
+  }
+  cuid2(message) {
+    return this._addCheck({ kind: "cuid2", ...errorUtil.errToObj(message) });
+  }
+  ulid(message) {
+    return this._addCheck({ kind: "ulid", ...errorUtil.errToObj(message) });
+  }
+  base64(message) {
+    return this._addCheck({ kind: "base64", ...errorUtil.errToObj(message) });
+  }
+  base64url(message) {
+    return this._addCheck({
+      kind: "base64url",
+      ...errorUtil.errToObj(message)
+    });
+  }
+  jwt(options2) {
+    return this._addCheck({ kind: "jwt", ...errorUtil.errToObj(options2) });
+  }
+  ip(options2) {
+    return this._addCheck({ kind: "ip", ...errorUtil.errToObj(options2) });
+  }
+  cidr(options2) {
+    return this._addCheck({ kind: "cidr", ...errorUtil.errToObj(options2) });
+  }
+  datetime(options2) {
+    if (typeof options2 === "string") {
+      return this._addCheck({
+        kind: "datetime",
+        precision: null,
+        offset: false,
+        local: false,
+        message: options2
+      });
+    }
+    return this._addCheck({
+      kind: "datetime",
+      precision: typeof options2?.precision === "undefined" ? null : options2?.precision,
+      offset: options2?.offset ?? false,
+      local: options2?.local ?? false,
+      ...errorUtil.errToObj(options2?.message)
+    });
+  }
+  date(message) {
+    return this._addCheck({ kind: "date", message });
+  }
+  time(options2) {
+    if (typeof options2 === "string") {
+      return this._addCheck({
+        kind: "time",
+        precision: null,
+        message: options2
+      });
+    }
+    return this._addCheck({
+      kind: "time",
+      precision: typeof options2?.precision === "undefined" ? null : options2?.precision,
+      ...errorUtil.errToObj(options2?.message)
+    });
+  }
+  duration(message) {
+    return this._addCheck({ kind: "duration", ...errorUtil.errToObj(message) });
+  }
+  regex(regex, message) {
+    return this._addCheck({
+      kind: "regex",
+      regex,
+      ...errorUtil.errToObj(message)
+    });
+  }
+  includes(value, options2) {
+    return this._addCheck({
+      kind: "includes",
+      value,
+      position: options2?.position,
+      ...errorUtil.errToObj(options2?.message)
+    });
+  }
+  startsWith(value, message) {
+    return this._addCheck({
+      kind: "startsWith",
+      value,
+      ...errorUtil.errToObj(message)
+    });
+  }
+  endsWith(value, message) {
+    return this._addCheck({
+      kind: "endsWith",
+      value,
+      ...errorUtil.errToObj(message)
+    });
+  }
+  min(minLength, message) {
+    return this._addCheck({
+      kind: "min",
+      value: minLength,
+      ...errorUtil.errToObj(message)
+    });
+  }
+  max(maxLength, message) {
+    return this._addCheck({
+      kind: "max",
+      value: maxLength,
+      ...errorUtil.errToObj(message)
+    });
+  }
+  length(len, message) {
+    return this._addCheck({
+      kind: "length",
+      value: len,
+      ...errorUtil.errToObj(message)
+    });
+  }
+  nonempty(message) {
+    return this.min(1, errorUtil.errToObj(message));
+  }
+  trim() {
+    return new ZodString2({
+      ...this._def,
+      checks: [...this._def.checks, { kind: "trim" }]
+    });
+  }
+  toLowerCase() {
+    return new ZodString2({
+      ...this._def,
+      checks: [...this._def.checks, { kind: "toLowerCase" }]
+    });
+  }
+  toUpperCase() {
+    return new ZodString2({
+      ...this._def,
+      checks: [...this._def.checks, { kind: "toUpperCase" }]
+    });
+  }
+  get isDatetime() {
+    return !!this._def.checks.find((ch) => ch.kind === "datetime");
+  }
+  get isDate() {
+    return !!this._def.checks.find((ch) => ch.kind === "date");
+  }
+  get isTime() {
+    return !!this._def.checks.find((ch) => ch.kind === "time");
+  }
+  get isDuration() {
+    return !!this._def.checks.find((ch) => ch.kind === "duration");
+  }
+  get isEmail() {
+    return !!this._def.checks.find((ch) => ch.kind === "email");
+  }
+  get isURL() {
+    return !!this._def.checks.find((ch) => ch.kind === "url");
+  }
+  get isEmoji() {
+    return !!this._def.checks.find((ch) => ch.kind === "emoji");
+  }
+  get isUUID() {
+    return !!this._def.checks.find((ch) => ch.kind === "uuid");
+  }
+  get isNANOID() {
+    return !!this._def.checks.find((ch) => ch.kind === "nanoid");
+  }
+  get isCUID() {
+    return !!this._def.checks.find((ch) => ch.kind === "cuid");
+  }
+  get isCUID2() {
+    return !!this._def.checks.find((ch) => ch.kind === "cuid2");
+  }
+  get isULID() {
+    return !!this._def.checks.find((ch) => ch.kind === "ulid");
+  }
+  get isIP() {
+    return !!this._def.checks.find((ch) => ch.kind === "ip");
+  }
+  get isCIDR() {
+    return !!this._def.checks.find((ch) => ch.kind === "cidr");
+  }
+  get isBase64() {
+    return !!this._def.checks.find((ch) => ch.kind === "base64");
+  }
+  get isBase64url() {
+    return !!this._def.checks.find((ch) => ch.kind === "base64url");
+  }
+  get minLength() {
+    let min = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "min") {
+        if (min === null || ch.value > min)
+          min = ch.value;
+      }
+    }
+    return min;
+  }
+  get maxLength() {
+    let max = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "max") {
+        if (max === null || ch.value < max)
+          max = ch.value;
+      }
+    }
+    return max;
+  }
+}
+ZodString2.create = (params) => {
+  return new ZodString2({
+    checks: [],
+    typeName: ZodFirstPartyTypeKind2.ZodString,
+    coerce: params?.coerce ?? false,
+    ...processCreateParams(params)
+  });
+};
+function floatSafeRemainder2(val2, step) {
+  const valDecCount = (val2.toString().split(".")[1] || "").length;
+  const stepDecCount = (step.toString().split(".")[1] || "").length;
+  const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
+  const valInt = Number.parseInt(val2.toFixed(decCount).replace(".", ""));
+  const stepInt = Number.parseInt(step.toFixed(decCount).replace(".", ""));
+  return valInt % stepInt / 10 ** decCount;
+}
+
+class ZodNumber2 extends ZodType2 {
+  constructor() {
+    super(...arguments);
+    this.min = this.gte;
+    this.max = this.lte;
+    this.step = this.multipleOf;
+  }
+  _parse(input) {
+    if (this._def.coerce) {
+      input.data = Number(input.data);
+    }
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.number) {
+      const ctx2 = this._getOrReturnCtx(input);
+      addIssueToContext(ctx2, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.number,
+        received: ctx2.parsedType
+      });
+      return INVALID;
+    }
+    let ctx = undefined;
+    const status = new ParseStatus;
+    for (const check2 of this._def.checks) {
+      if (check2.kind === "int") {
+        if (!util.isInteger(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.invalid_type,
+            expected: "integer",
+            received: "float",
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "min") {
+        const tooSmall = check2.inclusive ? input.data < check2.value : input.data <= check2.value;
+        if (tooSmall) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.too_small,
+            minimum: check2.value,
+            type: "number",
+            inclusive: check2.inclusive,
+            exact: false,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "max") {
+        const tooBig = check2.inclusive ? input.data > check2.value : input.data >= check2.value;
+        if (tooBig) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.too_big,
+            maximum: check2.value,
+            type: "number",
+            inclusive: check2.inclusive,
+            exact: false,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "multipleOf") {
+        if (floatSafeRemainder2(input.data, check2.value) !== 0) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.not_multiple_of,
+            multipleOf: check2.value,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "finite") {
+        if (!Number.isFinite(input.data)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.not_finite,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else {
+        util.assertNever(check2);
+      }
+    }
+    return { status: status.value, value: input.data };
+  }
+  gte(value, message) {
+    return this.setLimit("min", value, true, errorUtil.toString(message));
+  }
+  gt(value, message) {
+    return this.setLimit("min", value, false, errorUtil.toString(message));
+  }
+  lte(value, message) {
+    return this.setLimit("max", value, true, errorUtil.toString(message));
+  }
+  lt(value, message) {
+    return this.setLimit("max", value, false, errorUtil.toString(message));
+  }
+  setLimit(kind, value, inclusive, message) {
+    return new ZodNumber2({
+      ...this._def,
+      checks: [
+        ...this._def.checks,
+        {
+          kind,
+          value,
+          inclusive,
+          message: errorUtil.toString(message)
+        }
+      ]
+    });
+  }
+  _addCheck(check2) {
+    return new ZodNumber2({
+      ...this._def,
+      checks: [...this._def.checks, check2]
+    });
+  }
+  int(message) {
+    return this._addCheck({
+      kind: "int",
+      message: errorUtil.toString(message)
+    });
+  }
+  positive(message) {
+    return this._addCheck({
+      kind: "min",
+      value: 0,
+      inclusive: false,
+      message: errorUtil.toString(message)
+    });
+  }
+  negative(message) {
+    return this._addCheck({
+      kind: "max",
+      value: 0,
+      inclusive: false,
+      message: errorUtil.toString(message)
+    });
+  }
+  nonpositive(message) {
+    return this._addCheck({
+      kind: "max",
+      value: 0,
+      inclusive: true,
+      message: errorUtil.toString(message)
+    });
+  }
+  nonnegative(message) {
+    return this._addCheck({
+      kind: "min",
+      value: 0,
+      inclusive: true,
+      message: errorUtil.toString(message)
+    });
+  }
+  multipleOf(value, message) {
+    return this._addCheck({
+      kind: "multipleOf",
+      value,
+      message: errorUtil.toString(message)
+    });
+  }
+  finite(message) {
+    return this._addCheck({
+      kind: "finite",
+      message: errorUtil.toString(message)
+    });
+  }
+  safe(message) {
+    return this._addCheck({
+      kind: "min",
+      inclusive: true,
+      value: Number.MIN_SAFE_INTEGER,
+      message: errorUtil.toString(message)
+    })._addCheck({
+      kind: "max",
+      inclusive: true,
+      value: Number.MAX_SAFE_INTEGER,
+      message: errorUtil.toString(message)
+    });
+  }
+  get minValue() {
+    let min = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "min") {
+        if (min === null || ch.value > min)
+          min = ch.value;
+      }
+    }
+    return min;
+  }
+  get maxValue() {
+    let max = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "max") {
+        if (max === null || ch.value < max)
+          max = ch.value;
+      }
+    }
+    return max;
+  }
+  get isInt() {
+    return !!this._def.checks.find((ch) => ch.kind === "int" || ch.kind === "multipleOf" && util.isInteger(ch.value));
+  }
+  get isFinite() {
+    let max = null;
+    let min = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
+        return true;
+      } else if (ch.kind === "min") {
+        if (min === null || ch.value > min)
+          min = ch.value;
+      } else if (ch.kind === "max") {
+        if (max === null || ch.value < max)
+          max = ch.value;
+      }
+    }
+    return Number.isFinite(min) && Number.isFinite(max);
+  }
+}
+ZodNumber2.create = (params) => {
+  return new ZodNumber2({
+    checks: [],
+    typeName: ZodFirstPartyTypeKind2.ZodNumber,
+    coerce: params?.coerce || false,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodBigInt2 extends ZodType2 {
+  constructor() {
+    super(...arguments);
+    this.min = this.gte;
+    this.max = this.lte;
+  }
+  _parse(input) {
+    if (this._def.coerce) {
+      try {
+        input.data = BigInt(input.data);
+      } catch {
+        return this._getInvalidInput(input);
+      }
+    }
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.bigint) {
+      return this._getInvalidInput(input);
+    }
+    let ctx = undefined;
+    const status = new ParseStatus;
+    for (const check2 of this._def.checks) {
+      if (check2.kind === "min") {
+        const tooSmall = check2.inclusive ? input.data < check2.value : input.data <= check2.value;
+        if (tooSmall) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.too_small,
+            type: "bigint",
+            minimum: check2.value,
+            inclusive: check2.inclusive,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "max") {
+        const tooBig = check2.inclusive ? input.data > check2.value : input.data >= check2.value;
+        if (tooBig) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.too_big,
+            type: "bigint",
+            maximum: check2.value,
+            inclusive: check2.inclusive,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "multipleOf") {
+        if (input.data % check2.value !== BigInt(0)) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.not_multiple_of,
+            multipleOf: check2.value,
+            message: check2.message
+          });
+          status.dirty();
+        }
+      } else {
+        util.assertNever(check2);
+      }
+    }
+    return { status: status.value, value: input.data };
+  }
+  _getInvalidInput(input) {
+    const ctx = this._getOrReturnCtx(input);
+    addIssueToContext(ctx, {
+      code: ZodIssueCode2.invalid_type,
+      expected: ZodParsedType.bigint,
+      received: ctx.parsedType
+    });
+    return INVALID;
+  }
+  gte(value, message) {
+    return this.setLimit("min", value, true, errorUtil.toString(message));
+  }
+  gt(value, message) {
+    return this.setLimit("min", value, false, errorUtil.toString(message));
+  }
+  lte(value, message) {
+    return this.setLimit("max", value, true, errorUtil.toString(message));
+  }
+  lt(value, message) {
+    return this.setLimit("max", value, false, errorUtil.toString(message));
+  }
+  setLimit(kind, value, inclusive, message) {
+    return new ZodBigInt2({
+      ...this._def,
+      checks: [
+        ...this._def.checks,
+        {
+          kind,
+          value,
+          inclusive,
+          message: errorUtil.toString(message)
+        }
+      ]
+    });
+  }
+  _addCheck(check2) {
+    return new ZodBigInt2({
+      ...this._def,
+      checks: [...this._def.checks, check2]
+    });
+  }
+  positive(message) {
+    return this._addCheck({
+      kind: "min",
+      value: BigInt(0),
+      inclusive: false,
+      message: errorUtil.toString(message)
+    });
+  }
+  negative(message) {
+    return this._addCheck({
+      kind: "max",
+      value: BigInt(0),
+      inclusive: false,
+      message: errorUtil.toString(message)
+    });
+  }
+  nonpositive(message) {
+    return this._addCheck({
+      kind: "max",
+      value: BigInt(0),
+      inclusive: true,
+      message: errorUtil.toString(message)
+    });
+  }
+  nonnegative(message) {
+    return this._addCheck({
+      kind: "min",
+      value: BigInt(0),
+      inclusive: true,
+      message: errorUtil.toString(message)
+    });
+  }
+  multipleOf(value, message) {
+    return this._addCheck({
+      kind: "multipleOf",
+      value,
+      message: errorUtil.toString(message)
+    });
+  }
+  get minValue() {
+    let min = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "min") {
+        if (min === null || ch.value > min)
+          min = ch.value;
+      }
+    }
+    return min;
+  }
+  get maxValue() {
+    let max = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "max") {
+        if (max === null || ch.value < max)
+          max = ch.value;
+      }
+    }
+    return max;
+  }
+}
+ZodBigInt2.create = (params) => {
+  return new ZodBigInt2({
+    checks: [],
+    typeName: ZodFirstPartyTypeKind2.ZodBigInt,
+    coerce: params?.coerce ?? false,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodBoolean2 extends ZodType2 {
+  _parse(input) {
+    if (this._def.coerce) {
+      input.data = Boolean(input.data);
+    }
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.boolean) {
+      const ctx = this._getOrReturnCtx(input);
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.boolean,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    return OK(input.data);
+  }
+}
+ZodBoolean2.create = (params) => {
+  return new ZodBoolean2({
+    typeName: ZodFirstPartyTypeKind2.ZodBoolean,
+    coerce: params?.coerce || false,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodDate2 extends ZodType2 {
+  _parse(input) {
+    if (this._def.coerce) {
+      input.data = new Date(input.data);
+    }
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.date) {
+      const ctx2 = this._getOrReturnCtx(input);
+      addIssueToContext(ctx2, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.date,
+        received: ctx2.parsedType
+      });
+      return INVALID;
+    }
+    if (Number.isNaN(input.data.getTime())) {
+      const ctx2 = this._getOrReturnCtx(input);
+      addIssueToContext(ctx2, {
+        code: ZodIssueCode2.invalid_date
+      });
+      return INVALID;
+    }
+    const status = new ParseStatus;
+    let ctx = undefined;
+    for (const check2 of this._def.checks) {
+      if (check2.kind === "min") {
+        if (input.data.getTime() < check2.value) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.too_small,
+            message: check2.message,
+            inclusive: true,
+            exact: false,
+            minimum: check2.value,
+            type: "date"
+          });
+          status.dirty();
+        }
+      } else if (check2.kind === "max") {
+        if (input.data.getTime() > check2.value) {
+          ctx = this._getOrReturnCtx(input, ctx);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.too_big,
+            message: check2.message,
+            inclusive: true,
+            exact: false,
+            maximum: check2.value,
+            type: "date"
+          });
+          status.dirty();
+        }
+      } else {
+        util.assertNever(check2);
+      }
+    }
+    return {
+      status: status.value,
+      value: new Date(input.data.getTime())
+    };
+  }
+  _addCheck(check2) {
+    return new ZodDate2({
+      ...this._def,
+      checks: [...this._def.checks, check2]
+    });
+  }
+  min(minDate, message) {
+    return this._addCheck({
+      kind: "min",
+      value: minDate.getTime(),
+      message: errorUtil.toString(message)
+    });
+  }
+  max(maxDate, message) {
+    return this._addCheck({
+      kind: "max",
+      value: maxDate.getTime(),
+      message: errorUtil.toString(message)
+    });
+  }
+  get minDate() {
+    let min = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "min") {
+        if (min === null || ch.value > min)
+          min = ch.value;
+      }
+    }
+    return min != null ? new Date(min) : null;
+  }
+  get maxDate() {
+    let max = null;
+    for (const ch of this._def.checks) {
+      if (ch.kind === "max") {
+        if (max === null || ch.value < max)
+          max = ch.value;
+      }
+    }
+    return max != null ? new Date(max) : null;
+  }
+}
+ZodDate2.create = (params) => {
+  return new ZodDate2({
+    checks: [],
+    coerce: params?.coerce || false,
+    typeName: ZodFirstPartyTypeKind2.ZodDate,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodSymbol2 extends ZodType2 {
+  _parse(input) {
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.symbol) {
+      const ctx = this._getOrReturnCtx(input);
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.symbol,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    return OK(input.data);
+  }
+}
+ZodSymbol2.create = (params) => {
+  return new ZodSymbol2({
+    typeName: ZodFirstPartyTypeKind2.ZodSymbol,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodUndefined2 extends ZodType2 {
+  _parse(input) {
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.undefined) {
+      const ctx = this._getOrReturnCtx(input);
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.undefined,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    return OK(input.data);
+  }
+}
+ZodUndefined2.create = (params) => {
+  return new ZodUndefined2({
+    typeName: ZodFirstPartyTypeKind2.ZodUndefined,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodNull2 extends ZodType2 {
+  _parse(input) {
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.null) {
+      const ctx = this._getOrReturnCtx(input);
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.null,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    return OK(input.data);
+  }
+}
+ZodNull2.create = (params) => {
+  return new ZodNull2({
+    typeName: ZodFirstPartyTypeKind2.ZodNull,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodAny2 extends ZodType2 {
+  constructor() {
+    super(...arguments);
+    this._any = true;
+  }
+  _parse(input) {
+    return OK(input.data);
+  }
+}
+ZodAny2.create = (params) => {
+  return new ZodAny2({
+    typeName: ZodFirstPartyTypeKind2.ZodAny,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodUnknown2 extends ZodType2 {
+  constructor() {
+    super(...arguments);
+    this._unknown = true;
+  }
+  _parse(input) {
+    return OK(input.data);
+  }
+}
+ZodUnknown2.create = (params) => {
+  return new ZodUnknown2({
+    typeName: ZodFirstPartyTypeKind2.ZodUnknown,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodNever2 extends ZodType2 {
+  _parse(input) {
+    const ctx = this._getOrReturnCtx(input);
+    addIssueToContext(ctx, {
+      code: ZodIssueCode2.invalid_type,
+      expected: ZodParsedType.never,
+      received: ctx.parsedType
+    });
+    return INVALID;
+  }
+}
+ZodNever2.create = (params) => {
+  return new ZodNever2({
+    typeName: ZodFirstPartyTypeKind2.ZodNever,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodVoid2 extends ZodType2 {
+  _parse(input) {
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.undefined) {
+      const ctx = this._getOrReturnCtx(input);
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.void,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    return OK(input.data);
+  }
+}
+ZodVoid2.create = (params) => {
+  return new ZodVoid2({
+    typeName: ZodFirstPartyTypeKind2.ZodVoid,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodArray2 extends ZodType2 {
+  _parse(input) {
+    const { ctx, status } = this._processInputParams(input);
+    const def = this._def;
+    if (ctx.parsedType !== ZodParsedType.array) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.array,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    if (def.exactLength !== null) {
+      const tooBig = ctx.data.length > def.exactLength.value;
+      const tooSmall = ctx.data.length < def.exactLength.value;
+      if (tooBig || tooSmall) {
+        addIssueToContext(ctx, {
+          code: tooBig ? ZodIssueCode2.too_big : ZodIssueCode2.too_small,
+          minimum: tooSmall ? def.exactLength.value : undefined,
+          maximum: tooBig ? def.exactLength.value : undefined,
+          type: "array",
+          inclusive: true,
+          exact: true,
+          message: def.exactLength.message
+        });
+        status.dirty();
+      }
+    }
+    if (def.minLength !== null) {
+      if (ctx.data.length < def.minLength.value) {
+        addIssueToContext(ctx, {
+          code: ZodIssueCode2.too_small,
+          minimum: def.minLength.value,
+          type: "array",
+          inclusive: true,
+          exact: false,
+          message: def.minLength.message
+        });
+        status.dirty();
+      }
+    }
+    if (def.maxLength !== null) {
+      if (ctx.data.length > def.maxLength.value) {
+        addIssueToContext(ctx, {
+          code: ZodIssueCode2.too_big,
+          maximum: def.maxLength.value,
+          type: "array",
+          inclusive: true,
+          exact: false,
+          message: def.maxLength.message
+        });
+        status.dirty();
+      }
+    }
+    if (ctx.common.async) {
+      return Promise.all([...ctx.data].map((item, i) => {
+        return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+      })).then((result2) => {
+        return ParseStatus.mergeArray(status, result2);
+      });
+    }
+    const result = [...ctx.data].map((item, i) => {
+      return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+    });
+    return ParseStatus.mergeArray(status, result);
+  }
+  get element() {
+    return this._def.type;
+  }
+  min(minLength, message) {
+    return new ZodArray2({
+      ...this._def,
+      minLength: { value: minLength, message: errorUtil.toString(message) }
+    });
+  }
+  max(maxLength, message) {
+    return new ZodArray2({
+      ...this._def,
+      maxLength: { value: maxLength, message: errorUtil.toString(message) }
+    });
+  }
+  length(len, message) {
+    return new ZodArray2({
+      ...this._def,
+      exactLength: { value: len, message: errorUtil.toString(message) }
+    });
+  }
+  nonempty(message) {
+    return this.min(1, message);
+  }
+}
+ZodArray2.create = (schema, params) => {
+  return new ZodArray2({
+    type: schema,
+    minLength: null,
+    maxLength: null,
+    exactLength: null,
+    typeName: ZodFirstPartyTypeKind2.ZodArray,
+    ...processCreateParams(params)
+  });
+};
+function deepPartialify(schema) {
+  if (schema instanceof ZodObject2) {
+    const newShape = {};
+    for (const key in schema.shape) {
+      const fieldSchema = schema.shape[key];
+      newShape[key] = ZodOptional2.create(deepPartialify(fieldSchema));
+    }
+    return new ZodObject2({
+      ...schema._def,
+      shape: () => newShape
+    });
+  } else if (schema instanceof ZodArray2) {
+    return new ZodArray2({
+      ...schema._def,
+      type: deepPartialify(schema.element)
+    });
+  } else if (schema instanceof ZodOptional2) {
+    return ZodOptional2.create(deepPartialify(schema.unwrap()));
+  } else if (schema instanceof ZodNullable2) {
+    return ZodNullable2.create(deepPartialify(schema.unwrap()));
+  } else if (schema instanceof ZodTuple2) {
+    return ZodTuple2.create(schema.items.map((item) => deepPartialify(item)));
+  } else {
+    return schema;
+  }
+}
+
+class ZodObject2 extends ZodType2 {
+  constructor() {
+    super(...arguments);
+    this._cached = null;
+    this.nonstrict = this.passthrough;
+    this.augment = this.extend;
+  }
+  _getCached() {
+    if (this._cached !== null)
+      return this._cached;
+    const shape = this._def.shape();
+    const keys = util.objectKeys(shape);
+    this._cached = { shape, keys };
+    return this._cached;
+  }
+  _parse(input) {
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.object) {
+      const ctx2 = this._getOrReturnCtx(input);
+      addIssueToContext(ctx2, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.object,
+        received: ctx2.parsedType
+      });
+      return INVALID;
+    }
+    const { status, ctx } = this._processInputParams(input);
+    const { shape, keys: shapeKeys } = this._getCached();
+    const extraKeys = [];
+    if (!(this._def.catchall instanceof ZodNever2 && this._def.unknownKeys === "strip")) {
+      for (const key in ctx.data) {
+        if (!shapeKeys.includes(key)) {
+          extraKeys.push(key);
+        }
+      }
+    }
+    const pairs = [];
+    for (const key of shapeKeys) {
+      const keyValidator = shape[key];
+      const value = ctx.data[key];
+      pairs.push({
+        key: { status: "valid", value: key },
+        value: keyValidator._parse(new ParseInputLazyPath(ctx, value, ctx.path, key)),
+        alwaysSet: key in ctx.data
+      });
+    }
+    if (this._def.catchall instanceof ZodNever2) {
+      const unknownKeys = this._def.unknownKeys;
+      if (unknownKeys === "passthrough") {
+        for (const key of extraKeys) {
+          pairs.push({
+            key: { status: "valid", value: key },
+            value: { status: "valid", value: ctx.data[key] }
+          });
+        }
+      } else if (unknownKeys === "strict") {
+        if (extraKeys.length > 0) {
+          addIssueToContext(ctx, {
+            code: ZodIssueCode2.unrecognized_keys,
+            keys: extraKeys
+          });
+          status.dirty();
+        }
+      } else if (unknownKeys === "strip") {} else {
+        throw new Error(`Internal ZodObject error: invalid unknownKeys value.`);
+      }
+    } else {
+      const catchall = this._def.catchall;
+      for (const key of extraKeys) {
+        const value = ctx.data[key];
+        pairs.push({
+          key: { status: "valid", value: key },
+          value: catchall._parse(new ParseInputLazyPath(ctx, value, ctx.path, key)),
+          alwaysSet: key in ctx.data
+        });
+      }
+    }
+    if (ctx.common.async) {
+      return Promise.resolve().then(async () => {
+        const syncPairs = [];
+        for (const pair of pairs) {
+          const key = await pair.key;
+          const value = await pair.value;
+          syncPairs.push({
+            key,
+            value,
+            alwaysSet: pair.alwaysSet
+          });
+        }
+        return syncPairs;
+      }).then((syncPairs) => {
+        return ParseStatus.mergeObjectSync(status, syncPairs);
+      });
+    } else {
+      return ParseStatus.mergeObjectSync(status, pairs);
+    }
+  }
+  get shape() {
+    return this._def.shape();
+  }
+  strict(message) {
+    errorUtil.errToObj;
+    return new ZodObject2({
+      ...this._def,
+      unknownKeys: "strict",
+      ...message !== undefined ? {
+        errorMap: (issue2, ctx) => {
+          const defaultError = this._def.errorMap?.(issue2, ctx).message ?? ctx.defaultError;
+          if (issue2.code === "unrecognized_keys")
+            return {
+              message: errorUtil.errToObj(message).message ?? defaultError
+            };
+          return {
+            message: defaultError
+          };
+        }
+      } : {}
+    });
+  }
+  strip() {
+    return new ZodObject2({
+      ...this._def,
+      unknownKeys: "strip"
+    });
+  }
+  passthrough() {
+    return new ZodObject2({
+      ...this._def,
+      unknownKeys: "passthrough"
+    });
+  }
+  extend(augmentation) {
+    return new ZodObject2({
+      ...this._def,
+      shape: () => ({
+        ...this._def.shape(),
+        ...augmentation
+      })
+    });
+  }
+  merge(merging) {
+    const merged = new ZodObject2({
+      unknownKeys: merging._def.unknownKeys,
+      catchall: merging._def.catchall,
+      shape: () => ({
+        ...this._def.shape(),
+        ...merging._def.shape()
+      }),
+      typeName: ZodFirstPartyTypeKind2.ZodObject
+    });
+    return merged;
+  }
+  setKey(key, schema) {
+    return this.augment({ [key]: schema });
+  }
+  catchall(index4) {
+    return new ZodObject2({
+      ...this._def,
+      catchall: index4
+    });
+  }
+  pick(mask) {
+    const shape = {};
+    for (const key of util.objectKeys(mask)) {
+      if (mask[key] && this.shape[key]) {
+        shape[key] = this.shape[key];
+      }
+    }
+    return new ZodObject2({
+      ...this._def,
+      shape: () => shape
+    });
+  }
+  omit(mask) {
+    const shape = {};
+    for (const key of util.objectKeys(this.shape)) {
+      if (!mask[key]) {
+        shape[key] = this.shape[key];
+      }
+    }
+    return new ZodObject2({
+      ...this._def,
+      shape: () => shape
+    });
+  }
+  deepPartial() {
+    return deepPartialify(this);
+  }
+  partial(mask) {
+    const newShape = {};
+    for (const key of util.objectKeys(this.shape)) {
+      const fieldSchema = this.shape[key];
+      if (mask && !mask[key]) {
+        newShape[key] = fieldSchema;
+      } else {
+        newShape[key] = fieldSchema.optional();
+      }
+    }
+    return new ZodObject2({
+      ...this._def,
+      shape: () => newShape
+    });
+  }
+  required(mask) {
+    const newShape = {};
+    for (const key of util.objectKeys(this.shape)) {
+      if (mask && !mask[key]) {
+        newShape[key] = this.shape[key];
+      } else {
+        const fieldSchema = this.shape[key];
+        let newField = fieldSchema;
+        while (newField instanceof ZodOptional2) {
+          newField = newField._def.innerType;
+        }
+        newShape[key] = newField;
+      }
+    }
+    return new ZodObject2({
+      ...this._def,
+      shape: () => newShape
+    });
+  }
+  keyof() {
+    return createZodEnum(util.objectKeys(this.shape));
+  }
+}
+ZodObject2.create = (shape, params) => {
+  return new ZodObject2({
+    shape: () => shape,
+    unknownKeys: "strip",
+    catchall: ZodNever2.create(),
+    typeName: ZodFirstPartyTypeKind2.ZodObject,
+    ...processCreateParams(params)
+  });
+};
+ZodObject2.strictCreate = (shape, params) => {
+  return new ZodObject2({
+    shape: () => shape,
+    unknownKeys: "strict",
+    catchall: ZodNever2.create(),
+    typeName: ZodFirstPartyTypeKind2.ZodObject,
+    ...processCreateParams(params)
+  });
+};
+ZodObject2.lazycreate = (shape, params) => {
+  return new ZodObject2({
+    shape,
+    unknownKeys: "strip",
+    catchall: ZodNever2.create(),
+    typeName: ZodFirstPartyTypeKind2.ZodObject,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodUnion2 extends ZodType2 {
+  _parse(input) {
+    const { ctx } = this._processInputParams(input);
+    const options2 = this._def.options;
+    function handleResults(results) {
+      for (const result of results) {
+        if (result.result.status === "valid") {
+          return result.result;
+        }
+      }
+      for (const result of results) {
+        if (result.result.status === "dirty") {
+          ctx.common.issues.push(...result.ctx.common.issues);
+          return result.result;
+        }
+      }
+      const unionErrors = results.map((result) => new ZodError2(result.ctx.common.issues));
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_union,
+        unionErrors
+      });
+      return INVALID;
+    }
+    if (ctx.common.async) {
+      return Promise.all(options2.map(async (option) => {
+        const childCtx = {
+          ...ctx,
+          common: {
+            ...ctx.common,
+            issues: []
+          },
+          parent: null
+        };
+        return {
+          result: await option._parseAsync({
+            data: ctx.data,
+            path: ctx.path,
+            parent: childCtx
+          }),
+          ctx: childCtx
+        };
+      })).then(handleResults);
+    } else {
+      let dirty = undefined;
+      const issues = [];
+      for (const option of options2) {
+        const childCtx = {
+          ...ctx,
+          common: {
+            ...ctx.common,
+            issues: []
+          },
+          parent: null
+        };
+        const result = option._parseSync({
+          data: ctx.data,
+          path: ctx.path,
+          parent: childCtx
+        });
+        if (result.status === "valid") {
+          return result;
+        } else if (result.status === "dirty" && !dirty) {
+          dirty = { result, ctx: childCtx };
+        }
+        if (childCtx.common.issues.length) {
+          issues.push(childCtx.common.issues);
+        }
+      }
+      if (dirty) {
+        ctx.common.issues.push(...dirty.ctx.common.issues);
+        return dirty.result;
+      }
+      const unionErrors = issues.map((issues2) => new ZodError2(issues2));
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_union,
+        unionErrors
+      });
+      return INVALID;
+    }
+  }
+  get options() {
+    return this._def.options;
+  }
+}
+ZodUnion2.create = (types2, params) => {
+  return new ZodUnion2({
+    options: types2,
+    typeName: ZodFirstPartyTypeKind2.ZodUnion,
+    ...processCreateParams(params)
+  });
+};
+var getDiscriminator = (type) => {
+  if (type instanceof ZodLazy2) {
+    return getDiscriminator(type.schema);
+  } else if (type instanceof ZodEffects) {
+    return getDiscriminator(type.innerType());
+  } else if (type instanceof ZodLiteral2) {
+    return [type.value];
+  } else if (type instanceof ZodEnum2) {
+    return type.options;
+  } else if (type instanceof ZodNativeEnum) {
+    return util.objectValues(type.enum);
+  } else if (type instanceof ZodDefault2) {
+    return getDiscriminator(type._def.innerType);
+  } else if (type instanceof ZodUndefined2) {
+    return [undefined];
+  } else if (type instanceof ZodNull2) {
+    return [null];
+  } else if (type instanceof ZodOptional2) {
+    return [undefined, ...getDiscriminator(type.unwrap())];
+  } else if (type instanceof ZodNullable2) {
+    return [null, ...getDiscriminator(type.unwrap())];
+  } else if (type instanceof ZodBranded) {
+    return getDiscriminator(type.unwrap());
+  } else if (type instanceof ZodReadonly2) {
+    return getDiscriminator(type.unwrap());
+  } else if (type instanceof ZodCatch2) {
+    return getDiscriminator(type._def.innerType);
+  } else {
+    return [];
+  }
+};
+
+class ZodDiscriminatedUnion2 extends ZodType2 {
+  _parse(input) {
+    const { ctx } = this._processInputParams(input);
+    if (ctx.parsedType !== ZodParsedType.object) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.object,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    const discriminator = this.discriminator;
+    const discriminatorValue = ctx.data[discriminator];
+    const option = this.optionsMap.get(discriminatorValue);
+    if (!option) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_union_discriminator,
+        options: Array.from(this.optionsMap.keys()),
+        path: [discriminator]
+      });
+      return INVALID;
+    }
+    if (ctx.common.async) {
+      return option._parseAsync({
+        data: ctx.data,
+        path: ctx.path,
+        parent: ctx
+      });
+    } else {
+      return option._parseSync({
+        data: ctx.data,
+        path: ctx.path,
+        parent: ctx
+      });
+    }
+  }
+  get discriminator() {
+    return this._def.discriminator;
+  }
+  get options() {
+    return this._def.options;
+  }
+  get optionsMap() {
+    return this._def.optionsMap;
+  }
+  static create(discriminator, options2, params) {
+    const optionsMap = new Map;
+    for (const type of options2) {
+      const discriminatorValues = getDiscriminator(type.shape[discriminator]);
+      if (!discriminatorValues.length) {
+        throw new Error(`A discriminator value for key \`${discriminator}\` could not be extracted from all schema options`);
+      }
+      for (const value of discriminatorValues) {
+        if (optionsMap.has(value)) {
+          throw new Error(`Discriminator property ${String(discriminator)} has duplicate value ${String(value)}`);
+        }
+        optionsMap.set(value, type);
+      }
+    }
+    return new ZodDiscriminatedUnion2({
+      typeName: ZodFirstPartyTypeKind2.ZodDiscriminatedUnion,
+      discriminator,
+      options: options2,
+      optionsMap,
+      ...processCreateParams(params)
+    });
+  }
+}
+function mergeValues2(a, b) {
+  const aType = getParsedType2(a);
+  const bType = getParsedType2(b);
+  if (a === b) {
+    return { valid: true, data: a };
+  } else if (aType === ZodParsedType.object && bType === ZodParsedType.object) {
+    const bKeys = util.objectKeys(b);
+    const sharedKeys = util.objectKeys(a).filter((key) => bKeys.indexOf(key) !== -1);
+    const newObj = { ...a, ...b };
+    for (const key of sharedKeys) {
+      const sharedValue = mergeValues2(a[key], b[key]);
+      if (!sharedValue.valid) {
+        return { valid: false };
+      }
+      newObj[key] = sharedValue.data;
+    }
+    return { valid: true, data: newObj };
+  } else if (aType === ZodParsedType.array && bType === ZodParsedType.array) {
+    if (a.length !== b.length) {
+      return { valid: false };
+    }
+    const newArray = [];
+    for (let index4 = 0;index4 < a.length; index4++) {
+      const itemA = a[index4];
+      const itemB = b[index4];
+      const sharedValue = mergeValues2(itemA, itemB);
+      if (!sharedValue.valid) {
+        return { valid: false };
+      }
+      newArray.push(sharedValue.data);
+    }
+    return { valid: true, data: newArray };
+  } else if (aType === ZodParsedType.date && bType === ZodParsedType.date && +a === +b) {
+    return { valid: true, data: a };
+  } else {
+    return { valid: false };
+  }
+}
+
+class ZodIntersection2 extends ZodType2 {
+  _parse(input) {
+    const { status, ctx } = this._processInputParams(input);
+    const handleParsed = (parsedLeft, parsedRight) => {
+      if (isAborted(parsedLeft) || isAborted(parsedRight)) {
+        return INVALID;
+      }
+      const merged = mergeValues2(parsedLeft.value, parsedRight.value);
+      if (!merged.valid) {
+        addIssueToContext(ctx, {
+          code: ZodIssueCode2.invalid_intersection_types
+        });
+        return INVALID;
+      }
+      if (isDirty(parsedLeft) || isDirty(parsedRight)) {
+        status.dirty();
+      }
+      return { status: status.value, value: merged.data };
+    };
+    if (ctx.common.async) {
+      return Promise.all([
+        this._def.left._parseAsync({
+          data: ctx.data,
+          path: ctx.path,
+          parent: ctx
+        }),
+        this._def.right._parseAsync({
+          data: ctx.data,
+          path: ctx.path,
+          parent: ctx
+        })
+      ]).then(([left, right]) => handleParsed(left, right));
+    } else {
+      return handleParsed(this._def.left._parseSync({
+        data: ctx.data,
+        path: ctx.path,
+        parent: ctx
+      }), this._def.right._parseSync({
+        data: ctx.data,
+        path: ctx.path,
+        parent: ctx
+      }));
+    }
+  }
+}
+ZodIntersection2.create = (left, right, params) => {
+  return new ZodIntersection2({
+    left,
+    right,
+    typeName: ZodFirstPartyTypeKind2.ZodIntersection,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodTuple2 extends ZodType2 {
+  _parse(input) {
+    const { status, ctx } = this._processInputParams(input);
+    if (ctx.parsedType !== ZodParsedType.array) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.array,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    if (ctx.data.length < this._def.items.length) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.too_small,
+        minimum: this._def.items.length,
+        inclusive: true,
+        exact: false,
+        type: "array"
+      });
+      return INVALID;
+    }
+    const rest = this._def.rest;
+    if (!rest && ctx.data.length > this._def.items.length) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.too_big,
+        maximum: this._def.items.length,
+        inclusive: true,
+        exact: false,
+        type: "array"
+      });
+      status.dirty();
+    }
+    const items = [...ctx.data].map((item, itemIndex) => {
+      const schema = this._def.items[itemIndex] || this._def.rest;
+      if (!schema)
+        return null;
+      return schema._parse(new ParseInputLazyPath(ctx, item, ctx.path, itemIndex));
+    }).filter((x2) => !!x2);
+    if (ctx.common.async) {
+      return Promise.all(items).then((results) => {
+        return ParseStatus.mergeArray(status, results);
+      });
+    } else {
+      return ParseStatus.mergeArray(status, items);
+    }
+  }
+  get items() {
+    return this._def.items;
+  }
+  rest(rest) {
+    return new ZodTuple2({
+      ...this._def,
+      rest
+    });
+  }
+}
+ZodTuple2.create = (schemas3, params) => {
+  if (!Array.isArray(schemas3)) {
+    throw new Error("You must pass an array of schemas to z.tuple([ ... ])");
+  }
+  return new ZodTuple2({
+    items: schemas3,
+    typeName: ZodFirstPartyTypeKind2.ZodTuple,
+    rest: null,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodRecord2 extends ZodType2 {
+  get keySchema() {
+    return this._def.keyType;
+  }
+  get valueSchema() {
+    return this._def.valueType;
+  }
+  _parse(input) {
+    const { status, ctx } = this._processInputParams(input);
+    if (ctx.parsedType !== ZodParsedType.object) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.object,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    const pairs = [];
+    const keyType = this._def.keyType;
+    const valueType = this._def.valueType;
+    for (const key in ctx.data) {
+      pairs.push({
+        key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, key)),
+        value: valueType._parse(new ParseInputLazyPath(ctx, ctx.data[key], ctx.path, key)),
+        alwaysSet: key in ctx.data
+      });
+    }
+    if (ctx.common.async) {
+      return ParseStatus.mergeObjectAsync(status, pairs);
+    } else {
+      return ParseStatus.mergeObjectSync(status, pairs);
+    }
+  }
+  get element() {
+    return this._def.valueType;
+  }
+  static create(first2, second, third) {
+    if (second instanceof ZodType2) {
+      return new ZodRecord2({
+        keyType: first2,
+        valueType: second,
+        typeName: ZodFirstPartyTypeKind2.ZodRecord,
+        ...processCreateParams(third)
+      });
+    }
+    return new ZodRecord2({
+      keyType: ZodString2.create(),
+      valueType: first2,
+      typeName: ZodFirstPartyTypeKind2.ZodRecord,
+      ...processCreateParams(second)
+    });
+  }
+}
+
+class ZodMap2 extends ZodType2 {
+  get keySchema() {
+    return this._def.keyType;
+  }
+  get valueSchema() {
+    return this._def.valueType;
+  }
+  _parse(input) {
+    const { status, ctx } = this._processInputParams(input);
+    if (ctx.parsedType !== ZodParsedType.map) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.map,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    const keyType = this._def.keyType;
+    const valueType = this._def.valueType;
+    const pairs = [...ctx.data.entries()].map(([key, value], index4) => {
+      return {
+        key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, [index4, "key"])),
+        value: valueType._parse(new ParseInputLazyPath(ctx, value, ctx.path, [index4, "value"]))
+      };
+    });
+    if (ctx.common.async) {
+      const finalMap = new Map;
+      return Promise.resolve().then(async () => {
+        for (const pair of pairs) {
+          const key = await pair.key;
+          const value = await pair.value;
+          if (key.status === "aborted" || value.status === "aborted") {
+            return INVALID;
+          }
+          if (key.status === "dirty" || value.status === "dirty") {
+            status.dirty();
+          }
+          finalMap.set(key.value, value.value);
+        }
+        return { status: status.value, value: finalMap };
+      });
+    } else {
+      const finalMap = new Map;
+      for (const pair of pairs) {
+        const key = pair.key;
+        const value = pair.value;
+        if (key.status === "aborted" || value.status === "aborted") {
+          return INVALID;
+        }
+        if (key.status === "dirty" || value.status === "dirty") {
+          status.dirty();
+        }
+        finalMap.set(key.value, value.value);
+      }
+      return { status: status.value, value: finalMap };
+    }
+  }
+}
+ZodMap2.create = (keyType, valueType, params) => {
+  return new ZodMap2({
+    valueType,
+    keyType,
+    typeName: ZodFirstPartyTypeKind2.ZodMap,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodSet2 extends ZodType2 {
+  _parse(input) {
+    const { status, ctx } = this._processInputParams(input);
+    if (ctx.parsedType !== ZodParsedType.set) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.set,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    const def = this._def;
+    if (def.minSize !== null) {
+      if (ctx.data.size < def.minSize.value) {
+        addIssueToContext(ctx, {
+          code: ZodIssueCode2.too_small,
+          minimum: def.minSize.value,
+          type: "set",
+          inclusive: true,
+          exact: false,
+          message: def.minSize.message
+        });
+        status.dirty();
+      }
+    }
+    if (def.maxSize !== null) {
+      if (ctx.data.size > def.maxSize.value) {
+        addIssueToContext(ctx, {
+          code: ZodIssueCode2.too_big,
+          maximum: def.maxSize.value,
+          type: "set",
+          inclusive: true,
+          exact: false,
+          message: def.maxSize.message
+        });
+        status.dirty();
+      }
+    }
+    const valueType = this._def.valueType;
+    function finalizeSet(elements2) {
+      const parsedSet = new Set;
+      for (const element of elements2) {
+        if (element.status === "aborted")
+          return INVALID;
+        if (element.status === "dirty")
+          status.dirty();
+        parsedSet.add(element.value);
+      }
+      return { status: status.value, value: parsedSet };
+    }
+    const elements = [...ctx.data.values()].map((item, i) => valueType._parse(new ParseInputLazyPath(ctx, item, ctx.path, i)));
+    if (ctx.common.async) {
+      return Promise.all(elements).then((elements2) => finalizeSet(elements2));
+    } else {
+      return finalizeSet(elements);
+    }
+  }
+  min(minSize, message) {
+    return new ZodSet2({
+      ...this._def,
+      minSize: { value: minSize, message: errorUtil.toString(message) }
+    });
+  }
+  max(maxSize, message) {
+    return new ZodSet2({
+      ...this._def,
+      maxSize: { value: maxSize, message: errorUtil.toString(message) }
+    });
+  }
+  size(size, message) {
+    return this.min(size, message).max(size, message);
+  }
+  nonempty(message) {
+    return this.min(1, message);
+  }
+}
+ZodSet2.create = (valueType, params) => {
+  return new ZodSet2({
+    valueType,
+    minSize: null,
+    maxSize: null,
+    typeName: ZodFirstPartyTypeKind2.ZodSet,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodFunction2 extends ZodType2 {
+  constructor() {
+    super(...arguments);
+    this.validate = this.implement;
+  }
+  _parse(input) {
+    const { ctx } = this._processInputParams(input);
+    if (ctx.parsedType !== ZodParsedType.function) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.function,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    function makeArgsIssue(args, error48) {
+      return makeIssue({
+        data: args,
+        path: ctx.path,
+        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap2(), en_default2].filter((x2) => !!x2),
+        issueData: {
+          code: ZodIssueCode2.invalid_arguments,
+          argumentsError: error48
+        }
+      });
+    }
+    function makeReturnsIssue(returns, error48) {
+      return makeIssue({
+        data: returns,
+        path: ctx.path,
+        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap2(), en_default2].filter((x2) => !!x2),
+        issueData: {
+          code: ZodIssueCode2.invalid_return_type,
+          returnTypeError: error48
+        }
+      });
+    }
+    const params = { errorMap: ctx.common.contextualErrorMap };
+    const fn = ctx.data;
+    if (this._def.returns instanceof ZodPromise2) {
+      const me = this;
+      return OK(async function(...args) {
+        const error48 = new ZodError2([]);
+        const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
+          error48.addIssue(makeArgsIssue(args, e));
+          throw error48;
+        });
+        const result = await Reflect.apply(fn, this, parsedArgs);
+        const parsedReturns = await me._def.returns._def.type.parseAsync(result, params).catch((e) => {
+          error48.addIssue(makeReturnsIssue(result, e));
+          throw error48;
+        });
+        return parsedReturns;
+      });
+    } else {
+      const me = this;
+      return OK(function(...args) {
+        const parsedArgs = me._def.args.safeParse(args, params);
+        if (!parsedArgs.success) {
+          throw new ZodError2([makeArgsIssue(args, parsedArgs.error)]);
+        }
+        const result = Reflect.apply(fn, this, parsedArgs.data);
+        const parsedReturns = me._def.returns.safeParse(result, params);
+        if (!parsedReturns.success) {
+          throw new ZodError2([makeReturnsIssue(result, parsedReturns.error)]);
+        }
+        return parsedReturns.data;
+      });
+    }
+  }
+  parameters() {
+    return this._def.args;
+  }
+  returnType() {
+    return this._def.returns;
+  }
+  args(...items) {
+    return new ZodFunction2({
+      ...this._def,
+      args: ZodTuple2.create(items).rest(ZodUnknown2.create())
+    });
+  }
+  returns(returnType) {
+    return new ZodFunction2({
+      ...this._def,
+      returns: returnType
+    });
+  }
+  implement(func) {
+    const validatedFunc = this.parse(func);
+    return validatedFunc;
+  }
+  strictImplement(func) {
+    const validatedFunc = this.parse(func);
+    return validatedFunc;
+  }
+  static create(args, returns, params) {
+    return new ZodFunction2({
+      args: args ? args : ZodTuple2.create([]).rest(ZodUnknown2.create()),
+      returns: returns || ZodUnknown2.create(),
+      typeName: ZodFirstPartyTypeKind2.ZodFunction,
+      ...processCreateParams(params)
+    });
+  }
+}
+
+class ZodLazy2 extends ZodType2 {
+  get schema() {
+    return this._def.getter();
+  }
+  _parse(input) {
+    const { ctx } = this._processInputParams(input);
+    const lazySchema = this._def.getter();
+    return lazySchema._parse({ data: ctx.data, path: ctx.path, parent: ctx });
+  }
+}
+ZodLazy2.create = (getter, params) => {
+  return new ZodLazy2({
+    getter,
+    typeName: ZodFirstPartyTypeKind2.ZodLazy,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodLiteral2 extends ZodType2 {
+  _parse(input) {
+    if (input.data !== this._def.value) {
+      const ctx = this._getOrReturnCtx(input);
+      addIssueToContext(ctx, {
+        received: ctx.data,
+        code: ZodIssueCode2.invalid_literal,
+        expected: this._def.value
+      });
+      return INVALID;
+    }
+    return { status: "valid", value: input.data };
+  }
+  get value() {
+    return this._def.value;
+  }
+}
+ZodLiteral2.create = (value, params) => {
+  return new ZodLiteral2({
+    value,
+    typeName: ZodFirstPartyTypeKind2.ZodLiteral,
+    ...processCreateParams(params)
+  });
+};
+function createZodEnum(values, params) {
+  return new ZodEnum2({
+    values,
+    typeName: ZodFirstPartyTypeKind2.ZodEnum,
+    ...processCreateParams(params)
+  });
+}
+
+class ZodEnum2 extends ZodType2 {
+  _parse(input) {
+    if (typeof input.data !== "string") {
+      const ctx = this._getOrReturnCtx(input);
+      const expectedValues = this._def.values;
+      addIssueToContext(ctx, {
+        expected: util.joinValues(expectedValues),
+        received: ctx.parsedType,
+        code: ZodIssueCode2.invalid_type
+      });
+      return INVALID;
+    }
+    if (!this._cache) {
+      this._cache = new Set(this._def.values);
+    }
+    if (!this._cache.has(input.data)) {
+      const ctx = this._getOrReturnCtx(input);
+      const expectedValues = this._def.values;
+      addIssueToContext(ctx, {
+        received: ctx.data,
+        code: ZodIssueCode2.invalid_enum_value,
+        options: expectedValues
+      });
+      return INVALID;
+    }
+    return OK(input.data);
+  }
+  get options() {
+    return this._def.values;
+  }
+  get enum() {
+    const enumValues = {};
+    for (const val2 of this._def.values) {
+      enumValues[val2] = val2;
+    }
+    return enumValues;
+  }
+  get Values() {
+    const enumValues = {};
+    for (const val2 of this._def.values) {
+      enumValues[val2] = val2;
+    }
+    return enumValues;
+  }
+  get Enum() {
+    const enumValues = {};
+    for (const val2 of this._def.values) {
+      enumValues[val2] = val2;
+    }
+    return enumValues;
+  }
+  extract(values, newDef = this._def) {
+    return ZodEnum2.create(values, {
+      ...this._def,
+      ...newDef
+    });
+  }
+  exclude(values, newDef = this._def) {
+    return ZodEnum2.create(this.options.filter((opt) => !values.includes(opt)), {
+      ...this._def,
+      ...newDef
+    });
+  }
+}
+ZodEnum2.create = createZodEnum;
+
+class ZodNativeEnum extends ZodType2 {
+  _parse(input) {
+    const nativeEnumValues = util.getValidEnumValues(this._def.values);
+    const ctx = this._getOrReturnCtx(input);
+    if (ctx.parsedType !== ZodParsedType.string && ctx.parsedType !== ZodParsedType.number) {
+      const expectedValues = util.objectValues(nativeEnumValues);
+      addIssueToContext(ctx, {
+        expected: util.joinValues(expectedValues),
+        received: ctx.parsedType,
+        code: ZodIssueCode2.invalid_type
+      });
+      return INVALID;
+    }
+    if (!this._cache) {
+      this._cache = new Set(util.getValidEnumValues(this._def.values));
+    }
+    if (!this._cache.has(input.data)) {
+      const expectedValues = util.objectValues(nativeEnumValues);
+      addIssueToContext(ctx, {
+        received: ctx.data,
+        code: ZodIssueCode2.invalid_enum_value,
+        options: expectedValues
+      });
+      return INVALID;
+    }
+    return OK(input.data);
+  }
+  get enum() {
+    return this._def.values;
+  }
+}
+ZodNativeEnum.create = (values, params) => {
+  return new ZodNativeEnum({
+    values,
+    typeName: ZodFirstPartyTypeKind2.ZodNativeEnum,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodPromise2 extends ZodType2 {
+  unwrap() {
+    return this._def.type;
+  }
+  _parse(input) {
+    const { ctx } = this._processInputParams(input);
+    if (ctx.parsedType !== ZodParsedType.promise && ctx.common.async === false) {
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.promise,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    const promisified = ctx.parsedType === ZodParsedType.promise ? ctx.data : Promise.resolve(ctx.data);
+    return OK(promisified.then((data2) => {
+      return this._def.type.parseAsync(data2, {
+        path: ctx.path,
+        errorMap: ctx.common.contextualErrorMap
+      });
+    }));
+  }
+}
+ZodPromise2.create = (schema, params) => {
+  return new ZodPromise2({
+    type: schema,
+    typeName: ZodFirstPartyTypeKind2.ZodPromise,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodEffects extends ZodType2 {
+  innerType() {
+    return this._def.schema;
+  }
+  sourceType() {
+    return this._def.schema._def.typeName === ZodFirstPartyTypeKind2.ZodEffects ? this._def.schema.sourceType() : this._def.schema;
+  }
+  _parse(input) {
+    const { status, ctx } = this._processInputParams(input);
+    const effect = this._def.effect || null;
+    const checkCtx = {
+      addIssue: (arg) => {
+        addIssueToContext(ctx, arg);
+        if (arg.fatal) {
+          status.abort();
+        } else {
+          status.dirty();
+        }
+      },
+      get path() {
+        return ctx.path;
+      }
+    };
+    checkCtx.addIssue = checkCtx.addIssue.bind(checkCtx);
+    if (effect.type === "preprocess") {
+      const processed = effect.transform(ctx.data, checkCtx);
+      if (ctx.common.async) {
+        return Promise.resolve(processed).then(async (processed2) => {
+          if (status.value === "aborted")
+            return INVALID;
+          const result = await this._def.schema._parseAsync({
+            data: processed2,
+            path: ctx.path,
+            parent: ctx
+          });
+          if (result.status === "aborted")
+            return INVALID;
+          if (result.status === "dirty")
+            return DIRTY(result.value);
+          if (status.value === "dirty")
+            return DIRTY(result.value);
+          return result;
+        });
+      } else {
+        if (status.value === "aborted")
+          return INVALID;
+        const result = this._def.schema._parseSync({
+          data: processed,
+          path: ctx.path,
+          parent: ctx
+        });
+        if (result.status === "aborted")
+          return INVALID;
+        if (result.status === "dirty")
+          return DIRTY(result.value);
+        if (status.value === "dirty")
+          return DIRTY(result.value);
+        return result;
+      }
+    }
+    if (effect.type === "refinement") {
+      const executeRefinement = (acc) => {
+        const result = effect.refinement(acc, checkCtx);
+        if (ctx.common.async) {
+          return Promise.resolve(result);
+        }
+        if (result instanceof Promise) {
+          throw new Error("Async refinement encountered during synchronous parse operation. Use .parseAsync instead.");
+        }
+        return acc;
+      };
+      if (ctx.common.async === false) {
+        const inner = this._def.schema._parseSync({
+          data: ctx.data,
+          path: ctx.path,
+          parent: ctx
+        });
+        if (inner.status === "aborted")
+          return INVALID;
+        if (inner.status === "dirty")
+          status.dirty();
+        executeRefinement(inner.value);
+        return { status: status.value, value: inner.value };
+      } else {
+        return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((inner) => {
+          if (inner.status === "aborted")
+            return INVALID;
+          if (inner.status === "dirty")
+            status.dirty();
+          return executeRefinement(inner.value).then(() => {
+            return { status: status.value, value: inner.value };
+          });
+        });
+      }
+    }
+    if (effect.type === "transform") {
+      if (ctx.common.async === false) {
+        const base = this._def.schema._parseSync({
+          data: ctx.data,
+          path: ctx.path,
+          parent: ctx
+        });
+        if (!isValid(base))
+          return INVALID;
+        const result = effect.transform(base.value, checkCtx);
+        if (result instanceof Promise) {
+          throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
+        }
+        return { status: status.value, value: result };
+      } else {
+        return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
+          if (!isValid(base))
+            return INVALID;
+          return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
+            status: status.value,
+            value: result
+          }));
+        });
+      }
+    }
+    util.assertNever(effect);
+  }
+}
+ZodEffects.create = (schema, effect, params) => {
+  return new ZodEffects({
+    schema,
+    typeName: ZodFirstPartyTypeKind2.ZodEffects,
+    effect,
+    ...processCreateParams(params)
+  });
+};
+ZodEffects.createWithPreprocess = (preprocess2, schema, params) => {
+  return new ZodEffects({
+    schema,
+    effect: { type: "preprocess", transform: preprocess2 },
+    typeName: ZodFirstPartyTypeKind2.ZodEffects,
+    ...processCreateParams(params)
+  });
+};
+class ZodOptional2 extends ZodType2 {
+  _parse(input) {
+    const parsedType2 = this._getType(input);
+    if (parsedType2 === ZodParsedType.undefined) {
+      return OK(undefined);
+    }
+    return this._def.innerType._parse(input);
+  }
+  unwrap() {
+    return this._def.innerType;
+  }
+}
+ZodOptional2.create = (type, params) => {
+  return new ZodOptional2({
+    innerType: type,
+    typeName: ZodFirstPartyTypeKind2.ZodOptional,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodNullable2 extends ZodType2 {
+  _parse(input) {
+    const parsedType2 = this._getType(input);
+    if (parsedType2 === ZodParsedType.null) {
+      return OK(null);
+    }
+    return this._def.innerType._parse(input);
+  }
+  unwrap() {
+    return this._def.innerType;
+  }
+}
+ZodNullable2.create = (type, params) => {
+  return new ZodNullable2({
+    innerType: type,
+    typeName: ZodFirstPartyTypeKind2.ZodNullable,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodDefault2 extends ZodType2 {
+  _parse(input) {
+    const { ctx } = this._processInputParams(input);
+    let data2 = ctx.data;
+    if (ctx.parsedType === ZodParsedType.undefined) {
+      data2 = this._def.defaultValue();
+    }
+    return this._def.innerType._parse({
+      data: data2,
+      path: ctx.path,
+      parent: ctx
+    });
+  }
+  removeDefault() {
+    return this._def.innerType;
+  }
+}
+ZodDefault2.create = (type, params) => {
+  return new ZodDefault2({
+    innerType: type,
+    typeName: ZodFirstPartyTypeKind2.ZodDefault,
+    defaultValue: typeof params.default === "function" ? params.default : () => params.default,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodCatch2 extends ZodType2 {
+  _parse(input) {
+    const { ctx } = this._processInputParams(input);
+    const newCtx = {
+      ...ctx,
+      common: {
+        ...ctx.common,
+        issues: []
+      }
+    };
+    const result = this._def.innerType._parse({
+      data: newCtx.data,
+      path: newCtx.path,
+      parent: {
+        ...newCtx
+      }
+    });
+    if (isAsync(result)) {
+      return result.then((result2) => {
+        return {
+          status: "valid",
+          value: result2.status === "valid" ? result2.value : this._def.catchValue({
+            get error() {
+              return new ZodError2(newCtx.common.issues);
+            },
+            input: newCtx.data
+          })
+        };
+      });
+    } else {
+      return {
+        status: "valid",
+        value: result.status === "valid" ? result.value : this._def.catchValue({
+          get error() {
+            return new ZodError2(newCtx.common.issues);
+          },
+          input: newCtx.data
+        })
+      };
+    }
+  }
+  removeCatch() {
+    return this._def.innerType;
+  }
+}
+ZodCatch2.create = (type, params) => {
+  return new ZodCatch2({
+    innerType: type,
+    typeName: ZodFirstPartyTypeKind2.ZodCatch,
+    catchValue: typeof params.catch === "function" ? params.catch : () => params.catch,
+    ...processCreateParams(params)
+  });
+};
+
+class ZodNaN2 extends ZodType2 {
+  _parse(input) {
+    const parsedType2 = this._getType(input);
+    if (parsedType2 !== ZodParsedType.nan) {
+      const ctx = this._getOrReturnCtx(input);
+      addIssueToContext(ctx, {
+        code: ZodIssueCode2.invalid_type,
+        expected: ZodParsedType.nan,
+        received: ctx.parsedType
+      });
+      return INVALID;
+    }
+    return { status: "valid", value: input.data };
+  }
+}
+ZodNaN2.create = (params) => {
+  return new ZodNaN2({
+    typeName: ZodFirstPartyTypeKind2.ZodNaN,
+    ...processCreateParams(params)
+  });
+};
+var BRAND = Symbol("zod_brand");
+
+class ZodBranded extends ZodType2 {
+  _parse(input) {
+    const { ctx } = this._processInputParams(input);
+    const data2 = ctx.data;
+    return this._def.type._parse({
+      data: data2,
+      path: ctx.path,
+      parent: ctx
+    });
+  }
+  unwrap() {
+    return this._def.type;
+  }
+}
+
+class ZodPipeline extends ZodType2 {
+  _parse(input) {
+    const { status, ctx } = this._processInputParams(input);
+    if (ctx.common.async) {
+      const handleAsync = async () => {
+        const inResult = await this._def.in._parseAsync({
+          data: ctx.data,
+          path: ctx.path,
+          parent: ctx
+        });
+        if (inResult.status === "aborted")
+          return INVALID;
+        if (inResult.status === "dirty") {
+          status.dirty();
+          return DIRTY(inResult.value);
+        } else {
+          return this._def.out._parseAsync({
+            data: inResult.value,
+            path: ctx.path,
+            parent: ctx
+          });
+        }
+      };
+      return handleAsync();
+    } else {
+      const inResult = this._def.in._parseSync({
+        data: ctx.data,
+        path: ctx.path,
+        parent: ctx
+      });
+      if (inResult.status === "aborted")
+        return INVALID;
+      if (inResult.status === "dirty") {
+        status.dirty();
+        return {
+          status: "dirty",
+          value: inResult.value
+        };
+      } else {
+        return this._def.out._parseSync({
+          data: inResult.value,
+          path: ctx.path,
+          parent: ctx
+        });
+      }
+    }
+  }
+  static create(a, b) {
+    return new ZodPipeline({
+      in: a,
+      out: b,
+      typeName: ZodFirstPartyTypeKind2.ZodPipeline
+    });
+  }
+}
+
+class ZodReadonly2 extends ZodType2 {
+  _parse(input) {
+    const result = this._def.innerType._parse(input);
+    const freeze = (data2) => {
+      if (isValid(data2)) {
+        data2.value = Object.freeze(data2.value);
+      }
+      return data2;
+    };
+    return isAsync(result) ? result.then((data2) => freeze(data2)) : freeze(result);
+  }
+  unwrap() {
+    return this._def.innerType;
+  }
+}
+ZodReadonly2.create = (type, params) => {
+  return new ZodReadonly2({
+    innerType: type,
+    typeName: ZodFirstPartyTypeKind2.ZodReadonly,
+    ...processCreateParams(params)
+  });
+};
+var late = {
+  object: ZodObject2.lazycreate
+};
+var ZodFirstPartyTypeKind2;
+(function(ZodFirstPartyTypeKind3) {
+  ZodFirstPartyTypeKind3["ZodString"] = "ZodString";
+  ZodFirstPartyTypeKind3["ZodNumber"] = "ZodNumber";
+  ZodFirstPartyTypeKind3["ZodNaN"] = "ZodNaN";
+  ZodFirstPartyTypeKind3["ZodBigInt"] = "ZodBigInt";
+  ZodFirstPartyTypeKind3["ZodBoolean"] = "ZodBoolean";
+  ZodFirstPartyTypeKind3["ZodDate"] = "ZodDate";
+  ZodFirstPartyTypeKind3["ZodSymbol"] = "ZodSymbol";
+  ZodFirstPartyTypeKind3["ZodUndefined"] = "ZodUndefined";
+  ZodFirstPartyTypeKind3["ZodNull"] = "ZodNull";
+  ZodFirstPartyTypeKind3["ZodAny"] = "ZodAny";
+  ZodFirstPartyTypeKind3["ZodUnknown"] = "ZodUnknown";
+  ZodFirstPartyTypeKind3["ZodNever"] = "ZodNever";
+  ZodFirstPartyTypeKind3["ZodVoid"] = "ZodVoid";
+  ZodFirstPartyTypeKind3["ZodArray"] = "ZodArray";
+  ZodFirstPartyTypeKind3["ZodObject"] = "ZodObject";
+  ZodFirstPartyTypeKind3["ZodUnion"] = "ZodUnion";
+  ZodFirstPartyTypeKind3["ZodDiscriminatedUnion"] = "ZodDiscriminatedUnion";
+  ZodFirstPartyTypeKind3["ZodIntersection"] = "ZodIntersection";
+  ZodFirstPartyTypeKind3["ZodTuple"] = "ZodTuple";
+  ZodFirstPartyTypeKind3["ZodRecord"] = "ZodRecord";
+  ZodFirstPartyTypeKind3["ZodMap"] = "ZodMap";
+  ZodFirstPartyTypeKind3["ZodSet"] = "ZodSet";
+  ZodFirstPartyTypeKind3["ZodFunction"] = "ZodFunction";
+  ZodFirstPartyTypeKind3["ZodLazy"] = "ZodLazy";
+  ZodFirstPartyTypeKind3["ZodLiteral"] = "ZodLiteral";
+  ZodFirstPartyTypeKind3["ZodEnum"] = "ZodEnum";
+  ZodFirstPartyTypeKind3["ZodEffects"] = "ZodEffects";
+  ZodFirstPartyTypeKind3["ZodNativeEnum"] = "ZodNativeEnum";
+  ZodFirstPartyTypeKind3["ZodOptional"] = "ZodOptional";
+  ZodFirstPartyTypeKind3["ZodNullable"] = "ZodNullable";
+  ZodFirstPartyTypeKind3["ZodDefault"] = "ZodDefault";
+  ZodFirstPartyTypeKind3["ZodCatch"] = "ZodCatch";
+  ZodFirstPartyTypeKind3["ZodPromise"] = "ZodPromise";
+  ZodFirstPartyTypeKind3["ZodBranded"] = "ZodBranded";
+  ZodFirstPartyTypeKind3["ZodPipeline"] = "ZodPipeline";
+  ZodFirstPartyTypeKind3["ZodReadonly"] = "ZodReadonly";
+})(ZodFirstPartyTypeKind2 || (ZodFirstPartyTypeKind2 = {}));
+var stringType = ZodString2.create;
+var numberType = ZodNumber2.create;
+var nanType = ZodNaN2.create;
+var bigIntType = ZodBigInt2.create;
+var booleanType = ZodBoolean2.create;
+var dateType = ZodDate2.create;
+var symbolType = ZodSymbol2.create;
+var undefinedType = ZodUndefined2.create;
+var nullType = ZodNull2.create;
+var anyType = ZodAny2.create;
+var unknownType = ZodUnknown2.create;
+var neverType = ZodNever2.create;
+var voidType = ZodVoid2.create;
+var arrayType = ZodArray2.create;
+var objectType = ZodObject2.create;
+var strictObjectType = ZodObject2.strictCreate;
+var unionType = ZodUnion2.create;
+var discriminatedUnionType = ZodDiscriminatedUnion2.create;
+var intersectionType = ZodIntersection2.create;
+var tupleType = ZodTuple2.create;
+var recordType = ZodRecord2.create;
+var mapType = ZodMap2.create;
+var setType = ZodSet2.create;
+var functionType = ZodFunction2.create;
+var lazyType = ZodLazy2.create;
+var literalType = ZodLiteral2.create;
+var enumType = ZodEnum2.create;
+var nativeEnumType = ZodNativeEnum.create;
+var promiseType = ZodPromise2.create;
+var effectsType = ZodEffects.create;
+var optionalType = ZodOptional2.create;
+var nullableType = ZodNullable2.create;
+var preprocessType = ZodEffects.createWithPreprocess;
+var pipelineType = ZodPipeline.create;
+
+// node_modules/eventsource-parser/dist/index.js
+class ParseError extends Error {
+  constructor(message, options2) {
+    super(message), this.name = "ParseError", this.type = options2.type, this.field = options2.field, this.value = options2.value, this.line = options2.line;
+  }
+}
+var LF = 10;
+var CR = 13;
+var SPACE = 32;
+function noop(_arg) {}
+function createParser(config2) {
+  if (typeof config2 == "function")
+    throw new TypeError("`config` must be an object, got a function instead. Did you mean `createParser({onEvent: fn})`?");
+  const { onEvent = noop, onError = noop, onRetry = noop, onComment, maxBufferSize } = config2, pendingFragments = [];
+  let pendingFragmentsLength = 0, isFirstChunk = true, id, data2 = "", dataLines = 0, eventType, terminated = false;
+  function feed(chunk) {
+    if (terminated)
+      throw new Error("Cannot feed parser: it was terminated after exceeding the configured max buffer size. Call `reset()` to resume parsing.");
+    if (isFirstChunk && (isFirstChunk = false, chunk.charCodeAt(0) === 239 && chunk.charCodeAt(1) === 187 && chunk.charCodeAt(2) === 191 && (chunk = chunk.slice(3))), pendingFragments.length === 0) {
+      const trailing2 = processLines(chunk);
+      trailing2 !== "" && (pendingFragments.push(trailing2), pendingFragmentsLength = trailing2.length), checkBufferSize();
+      return;
+    }
+    if (chunk.indexOf(`
+`) === -1 && chunk.indexOf("\r") === -1) {
+      pendingFragments.push(chunk), pendingFragmentsLength += chunk.length, checkBufferSize();
+      return;
+    }
+    pendingFragments.push(chunk);
+    const input = pendingFragments.join("");
+    pendingFragments.length = 0, pendingFragmentsLength = 0;
+    const trailing = processLines(input);
+    trailing !== "" && (pendingFragments.push(trailing), pendingFragmentsLength = trailing.length), checkBufferSize();
+  }
+  function checkBufferSize() {
+    maxBufferSize !== undefined && (pendingFragmentsLength + data2.length <= maxBufferSize || (terminated = true, pendingFragments.length = 0, pendingFragmentsLength = 0, id = undefined, data2 = "", dataLines = 0, eventType = undefined, onError(new ParseError(`Buffered data exceeded max buffer size of ${maxBufferSize} characters`, {
+      type: "max-buffer-size-exceeded"
+    }))));
+  }
+  function processLines(chunk) {
+    let searchIndex = 0;
+    if (chunk.indexOf("\r") === -1) {
+      let lfIndex = chunk.indexOf(`
+`, searchIndex);
+      for (;lfIndex !== -1; ) {
+        if (searchIndex === lfIndex) {
+          dataLines > 0 && onEvent({ id, event: eventType, data: data2 }), id = undefined, data2 = "", dataLines = 0, eventType = undefined, searchIndex = lfIndex + 1, lfIndex = chunk.indexOf(`
+`, searchIndex);
+          continue;
+        }
+        const firstCharCode = chunk.charCodeAt(searchIndex);
+        if (isDataPrefix(chunk, searchIndex, firstCharCode)) {
+          const valueStart = chunk.charCodeAt(searchIndex + 5) === SPACE ? searchIndex + 6 : searchIndex + 5, value = chunk.slice(valueStart, lfIndex);
+          if (dataLines === 0 && chunk.charCodeAt(lfIndex + 1) === LF) {
+            onEvent({ id, event: eventType, data: value }), id = undefined, data2 = "", eventType = undefined, searchIndex = lfIndex + 2, lfIndex = chunk.indexOf(`
+`, searchIndex);
+            continue;
+          }
+          data2 = dataLines === 0 ? value : `${data2}
+${value}`, dataLines++;
+        } else
+          isEventPrefix(chunk, searchIndex, firstCharCode) ? eventType = chunk.slice(chunk.charCodeAt(searchIndex + 6) === SPACE ? searchIndex + 7 : searchIndex + 6, lfIndex) || undefined : parseLine(chunk, searchIndex, lfIndex);
+        searchIndex = lfIndex + 1, lfIndex = chunk.indexOf(`
+`, searchIndex);
+      }
+      return chunk.slice(searchIndex);
+    }
+    for (;searchIndex < chunk.length; ) {
+      const crIndex = chunk.indexOf("\r", searchIndex), lfIndex = chunk.indexOf(`
+`, searchIndex);
+      let lineEnd = -1;
+      if (crIndex !== -1 && lfIndex !== -1 ? lineEnd = crIndex < lfIndex ? crIndex : lfIndex : crIndex !== -1 ? crIndex === chunk.length - 1 ? lineEnd = -1 : lineEnd = crIndex : lfIndex !== -1 && (lineEnd = lfIndex), lineEnd === -1)
+        break;
+      parseLine(chunk, searchIndex, lineEnd), searchIndex = lineEnd + 1, chunk.charCodeAt(searchIndex - 1) === CR && chunk.charCodeAt(searchIndex) === LF && searchIndex++;
+    }
+    return chunk.slice(searchIndex);
+  }
+  function parseLine(chunk, start, end2) {
+    if (start === end2) {
+      dispatchEvent();
+      return;
+    }
+    const firstCharCode = chunk.charCodeAt(start);
+    if (isDataPrefix(chunk, start, firstCharCode)) {
+      const valueStart = chunk.charCodeAt(start + 5) === SPACE ? start + 6 : start + 5, value2 = chunk.slice(valueStart, end2);
+      data2 = dataLines === 0 ? value2 : `${data2}
+${value2}`, dataLines++;
+      return;
+    }
+    if (isEventPrefix(chunk, start, firstCharCode)) {
+      eventType = chunk.slice(chunk.charCodeAt(start + 6) === SPACE ? start + 7 : start + 6, end2) || undefined;
+      return;
+    }
+    if (firstCharCode === 105 && chunk.charCodeAt(start + 1) === 100 && chunk.charCodeAt(start + 2) === 58) {
+      const value2 = chunk.slice(chunk.charCodeAt(start + 3) === SPACE ? start + 4 : start + 3, end2);
+      id = value2.includes("\x00") ? undefined : value2;
+      return;
+    }
+    if (firstCharCode === 58) {
+      if (onComment) {
+        const line2 = chunk.slice(start, end2);
+        onComment(line2.slice(chunk.charCodeAt(start + 1) === SPACE ? 2 : 1));
+      }
+      return;
+    }
+    const line = chunk.slice(start, end2), fieldSeparatorIndex = line.indexOf(":");
+    if (fieldSeparatorIndex === -1) {
+      processField(line, "", line);
+      return;
+    }
+    const field = line.slice(0, fieldSeparatorIndex), offset = line.charCodeAt(fieldSeparatorIndex + 1) === SPACE ? 2 : 1, value = line.slice(fieldSeparatorIndex + offset);
+    processField(field, value, line);
+  }
+  function processField(field, value, line) {
+    switch (field) {
+      case "event":
+        eventType = value || undefined;
+        break;
+      case "data":
+        data2 = dataLines === 0 ? value : `${data2}
+${value}`, dataLines++;
+        break;
+      case "id":
+        id = value.includes("\x00") ? undefined : value;
+        break;
+      case "retry":
+        /^\d+$/.test(value) ? onRetry(parseInt(value, 10)) : onError(new ParseError(`Invalid \`retry\` value: "${value}"`, {
+          type: "invalid-retry",
+          value,
+          line
+        }));
+        break;
+      default:
+        onError(new ParseError(`Unknown field "${field.length > 20 ? `${field.slice(0, 20)}\u2026` : field}"`, { type: "unknown-field", field, value, line }));
+        break;
+    }
+  }
+  function dispatchEvent() {
+    dataLines > 0 && onEvent({
+      id,
+      event: eventType,
+      data: data2
+    }), id = undefined, data2 = "", dataLines = 0, eventType = undefined;
+  }
+  function reset(options2 = {}) {
+    if (options2.consume && pendingFragments.length > 0) {
+      const incompleteLine = pendingFragments.join("");
+      parseLine(incompleteLine, 0, incompleteLine.length);
+    }
+    isFirstChunk = true, id = undefined, data2 = "", dataLines = 0, eventType = undefined, pendingFragments.length = 0, pendingFragmentsLength = 0, terminated = false;
+  }
+  return { feed, reset };
+}
+function isDataPrefix(chunk, i, firstCharCode) {
+  return firstCharCode === 100 && chunk.charCodeAt(i + 1) === 97 && chunk.charCodeAt(i + 2) === 116 && chunk.charCodeAt(i + 3) === 97 && chunk.charCodeAt(i + 4) === 58;
+}
+function isEventPrefix(chunk, i, firstCharCode) {
+  return firstCharCode === 101 && chunk.charCodeAt(i + 1) === 118 && chunk.charCodeAt(i + 2) === 101 && chunk.charCodeAt(i + 3) === 110 && chunk.charCodeAt(i + 4) === 116 && chunk.charCodeAt(i + 5) === 58;
+}
+
+// node_modules/eventsource-parser/dist/stream.js
+class EventSourceParserStream extends TransformStream {
+  constructor({ onError, onRetry, onComment, maxBufferSize } = {}) {
+    let parser;
+    super({
+      start(controller) {
+        parser = createParser({
+          onEvent: (event) => {
+            controller.enqueue(event);
+          },
+          onError(error48) {
+            typeof onError == "function" && onError(error48), (onError === "terminate" || error48.type === "max-buffer-size-exceeded") && controller.error(error48);
+          },
+          onRetry,
+          onComment,
+          maxBufferSize
+        });
+      },
+      transform(chunk) {
+        parser.feed(chunk);
+      }
+    });
+  }
+}
+
+// node_modules/@ai-sdk/provider-utils/dist/index.mjs
+function combineHeaders(...headers) {
+  return headers.reduce((combinedHeaders, currentHeaders) => ({
+    ...combinedHeaders,
+    ...currentHeaders != null ? currentHeaders : {}
+  }), {});
+}
+function createToolNameMapping({
+  tools = [],
+  providerToolNames,
+  resolveProviderToolName
+}) {
+  var _a23;
+  const customToolNameToProviderToolName = {};
+  const providerToolNameToCustomToolName = {};
+  for (const tool2 of tools) {
+    if (tool2.type === "provider") {
+      const providerToolName = (_a23 = resolveProviderToolName == null ? undefined : resolveProviderToolName(tool2)) != null ? _a23 : (tool2.id in providerToolNames) ? providerToolNames[tool2.id] : undefined;
+      if (providerToolName == null) {
+        continue;
+      }
+      customToolNameToProviderToolName[tool2.name] = providerToolName;
+      providerToolNameToCustomToolName[providerToolName] = tool2.name;
+    }
+  }
+  return {
+    toProviderToolName: (customToolName) => {
+      var _a33;
+      return (_a33 = customToolNameToProviderToolName[customToolName]) != null ? _a33 : customToolName;
+    },
+    toCustomToolName: (providerToolName) => {
+      var _a33;
+      return (_a33 = providerToolNameToCustomToolName[providerToolName]) != null ? _a33 : providerToolName;
+    }
+  };
+}
+async function delay(delayInMs, options2) {
+  if (delayInMs == null) {
+    return Promise.resolve();
+  }
+  const signal = options2 == null ? undefined : options2.abortSignal;
+  return new Promise((resolve2, reject) => {
+    if (signal == null ? undefined : signal.aborted) {
+      reject(createAbortError());
+      return;
+    }
+    const timeoutId = setTimeout(() => {
+      cleanup();
+      resolve2();
+    }, delayInMs);
+    const cleanup = () => {
+      clearTimeout(timeoutId);
+      signal == null || signal.removeEventListener("abort", onAbort);
+    };
+    const onAbort = () => {
+      cleanup();
+      reject(createAbortError());
+    };
+    signal == null || signal.addEventListener("abort", onAbort);
+  });
+}
+function createAbortError() {
+  return new DOMException("Delay was aborted", "AbortError");
+}
+var DelayedPromise = class {
+  constructor() {
+    this.status = { type: "pending" };
+    this._resolve = undefined;
+    this._reject = undefined;
+  }
+  get promise() {
+    if (this._promise) {
+      return this._promise;
+    }
+    this._promise = new Promise((resolve2, reject) => {
+      if (this.status.type === "resolved") {
+        resolve2(this.status.value);
+      } else if (this.status.type === "rejected") {
+        reject(this.status.error);
+      }
+      this._resolve = resolve2;
+      this._reject = reject;
+    });
+    return this._promise;
+  }
+  resolve(value) {
+    var _a23;
+    this.status = { type: "resolved", value };
+    if (this._promise) {
+      (_a23 = this._resolve) == null || _a23.call(this, value);
+    }
+  }
+  reject(error48) {
+    var _a23;
+    this.status = { type: "rejected", error: error48 };
+    if (this._promise) {
+      (_a23 = this._reject) == null || _a23.call(this, error48);
+    }
+  }
+  isResolved() {
+    return this.status.type === "resolved";
+  }
+  isRejected() {
+    return this.status.type === "rejected";
+  }
+  isPending() {
+    return this.status.type === "pending";
+  }
+};
+function extractResponseHeaders(response) {
+  return Object.fromEntries([...response.headers]);
+}
+var { btoa: btoa2, atob: atob2 } = globalThis;
+function convertBase64ToUint8Array(base64String) {
+  const base64Url = base64String.replace(/-/g, "+").replace(/_/g, "/");
+  const latin1string = atob2(base64Url);
+  return Uint8Array.from(latin1string, (byte) => byte.codePointAt(0));
+}
+function convertUint8ArrayToBase64(array2) {
+  let latin1string = "";
+  for (let i = 0;i < array2.length; i++) {
+    latin1string += String.fromCodePoint(array2[i]);
+  }
+  return btoa2(latin1string);
+}
+function convertToBase64(value) {
+  return value instanceof Uint8Array ? convertUint8ArrayToBase64(value) : value;
+}
+function convertToFormData(input, options2 = {}) {
+  const { useArrayBrackets = true } = options2;
+  const formData = new FormData;
+  for (const [key, value] of Object.entries(input)) {
+    if (value == null) {
+      continue;
+    }
+    if (Array.isArray(value)) {
+      if (value.length === 1) {
+        formData.append(key, value[0]);
+        continue;
+      }
+      const arrayKey = useArrayBrackets ? `${key}[]` : key;
+      for (const item of value) {
+        formData.append(arrayKey, item);
+      }
+      continue;
+    }
+    formData.append(key, value);
+  }
+  return formData;
+}
+var name14 = "AI_DownloadError";
+var marker15 = `vercel.ai.error.${name14}`;
+var symbol15 = Symbol.for(marker15);
+var _a15;
+var _b15;
+var DownloadError = class extends (_b15 = AISDKError, _a15 = symbol15, _b15) {
+  constructor({
+    url: url2,
+    statusCode,
+    statusText,
+    cause,
+    message = cause == null ? `Failed to download ${url2}: ${statusCode} ${statusText}` : `Failed to download ${url2}: ${cause}`
+  }) {
+    super({ name: name14, message, cause });
+    this[_a15] = true;
+    this.url = url2;
+    this.statusCode = statusCode;
+    this.statusText = statusText;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker15);
+  }
+};
+var DEFAULT_MAX_DOWNLOAD_SIZE = 2 * 1024 * 1024 * 1024;
+async function readResponseWithSizeLimit({
+  response,
+  url: url2,
+  maxBytes = DEFAULT_MAX_DOWNLOAD_SIZE
+}) {
+  const contentLength = response.headers.get("content-length");
+  if (contentLength != null) {
+    const length = parseInt(contentLength, 10);
+    if (!isNaN(length) && length > maxBytes) {
+      throw new DownloadError({
+        url: url2,
+        message: `Download of ${url2} exceeded maximum size of ${maxBytes} bytes (Content-Length: ${length}).`
+      });
+    }
+  }
+  const body = response.body;
+  if (body == null) {
+    return new Uint8Array(0);
+  }
+  const reader = body.getReader();
+  const chunks = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      totalBytes += value.length;
+      if (totalBytes > maxBytes) {
+        throw new DownloadError({
+          url: url2,
+          message: `Download of ${url2} exceeded maximum size of ${maxBytes} bytes.`
+        });
+      }
+      chunks.push(value);
+    }
+  } finally {
+    try {
+      await reader.cancel();
+    } finally {
+      reader.releaseLock();
+    }
+  }
+  const result = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+function validateDownloadUrl(url2) {
+  let parsed;
+  try {
+    parsed = new URL(url2);
+  } catch (e) {
+    throw new DownloadError({
+      url: url2,
+      message: `Invalid URL: ${url2}`
+    });
+  }
+  if (parsed.protocol === "data:") {
+    return;
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new DownloadError({
+      url: url2,
+      message: `URL scheme must be http, https, or data, got ${parsed.protocol}`
+    });
+  }
+  const hostname3 = parsed.hostname;
+  if (!hostname3) {
+    throw new DownloadError({
+      url: url2,
+      message: `URL must have a hostname`
+    });
+  }
+  if (hostname3 === "localhost" || hostname3.endsWith(".local") || hostname3.endsWith(".localhost")) {
+    throw new DownloadError({
+      url: url2,
+      message: `URL with hostname ${hostname3} is not allowed`
+    });
+  }
+  if (hostname3.startsWith("[") && hostname3.endsWith("]")) {
+    const ipv63 = hostname3.slice(1, -1);
+    if (isPrivateIPv6(ipv63)) {
+      throw new DownloadError({
+        url: url2,
+        message: `URL with IPv6 address ${hostname3} is not allowed`
+      });
+    }
+    return;
+  }
+  if (isIPv4(hostname3)) {
+    if (isPrivateIPv4(hostname3)) {
+      throw new DownloadError({
+        url: url2,
+        message: `URL with IP address ${hostname3} is not allowed`
+      });
+    }
+    return;
+  }
+}
+function isIPv4(hostname3) {
+  const parts = hostname3.split(".");
+  if (parts.length !== 4)
+    return false;
+  return parts.every((part) => {
+    const num = Number(part);
+    return Number.isInteger(num) && num >= 0 && num <= 255 && String(num) === part;
+  });
+}
+function isPrivateIPv4(ip) {
+  const parts = ip.split(".").map(Number);
+  const [a, b] = parts;
+  if (a === 0)
+    return true;
+  if (a === 10)
+    return true;
+  if (a === 127)
+    return true;
+  if (a === 169 && b === 254)
+    return true;
+  if (a === 172 && b >= 16 && b <= 31)
+    return true;
+  if (a === 192 && b === 168)
+    return true;
+  return false;
+}
+function isPrivateIPv6(ip) {
+  const normalized = ip.toLowerCase();
+  if (normalized === "::1")
+    return true;
+  if (normalized === "::")
+    return true;
+  if (normalized.startsWith("::ffff:")) {
+    const mappedPart = normalized.slice(7);
+    if (isIPv4(mappedPart)) {
+      return isPrivateIPv4(mappedPart);
+    }
+    const hexParts = mappedPart.split(":");
+    if (hexParts.length === 2) {
+      const high = parseInt(hexParts[0], 16);
+      const low = parseInt(hexParts[1], 16);
+      if (!isNaN(high) && !isNaN(low)) {
+        const a = high >> 8 & 255;
+        const b = high & 255;
+        const c3 = low >> 8 & 255;
+        const d = low & 255;
+        return isPrivateIPv4(`${a}.${b}.${c3}.${d}`);
+      }
+    }
+  }
+  if (normalized.startsWith("fc") || normalized.startsWith("fd"))
+    return true;
+  if (normalized.startsWith("fe80"))
+    return true;
+  return false;
+}
+async function downloadBlob(url2, options2) {
+  var _a23, _b22;
+  validateDownloadUrl(url2);
+  try {
+    const response = await fetch(url2, {
+      signal: options2 == null ? undefined : options2.abortSignal
+    });
+    if (response.redirected) {
+      validateDownloadUrl(response.url);
+    }
+    if (!response.ok) {
+      throw new DownloadError({
+        url: url2,
+        statusCode: response.status,
+        statusText: response.statusText
+      });
+    }
+    const data2 = await readResponseWithSizeLimit({
+      response,
+      url: url2,
+      maxBytes: (_a23 = options2 == null ? undefined : options2.maxBytes) != null ? _a23 : DEFAULT_MAX_DOWNLOAD_SIZE
+    });
+    const contentType = (_b22 = response.headers.get("content-type")) != null ? _b22 : undefined;
+    return new Blob([data2], contentType ? { type: contentType } : undefined);
+  } catch (error48) {
+    if (DownloadError.isInstance(error48)) {
+      throw error48;
+    }
+    throw new DownloadError({ url: url2, cause: error48 });
+  }
+}
+var createIdGenerator = ({
+  prefix,
+  size = 16,
+  alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+  separator = "-"
+} = {}) => {
+  const generator = () => {
+    const alphabetLength = alphabet.length;
+    const chars = new Array(size);
+    for (let i = 0;i < size; i++) {
+      chars[i] = alphabet[Math.random() * alphabetLength | 0];
+    }
+    return chars.join("");
+  };
+  if (prefix == null) {
+    return generator;
+  }
+  if (alphabet.includes(separator)) {
+    throw new InvalidArgumentError({
+      argument: "separator",
+      message: `The separator "${separator}" must not be part of the alphabet "${alphabet}".`
+    });
+  }
+  return () => `${prefix}${separator}${generator()}`;
+};
+var generateId = createIdGenerator();
+function getErrorMessage2(error48) {
+  if (error48 == null) {
+    return "unknown error";
+  }
+  if (typeof error48 === "string") {
+    return error48;
+  }
+  if (error48 instanceof Error) {
+    return error48.message;
+  }
+  return JSON.stringify(error48);
+}
+function isAbortError(error48) {
+  return (error48 instanceof Error || error48 instanceof DOMException) && (error48.name === "AbortError" || error48.name === "ResponseAborted" || error48.name === "TimeoutError");
+}
+var FETCH_FAILED_ERROR_MESSAGES = ["fetch failed", "failed to fetch"];
+var BUN_ERROR_CODES = [
+  "ConnectionRefused",
+  "ConnectionClosed",
+  "FailedToOpenSocket",
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ETIMEDOUT",
+  "EPIPE"
+];
+function isBunNetworkError(error48) {
+  if (!(error48 instanceof Error)) {
+    return false;
+  }
+  const code = error48.code;
+  if (typeof code === "string" && BUN_ERROR_CODES.includes(code)) {
+    return true;
+  }
+  return false;
+}
+function handleFetchError({
+  error: error48,
+  url: url2,
+  requestBodyValues
+}) {
+  if (isAbortError(error48)) {
+    return error48;
+  }
+  if (error48 instanceof TypeError && FETCH_FAILED_ERROR_MESSAGES.includes(error48.message.toLowerCase())) {
+    const cause = error48.cause;
+    if (cause != null) {
+      return new APICallError({
+        message: `Cannot connect to API: ${cause.message}`,
+        cause,
+        url: url2,
+        requestBodyValues,
+        isRetryable: true
+      });
+    }
+  }
+  if (isBunNetworkError(error48)) {
+    return new APICallError({
+      message: `Cannot connect to API: ${error48.message}`,
+      cause: error48,
+      url: url2,
+      requestBodyValues,
+      isRetryable: true
+    });
+  }
+  return error48;
+}
+function getRuntimeEnvironmentUserAgent(globalThisAny = globalThis) {
+  var _a23, _b22, _c;
+  if (globalThisAny.window) {
+    return `runtime/browser`;
+  }
+  if ((_a23 = globalThisAny.navigator) == null ? undefined : _a23.userAgent) {
+    return `runtime/${globalThisAny.navigator.userAgent.toLowerCase()}`;
+  }
+  if ((_c = (_b22 = globalThisAny.process) == null ? undefined : _b22.versions) == null ? undefined : _c.node) {
+    return `runtime/node.js/${globalThisAny.process.version.substring(0)}`;
+  }
+  if (globalThisAny.EdgeRuntime) {
+    return `runtime/vercel-edge`;
+  }
+  return "runtime/unknown";
+}
+function normalizeHeaders(headers) {
+  if (headers == null) {
+    return {};
+  }
+  const normalized = {};
+  if (headers instanceof Headers) {
+    headers.forEach((value, key) => {
+      normalized[key.toLowerCase()] = value;
+    });
+  } else {
+    if (!Array.isArray(headers)) {
+      headers = Object.entries(headers);
+    }
+    for (const [key, value] of headers) {
+      if (value != null) {
+        normalized[key.toLowerCase()] = value;
+      }
+    }
+  }
+  return normalized;
+}
+function withUserAgentSuffix(headers, ...userAgentSuffixParts) {
+  const normalizedHeaders = new Headers(normalizeHeaders(headers));
+  const currentUserAgentHeader = normalizedHeaders.get("user-agent") || "";
+  normalizedHeaders.set("user-agent", [currentUserAgentHeader, ...userAgentSuffixParts].filter(Boolean).join(" "));
+  return Object.fromEntries(normalizedHeaders.entries());
+}
+var VERSION = "4.0.27";
+var getOriginalFetch = () => globalThis.fetch;
+var getFromApi = async ({
+  url: url2,
+  headers = {},
+  successfulResponseHandler,
+  failedResponseHandler,
+  abortSignal,
+  fetch: fetch22 = getOriginalFetch()
+}) => {
+  try {
+    const response = await fetch22(url2, {
+      method: "GET",
+      headers: withUserAgentSuffix(headers, `ai-sdk/provider-utils/${VERSION}`, getRuntimeEnvironmentUserAgent()),
+      signal: abortSignal
+    });
+    const responseHeaders = extractResponseHeaders(response);
+    if (!response.ok) {
+      let errorInformation;
+      try {
+        errorInformation = await failedResponseHandler({
+          response,
+          url: url2,
+          requestBodyValues: {}
+        });
+      } catch (error48) {
+        if (isAbortError(error48) || APICallError.isInstance(error48)) {
+          throw error48;
+        }
+        throw new APICallError({
+          message: "Failed to process error response",
+          cause: error48,
+          statusCode: response.status,
+          url: url2,
+          responseHeaders,
+          requestBodyValues: {}
+        });
+      }
+      throw errorInformation.value;
+    }
+    try {
+      return await successfulResponseHandler({
+        response,
+        url: url2,
+        requestBodyValues: {}
+      });
+    } catch (error48) {
+      if (error48 instanceof Error) {
+        if (isAbortError(error48) || APICallError.isInstance(error48)) {
+          throw error48;
+        }
+      }
+      throw new APICallError({
+        message: "Failed to process successful response",
+        cause: error48,
+        statusCode: response.status,
+        url: url2,
+        responseHeaders,
+        requestBodyValues: {}
+      });
+    }
+  } catch (error48) {
+    throw handleFetchError({ error: error48, url: url2, requestBodyValues: {} });
+  }
+};
+function isNonNullable(value) {
+  return value != null;
+}
+function isUrlSupported({
+  mediaType,
+  url: url2,
+  supportedUrls
+}) {
+  url2 = url2.toLowerCase();
+  mediaType = mediaType.toLowerCase();
+  return Object.entries(supportedUrls).map(([key, value]) => {
+    const mediaType2 = key.toLowerCase();
+    return mediaType2 === "*" || mediaType2 === "*/*" ? { mediaTypePrefix: "", regexes: value } : { mediaTypePrefix: mediaType2.replace(/\*/, ""), regexes: value };
+  }).filter(({ mediaTypePrefix }) => mediaType.startsWith(mediaTypePrefix)).flatMap(({ regexes }) => regexes).some((pattern) => pattern.test(url2));
+}
+function loadApiKey({
+  apiKey,
+  environmentVariableName,
+  apiKeyParameterName = "apiKey",
+  description
+}) {
+  if (typeof apiKey === "string") {
+    return apiKey;
+  }
+  if (apiKey != null) {
+    throw new LoadAPIKeyError({
+      message: `${description} API key must be a string.`
+    });
+  }
+  if (typeof process === "undefined") {
+    throw new LoadAPIKeyError({
+      message: `${description} API key is missing. Pass it using the '${apiKeyParameterName}' parameter. Environment variables are not supported in this environment.`
+    });
+  }
+  apiKey = process.env[environmentVariableName];
+  if (apiKey == null) {
+    throw new LoadAPIKeyError({
+      message: `${description} API key is missing. Pass it using the '${apiKeyParameterName}' parameter or the ${environmentVariableName} environment variable.`
+    });
+  }
+  if (typeof apiKey !== "string") {
+    throw new LoadAPIKeyError({
+      message: `${description} API key must be a string. The value of the ${environmentVariableName} environment variable is not a string.`
+    });
+  }
+  return apiKey;
+}
+function loadOptionalSetting({
+  settingValue,
+  environmentVariableName
+}) {
+  if (typeof settingValue === "string") {
+    return settingValue;
+  }
+  if (settingValue != null || typeof process === "undefined") {
+    return;
+  }
+  settingValue = process.env[environmentVariableName];
+  if (settingValue == null || typeof settingValue !== "string") {
+    return;
+  }
+  return settingValue;
+}
+function mediaTypeToExtension(mediaType) {
+  var _a23;
+  const [_type, subtype = ""] = mediaType.toLowerCase().split("/");
+  return (_a23 = {
+    mpeg: "mp3",
+    "x-wav": "wav",
+    opus: "ogg",
+    mp4: "m4a",
+    "x-m4a": "m4a"
+  }[subtype]) != null ? _a23 : subtype;
+}
+var suspectProtoRx = /"(?:_|\\u005[Ff])(?:_|\\u005[Ff])(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])(?:t|\\u0074)(?:o|\\u006[Ff])(?:_|\\u005[Ff])(?:_|\\u005[Ff])"\s*:/;
+var suspectConstructorRx = /"(?:c|\\u0063)(?:o|\\u006[Ff])(?:n|\\u006[Ee])(?:s|\\u0073)(?:t|\\u0074)(?:r|\\u0072)(?:u|\\u0075)(?:c|\\u0063)(?:t|\\u0074)(?:o|\\u006[Ff])(?:r|\\u0072)"\s*:/;
+function _parse2(text4) {
+  const obj = JSON.parse(text4);
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+  if (suspectProtoRx.test(text4) === false && suspectConstructorRx.test(text4) === false) {
+    return obj;
+  }
+  return filter4(obj);
+}
+function filter4(obj) {
+  let next2 = [obj];
+  while (next2.length) {
+    const nodes = next2;
+    next2 = [];
+    for (const node2 of nodes) {
+      if (Object.prototype.hasOwnProperty.call(node2, "__proto__")) {
+        throw new SyntaxError("Object contains forbidden prototype property");
+      }
+      if (Object.prototype.hasOwnProperty.call(node2, "constructor") && node2.constructor !== null && typeof node2.constructor === "object" && Object.prototype.hasOwnProperty.call(node2.constructor, "prototype")) {
+        throw new SyntaxError("Object contains forbidden prototype property");
+      }
+      for (const key in node2) {
+        const value = node2[key];
+        if (value && typeof value === "object") {
+          next2.push(value);
+        }
+      }
+    }
+  }
+  return obj;
+}
+function secureJsonParse(text4) {
+  const { stackTraceLimit } = Error;
+  try {
+    Error.stackTraceLimit = 0;
+  } catch (e) {
+    return _parse2(text4);
+  }
+  try {
+    return _parse2(text4);
+  } finally {
+    Error.stackTraceLimit = stackTraceLimit;
+  }
+}
+function addAdditionalPropertiesToJsonSchema(jsonSchema2) {
+  if (jsonSchema2.type === "object" || Array.isArray(jsonSchema2.type) && jsonSchema2.type.includes("object")) {
+    jsonSchema2.additionalProperties = false;
+    const { properties } = jsonSchema2;
+    if (properties != null) {
+      for (const key of Object.keys(properties)) {
+        properties[key] = visit(properties[key]);
+      }
+    }
+  }
+  if (jsonSchema2.items != null) {
+    jsonSchema2.items = Array.isArray(jsonSchema2.items) ? jsonSchema2.items.map(visit) : visit(jsonSchema2.items);
+  }
+  if (jsonSchema2.anyOf != null) {
+    jsonSchema2.anyOf = jsonSchema2.anyOf.map(visit);
+  }
+  if (jsonSchema2.allOf != null) {
+    jsonSchema2.allOf = jsonSchema2.allOf.map(visit);
+  }
+  if (jsonSchema2.oneOf != null) {
+    jsonSchema2.oneOf = jsonSchema2.oneOf.map(visit);
+  }
+  const { definitions } = jsonSchema2;
+  if (definitions != null) {
+    for (const key of Object.keys(definitions)) {
+      definitions[key] = visit(definitions[key]);
+    }
+  }
+  return jsonSchema2;
+}
+function visit(def) {
+  if (typeof def === "boolean")
+    return def;
+  return addAdditionalPropertiesToJsonSchema(def);
+}
+var ignoreOverride = /* @__PURE__ */ Symbol("Let zodToJsonSchema decide on which parser to use");
+var defaultOptions2 = {
+  name: undefined,
+  $refStrategy: "root",
+  basePath: ["#"],
+  effectStrategy: "input",
+  pipeStrategy: "all",
+  dateStrategy: "format:date-time",
+  mapStrategy: "entries",
+  removeAdditionalStrategy: "passthrough",
+  allowedAdditionalProperties: true,
+  rejectedAdditionalProperties: false,
+  definitionPath: "definitions",
+  strictUnions: false,
+  definitions: {},
+  errorMessages: false,
+  patternStrategy: "escape",
+  applyRegexFlags: false,
+  emailStrategy: "format:email",
+  base64Strategy: "contentEncoding:base64",
+  nameStrategy: "ref"
+};
+var getDefaultOptions = (options2) => typeof options2 === "string" ? {
+  ...defaultOptions2,
+  name: options2
+} : {
+  ...defaultOptions2,
+  ...options2
+};
+function parseAnyDef() {
+  return {};
+}
+function parseArrayDef(def, refs) {
+  var _a23, _b22, _c;
+  const res = {
+    type: "array"
+  };
+  if (((_a23 = def.type) == null ? undefined : _a23._def) && ((_c = (_b22 = def.type) == null ? undefined : _b22._def) == null ? undefined : _c.typeName) !== ZodFirstPartyTypeKind2.ZodAny) {
+    res.items = parseDef(def.type._def, {
+      ...refs,
+      currentPath: [...refs.currentPath, "items"]
+    });
+  }
+  if (def.minLength) {
+    res.minItems = def.minLength.value;
+  }
+  if (def.maxLength) {
+    res.maxItems = def.maxLength.value;
+  }
+  if (def.exactLength) {
+    res.minItems = def.exactLength.value;
+    res.maxItems = def.exactLength.value;
+  }
+  return res;
+}
+function parseBigintDef(def) {
+  const res = {
+    type: "integer",
+    format: "int64"
+  };
+  if (!def.checks)
+    return res;
+  for (const check2 of def.checks) {
+    switch (check2.kind) {
+      case "min":
+        if (check2.inclusive) {
+          res.minimum = check2.value;
+        } else {
+          res.exclusiveMinimum = check2.value;
+        }
+        break;
+      case "max":
+        if (check2.inclusive) {
+          res.maximum = check2.value;
+        } else {
+          res.exclusiveMaximum = check2.value;
+        }
+        break;
+      case "multipleOf":
+        res.multipleOf = check2.value;
+        break;
+    }
+  }
+  return res;
+}
+function parseBooleanDef() {
+  return { type: "boolean" };
+}
+function parseBrandedDef(_def, refs) {
+  return parseDef(_def.type._def, refs);
+}
+var parseCatchDef = (def, refs) => {
+  return parseDef(def.innerType._def, refs);
+};
+function parseDateDef(def, refs, overrideDateStrategy) {
+  const strategy = overrideDateStrategy != null ? overrideDateStrategy : refs.dateStrategy;
+  if (Array.isArray(strategy)) {
+    return {
+      anyOf: strategy.map((item, i) => parseDateDef(def, refs, item))
+    };
+  }
+  switch (strategy) {
+    case "string":
+    case "format:date-time":
+      return {
+        type: "string",
+        format: "date-time"
+      };
+    case "format:date":
+      return {
+        type: "string",
+        format: "date"
+      };
+    case "integer":
+      return integerDateParser(def);
+  }
+}
+var integerDateParser = (def) => {
+  const res = {
+    type: "integer",
+    format: "unix-time"
+  };
+  for (const check2 of def.checks) {
+    switch (check2.kind) {
+      case "min":
+        res.minimum = check2.value;
+        break;
+      case "max":
+        res.maximum = check2.value;
+        break;
+    }
+  }
+  return res;
+};
+function parseDefaultDef(_def, refs) {
+  return {
+    ...parseDef(_def.innerType._def, refs),
+    default: _def.defaultValue()
+  };
+}
+function parseEffectsDef(_def, refs) {
+  return refs.effectStrategy === "input" ? parseDef(_def.schema._def, refs) : parseAnyDef();
+}
+function parseEnumDef(def) {
+  return {
+    type: "string",
+    enum: Array.from(def.values)
+  };
+}
+var isJsonSchema7AllOfType = (type) => {
+  if ("type" in type && type.type === "string")
+    return false;
+  return "allOf" in type;
+};
+function parseIntersectionDef(def, refs) {
+  const allOf = [
+    parseDef(def.left._def, {
+      ...refs,
+      currentPath: [...refs.currentPath, "allOf", "0"]
+    }),
+    parseDef(def.right._def, {
+      ...refs,
+      currentPath: [...refs.currentPath, "allOf", "1"]
+    })
+  ].filter((x2) => !!x2);
+  const mergedAllOf = [];
+  allOf.forEach((schema) => {
+    if (isJsonSchema7AllOfType(schema)) {
+      mergedAllOf.push(...schema.allOf);
+    } else {
+      let nestedSchema = schema;
+      if ("additionalProperties" in schema && schema.additionalProperties === false) {
+        const { additionalProperties, ...rest } = schema;
+        nestedSchema = rest;
+      }
+      mergedAllOf.push(nestedSchema);
+    }
+  });
+  return mergedAllOf.length ? { allOf: mergedAllOf } : undefined;
+}
+function parseLiteralDef(def) {
+  const parsedType2 = typeof def.value;
+  if (parsedType2 !== "bigint" && parsedType2 !== "number" && parsedType2 !== "boolean" && parsedType2 !== "string") {
+    return {
+      type: Array.isArray(def.value) ? "array" : "object"
+    };
+  }
+  return {
+    type: parsedType2 === "bigint" ? "integer" : parsedType2,
+    const: def.value
+  };
+}
+var emojiRegex2 = undefined;
+var zodPatterns = {
+  cuid: /^[cC][^\s-]{8,}$/,
+  cuid2: /^[0-9a-z]+$/,
+  ulid: /^[0-9A-HJKMNP-TV-Z]{26}$/,
+  email: /^(?!\.)(?!.*\.\.)([a-zA-Z0-9_'+\-\.]*)[a-zA-Z0-9_+-]@([a-zA-Z0-9][a-zA-Z0-9\-]*\.)+[a-zA-Z]{2,}$/,
+  emoji: () => {
+    if (emojiRegex2 === undefined) {
+      emojiRegex2 = RegExp("^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$", "u");
+    }
+    return emojiRegex2;
+  },
+  uuid: /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/,
+  ipv4: /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/,
+  ipv4Cidr: /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/,
+  ipv6: /^(([a-f0-9]{1,4}:){7}|::([a-f0-9]{1,4}:){0,6}|([a-f0-9]{1,4}:){1}:([a-f0-9]{1,4}:){0,5}|([a-f0-9]{1,4}:){2}:([a-f0-9]{1,4}:){0,4}|([a-f0-9]{1,4}:){3}:([a-f0-9]{1,4}:){0,3}|([a-f0-9]{1,4}:){4}:([a-f0-9]{1,4}:){0,2}|([a-f0-9]{1,4}:){5}:([a-f0-9]{1,4}:){0,1})([a-f0-9]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/,
+  ipv6Cidr: /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/,
+  base64: /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/,
+  base64url: /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/,
+  nanoid: /^[a-zA-Z0-9_-]{21}$/,
+  jwt: /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/
+};
+function parseStringDef(def, refs) {
+  const res = {
+    type: "string"
+  };
+  if (def.checks) {
+    for (const check2 of def.checks) {
+      switch (check2.kind) {
+        case "min":
+          res.minLength = typeof res.minLength === "number" ? Math.max(res.minLength, check2.value) : check2.value;
+          break;
+        case "max":
+          res.maxLength = typeof res.maxLength === "number" ? Math.min(res.maxLength, check2.value) : check2.value;
+          break;
+        case "email":
+          switch (refs.emailStrategy) {
+            case "format:email":
+              addFormat(res, "email", check2.message, refs);
+              break;
+            case "format:idn-email":
+              addFormat(res, "idn-email", check2.message, refs);
+              break;
+            case "pattern:zod":
+              addPattern(res, zodPatterns.email, check2.message, refs);
+              break;
+          }
+          break;
+        case "url":
+          addFormat(res, "uri", check2.message, refs);
+          break;
+        case "uuid":
+          addFormat(res, "uuid", check2.message, refs);
+          break;
+        case "regex":
+          addPattern(res, check2.regex, check2.message, refs);
+          break;
+        case "cuid":
+          addPattern(res, zodPatterns.cuid, check2.message, refs);
+          break;
+        case "cuid2":
+          addPattern(res, zodPatterns.cuid2, check2.message, refs);
+          break;
+        case "startsWith":
+          addPattern(res, RegExp(`^${escapeLiteralCheckValue(check2.value, refs)}`), check2.message, refs);
+          break;
+        case "endsWith":
+          addPattern(res, RegExp(`${escapeLiteralCheckValue(check2.value, refs)}$`), check2.message, refs);
+          break;
+        case "datetime":
+          addFormat(res, "date-time", check2.message, refs);
+          break;
+        case "date":
+          addFormat(res, "date", check2.message, refs);
+          break;
+        case "time":
+          addFormat(res, "time", check2.message, refs);
+          break;
+        case "duration":
+          addFormat(res, "duration", check2.message, refs);
+          break;
+        case "length":
+          res.minLength = typeof res.minLength === "number" ? Math.max(res.minLength, check2.value) : check2.value;
+          res.maxLength = typeof res.maxLength === "number" ? Math.min(res.maxLength, check2.value) : check2.value;
+          break;
+        case "includes": {
+          addPattern(res, RegExp(escapeLiteralCheckValue(check2.value, refs)), check2.message, refs);
+          break;
+        }
+        case "ip": {
+          if (check2.version !== "v6") {
+            addFormat(res, "ipv4", check2.message, refs);
+          }
+          if (check2.version !== "v4") {
+            addFormat(res, "ipv6", check2.message, refs);
+          }
+          break;
+        }
+        case "base64url":
+          addPattern(res, zodPatterns.base64url, check2.message, refs);
+          break;
+        case "jwt":
+          addPattern(res, zodPatterns.jwt, check2.message, refs);
+          break;
+        case "cidr": {
+          if (check2.version !== "v6") {
+            addPattern(res, zodPatterns.ipv4Cidr, check2.message, refs);
+          }
+          if (check2.version !== "v4") {
+            addPattern(res, zodPatterns.ipv6Cidr, check2.message, refs);
+          }
+          break;
+        }
+        case "emoji":
+          addPattern(res, zodPatterns.emoji(), check2.message, refs);
+          break;
+        case "ulid": {
+          addPattern(res, zodPatterns.ulid, check2.message, refs);
+          break;
+        }
+        case "base64": {
+          switch (refs.base64Strategy) {
+            case "format:binary": {
+              addFormat(res, "binary", check2.message, refs);
+              break;
+            }
+            case "contentEncoding:base64": {
+              res.contentEncoding = "base64";
+              break;
+            }
+            case "pattern:zod": {
+              addPattern(res, zodPatterns.base64, check2.message, refs);
+              break;
+            }
+          }
+          break;
+        }
+        case "nanoid": {
+          addPattern(res, zodPatterns.nanoid, check2.message, refs);
+        }
+        case "toLowerCase":
+        case "toUpperCase":
+        case "trim":
+          break;
+        default:
+      }
+    }
+  }
+  return res;
+}
+function escapeLiteralCheckValue(literal2, refs) {
+  return refs.patternStrategy === "escape" ? escapeNonAlphaNumeric(literal2) : literal2;
+}
+var ALPHA_NUMERIC = new Set("ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvxyz0123456789");
+function escapeNonAlphaNumeric(source) {
+  let result = "";
+  for (let i = 0;i < source.length; i++) {
+    if (!ALPHA_NUMERIC.has(source[i])) {
+      result += "\\";
+    }
+    result += source[i];
+  }
+  return result;
+}
+function addFormat(schema, value, message, refs) {
+  var _a23;
+  if (schema.format || ((_a23 = schema.anyOf) == null ? undefined : _a23.some((x2) => x2.format))) {
+    if (!schema.anyOf) {
+      schema.anyOf = [];
+    }
+    if (schema.format) {
+      schema.anyOf.push({
+        format: schema.format
+      });
+      delete schema.format;
+    }
+    schema.anyOf.push({
+      format: value,
+      ...message && refs.errorMessages && { errorMessage: { format: message } }
+    });
+  } else {
+    schema.format = value;
+  }
+}
+function addPattern(schema, regex, message, refs) {
+  var _a23;
+  if (schema.pattern || ((_a23 = schema.allOf) == null ? undefined : _a23.some((x2) => x2.pattern))) {
+    if (!schema.allOf) {
+      schema.allOf = [];
+    }
+    if (schema.pattern) {
+      schema.allOf.push({
+        pattern: schema.pattern
+      });
+      delete schema.pattern;
+    }
+    schema.allOf.push({
+      pattern: stringifyRegExpWithFlags(regex, refs),
+      ...message && refs.errorMessages && { errorMessage: { pattern: message } }
+    });
+  } else {
+    schema.pattern = stringifyRegExpWithFlags(regex, refs);
+  }
+}
+function stringifyRegExpWithFlags(regex, refs) {
+  var _a23;
+  if (!refs.applyRegexFlags || !regex.flags) {
+    return regex.source;
+  }
+  const flags = {
+    i: regex.flags.includes("i"),
+    m: regex.flags.includes("m"),
+    s: regex.flags.includes("s")
+  };
+  const source = flags.i ? regex.source.toLowerCase() : regex.source;
+  let pattern = "";
+  let isEscaped = false;
+  let inCharGroup = false;
+  let inCharRange = false;
+  for (let i = 0;i < source.length; i++) {
+    if (isEscaped) {
+      pattern += source[i];
+      isEscaped = false;
+      continue;
+    }
+    if (flags.i) {
+      if (inCharGroup) {
+        if (source[i].match(/[a-z]/)) {
+          if (inCharRange) {
+            pattern += source[i];
+            pattern += `${source[i - 2]}-${source[i]}`.toUpperCase();
+            inCharRange = false;
+          } else if (source[i + 1] === "-" && ((_a23 = source[i + 2]) == null ? undefined : _a23.match(/[a-z]/))) {
+            pattern += source[i];
+            inCharRange = true;
+          } else {
+            pattern += `${source[i]}${source[i].toUpperCase()}`;
+          }
+          continue;
+        }
+      } else if (source[i].match(/[a-z]/)) {
+        pattern += `[${source[i]}${source[i].toUpperCase()}]`;
+        continue;
+      }
+    }
+    if (flags.m) {
+      if (source[i] === "^") {
+        pattern += `(^|(?<=[\r
+]))`;
+        continue;
+      } else if (source[i] === "$") {
+        pattern += `($|(?=[\r
+]))`;
+        continue;
+      }
+    }
+    if (flags.s && source[i] === ".") {
+      pattern += inCharGroup ? `${source[i]}\r
+` : `[${source[i]}\r
+]`;
+      continue;
+    }
+    pattern += source[i];
+    if (source[i] === "\\") {
+      isEscaped = true;
+    } else if (inCharGroup && source[i] === "]") {
+      inCharGroup = false;
+    } else if (!inCharGroup && source[i] === "[") {
+      inCharGroup = true;
+    }
+  }
+  try {
+    new RegExp(pattern);
+  } catch (e) {
+    console.warn(`Could not convert regex pattern at ${refs.currentPath.join("/")} to a flag-independent form! Falling back to the flag-ignorant source`);
+    return regex.source;
+  }
+  return pattern;
+}
+function parseRecordDef(def, refs) {
+  var _a23, _b22, _c, _d, _e, _f;
+  const schema = {
+    type: "object",
+    additionalProperties: (_a23 = parseDef(def.valueType._def, {
+      ...refs,
+      currentPath: [...refs.currentPath, "additionalProperties"]
+    })) != null ? _a23 : refs.allowedAdditionalProperties
+  };
+  if (((_b22 = def.keyType) == null ? undefined : _b22._def.typeName) === ZodFirstPartyTypeKind2.ZodString && ((_c = def.keyType._def.checks) == null ? undefined : _c.length)) {
+    const { type, ...keyType } = parseStringDef(def.keyType._def, refs);
+    return {
+      ...schema,
+      propertyNames: keyType
+    };
+  } else if (((_d = def.keyType) == null ? undefined : _d._def.typeName) === ZodFirstPartyTypeKind2.ZodEnum) {
+    return {
+      ...schema,
+      propertyNames: {
+        enum: def.keyType._def.values
+      }
+    };
+  } else if (((_e = def.keyType) == null ? undefined : _e._def.typeName) === ZodFirstPartyTypeKind2.ZodBranded && def.keyType._def.type._def.typeName === ZodFirstPartyTypeKind2.ZodString && ((_f = def.keyType._def.type._def.checks) == null ? undefined : _f.length)) {
+    const { type, ...keyType } = parseBrandedDef(def.keyType._def, refs);
+    return {
+      ...schema,
+      propertyNames: keyType
+    };
+  }
+  return schema;
+}
+function parseMapDef(def, refs) {
+  if (refs.mapStrategy === "record") {
+    return parseRecordDef(def, refs);
+  }
+  const keys = parseDef(def.keyType._def, {
+    ...refs,
+    currentPath: [...refs.currentPath, "items", "items", "0"]
+  }) || parseAnyDef();
+  const values = parseDef(def.valueType._def, {
+    ...refs,
+    currentPath: [...refs.currentPath, "items", "items", "1"]
+  }) || parseAnyDef();
+  return {
+    type: "array",
+    maxItems: 125,
+    items: {
+      type: "array",
+      items: [keys, values],
+      minItems: 2,
+      maxItems: 2
+    }
+  };
+}
+function parseNativeEnumDef(def) {
+  const object2 = def.values;
+  const actualKeys = Object.keys(def.values).filter((key) => {
+    return typeof object2[object2[key]] !== "number";
+  });
+  const actualValues = actualKeys.map((key) => object2[key]);
+  const parsedTypes = Array.from(new Set(actualValues.map((values) => typeof values)));
+  return {
+    type: parsedTypes.length === 1 ? parsedTypes[0] === "string" ? "string" : "number" : ["string", "number"],
+    enum: actualValues
+  };
+}
+function parseNeverDef() {
+  return { not: parseAnyDef() };
+}
+function parseNullDef() {
+  return {
+    type: "null"
+  };
+}
+var primitiveMappings = {
+  ZodString: "string",
+  ZodNumber: "number",
+  ZodBigInt: "integer",
+  ZodBoolean: "boolean",
+  ZodNull: "null"
+};
+function parseUnionDef(def, refs) {
+  const options2 = def.options instanceof Map ? Array.from(def.options.values()) : def.options;
+  if (options2.every((x2) => (x2._def.typeName in primitiveMappings) && (!x2._def.checks || !x2._def.checks.length))) {
+    const types2 = options2.reduce((types22, x2) => {
+      const type = primitiveMappings[x2._def.typeName];
+      return type && !types22.includes(type) ? [...types22, type] : types22;
+    }, []);
+    return {
+      type: types2.length > 1 ? types2 : types2[0]
+    };
+  } else if (options2.every((x2) => x2._def.typeName === "ZodLiteral" && !x2.description)) {
+    const types2 = options2.reduce((acc, x2) => {
+      const type = typeof x2._def.value;
+      switch (type) {
+        case "string":
+        case "number":
+        case "boolean":
+          return [...acc, type];
+        case "bigint":
+          return [...acc, "integer"];
+        case "object":
+          if (x2._def.value === null)
+            return [...acc, "null"];
+        case "symbol":
+        case "undefined":
+        case "function":
+        default:
+          return acc;
+      }
+    }, []);
+    if (types2.length === options2.length) {
+      const uniqueTypes = types2.filter((x2, i, a) => a.indexOf(x2) === i);
+      return {
+        type: uniqueTypes.length > 1 ? uniqueTypes : uniqueTypes[0],
+        enum: options2.reduce((acc, x2) => {
+          return acc.includes(x2._def.value) ? acc : [...acc, x2._def.value];
+        }, [])
+      };
+    }
+  } else if (options2.every((x2) => x2._def.typeName === "ZodEnum")) {
+    return {
+      type: "string",
+      enum: options2.reduce((acc, x2) => [
+        ...acc,
+        ...x2._def.values.filter((x22) => !acc.includes(x22))
+      ], [])
+    };
+  }
+  return asAnyOf(def, refs);
+}
+var asAnyOf = (def, refs) => {
+  const anyOf = (def.options instanceof Map ? Array.from(def.options.values()) : def.options).map((x2, i) => parseDef(x2._def, {
+    ...refs,
+    currentPath: [...refs.currentPath, "anyOf", `${i}`]
+  })).filter((x2) => !!x2 && (!refs.strictUnions || typeof x2 === "object" && Object.keys(x2).length > 0));
+  return anyOf.length ? { anyOf } : undefined;
+};
+function parseNullableDef(def, refs) {
+  if (["ZodString", "ZodNumber", "ZodBigInt", "ZodBoolean", "ZodNull"].includes(def.innerType._def.typeName) && (!def.innerType._def.checks || !def.innerType._def.checks.length)) {
+    return {
+      type: [
+        primitiveMappings[def.innerType._def.typeName],
+        "null"
+      ]
+    };
+  }
+  const base = parseDef(def.innerType._def, {
+    ...refs,
+    currentPath: [...refs.currentPath, "anyOf", "0"]
+  });
+  return base && { anyOf: [base, { type: "null" }] };
+}
+function parseNumberDef(def) {
+  const res = {
+    type: "number"
+  };
+  if (!def.checks)
+    return res;
+  for (const check2 of def.checks) {
+    switch (check2.kind) {
+      case "int":
+        res.type = "integer";
+        break;
+      case "min":
+        if (check2.inclusive) {
+          res.minimum = check2.value;
+        } else {
+          res.exclusiveMinimum = check2.value;
+        }
+        break;
+      case "max":
+        if (check2.inclusive) {
+          res.maximum = check2.value;
+        } else {
+          res.exclusiveMaximum = check2.value;
+        }
+        break;
+      case "multipleOf":
+        res.multipleOf = check2.value;
+        break;
+    }
+  }
+  return res;
+}
+function parseObjectDef(def, refs) {
+  const result = {
+    type: "object",
+    properties: {}
+  };
+  const required2 = [];
+  const shape = def.shape();
+  for (const propName in shape) {
+    let propDef = shape[propName];
+    if (propDef === undefined || propDef._def === undefined) {
+      continue;
+    }
+    const propOptional = safeIsOptional(propDef);
+    const parsedDef = parseDef(propDef._def, {
+      ...refs,
+      currentPath: [...refs.currentPath, "properties", propName],
+      propertyPath: [...refs.currentPath, "properties", propName]
+    });
+    if (parsedDef === undefined) {
+      continue;
+    }
+    result.properties[propName] = parsedDef;
+    if (!propOptional) {
+      required2.push(propName);
+    }
+  }
+  if (required2.length) {
+    result.required = required2;
+  }
+  const additionalProperties = decideAdditionalProperties(def, refs);
+  if (additionalProperties !== undefined) {
+    result.additionalProperties = additionalProperties;
+  }
+  return result;
+}
+function decideAdditionalProperties(def, refs) {
+  if (def.catchall._def.typeName !== "ZodNever") {
+    return parseDef(def.catchall._def, {
+      ...refs,
+      currentPath: [...refs.currentPath, "additionalProperties"]
+    });
+  }
+  switch (def.unknownKeys) {
+    case "passthrough":
+      return refs.allowedAdditionalProperties;
+    case "strict":
+      return refs.rejectedAdditionalProperties;
+    case "strip":
+      return refs.removeAdditionalStrategy === "strict" ? refs.allowedAdditionalProperties : refs.rejectedAdditionalProperties;
+  }
+}
+function safeIsOptional(schema) {
+  try {
+    return schema.isOptional();
+  } catch (e) {
+    return true;
+  }
+}
+var parseOptionalDef = (def, refs) => {
+  var _a23;
+  if (refs.currentPath.toString() === ((_a23 = refs.propertyPath) == null ? undefined : _a23.toString())) {
+    return parseDef(def.innerType._def, refs);
+  }
+  const innerSchema = parseDef(def.innerType._def, {
+    ...refs,
+    currentPath: [...refs.currentPath, "anyOf", "1"]
+  });
+  return innerSchema ? { anyOf: [{ not: parseAnyDef() }, innerSchema] } : parseAnyDef();
+};
+var parsePipelineDef = (def, refs) => {
+  if (refs.pipeStrategy === "input") {
+    return parseDef(def.in._def, refs);
+  } else if (refs.pipeStrategy === "output") {
+    return parseDef(def.out._def, refs);
+  }
+  const a = parseDef(def.in._def, {
+    ...refs,
+    currentPath: [...refs.currentPath, "allOf", "0"]
+  });
+  const b = parseDef(def.out._def, {
+    ...refs,
+    currentPath: [...refs.currentPath, "allOf", a ? "1" : "0"]
+  });
+  return {
+    allOf: [a, b].filter((x2) => x2 !== undefined)
+  };
+};
+function parsePromiseDef(def, refs) {
+  return parseDef(def.type._def, refs);
+}
+function parseSetDef(def, refs) {
+  const items = parseDef(def.valueType._def, {
+    ...refs,
+    currentPath: [...refs.currentPath, "items"]
+  });
+  const schema = {
+    type: "array",
+    uniqueItems: true,
+    items
+  };
+  if (def.minSize) {
+    schema.minItems = def.minSize.value;
+  }
+  if (def.maxSize) {
+    schema.maxItems = def.maxSize.value;
+  }
+  return schema;
+}
+function parseTupleDef(def, refs) {
+  if (def.rest) {
+    return {
+      type: "array",
+      minItems: def.items.length,
+      items: def.items.map((x2, i) => parseDef(x2._def, {
+        ...refs,
+        currentPath: [...refs.currentPath, "items", `${i}`]
+      })).reduce((acc, x2) => x2 === undefined ? acc : [...acc, x2], []),
+      additionalItems: parseDef(def.rest._def, {
+        ...refs,
+        currentPath: [...refs.currentPath, "additionalItems"]
+      })
+    };
+  } else {
+    return {
+      type: "array",
+      minItems: def.items.length,
+      maxItems: def.items.length,
+      items: def.items.map((x2, i) => parseDef(x2._def, {
+        ...refs,
+        currentPath: [...refs.currentPath, "items", `${i}`]
+      })).reduce((acc, x2) => x2 === undefined ? acc : [...acc, x2], [])
+    };
+  }
+}
+function parseUndefinedDef() {
+  return {
+    not: parseAnyDef()
+  };
+}
+function parseUnknownDef() {
+  return parseAnyDef();
+}
+var parseReadonlyDef = (def, refs) => {
+  return parseDef(def.innerType._def, refs);
+};
+var selectParser = (def, typeName, refs) => {
+  switch (typeName) {
+    case ZodFirstPartyTypeKind2.ZodString:
+      return parseStringDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodNumber:
+      return parseNumberDef(def);
+    case ZodFirstPartyTypeKind2.ZodObject:
+      return parseObjectDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodBigInt:
+      return parseBigintDef(def);
+    case ZodFirstPartyTypeKind2.ZodBoolean:
+      return parseBooleanDef();
+    case ZodFirstPartyTypeKind2.ZodDate:
+      return parseDateDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodUndefined:
+      return parseUndefinedDef();
+    case ZodFirstPartyTypeKind2.ZodNull:
+      return parseNullDef();
+    case ZodFirstPartyTypeKind2.ZodArray:
+      return parseArrayDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodUnion:
+    case ZodFirstPartyTypeKind2.ZodDiscriminatedUnion:
+      return parseUnionDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodIntersection:
+      return parseIntersectionDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodTuple:
+      return parseTupleDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodRecord:
+      return parseRecordDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodLiteral:
+      return parseLiteralDef(def);
+    case ZodFirstPartyTypeKind2.ZodEnum:
+      return parseEnumDef(def);
+    case ZodFirstPartyTypeKind2.ZodNativeEnum:
+      return parseNativeEnumDef(def);
+    case ZodFirstPartyTypeKind2.ZodNullable:
+      return parseNullableDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodOptional:
+      return parseOptionalDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodMap:
+      return parseMapDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodSet:
+      return parseSetDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodLazy:
+      return () => def.getter()._def;
+    case ZodFirstPartyTypeKind2.ZodPromise:
+      return parsePromiseDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodNaN:
+    case ZodFirstPartyTypeKind2.ZodNever:
+      return parseNeverDef();
+    case ZodFirstPartyTypeKind2.ZodEffects:
+      return parseEffectsDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodAny:
+      return parseAnyDef();
+    case ZodFirstPartyTypeKind2.ZodUnknown:
+      return parseUnknownDef();
+    case ZodFirstPartyTypeKind2.ZodDefault:
+      return parseDefaultDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodBranded:
+      return parseBrandedDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodReadonly:
+      return parseReadonlyDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodCatch:
+      return parseCatchDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodPipeline:
+      return parsePipelineDef(def, refs);
+    case ZodFirstPartyTypeKind2.ZodFunction:
+    case ZodFirstPartyTypeKind2.ZodVoid:
+    case ZodFirstPartyTypeKind2.ZodSymbol:
+      return;
+    default:
+      return /* @__PURE__ */ ((_) => {
+        return;
+      })(typeName);
+  }
+};
+var getRelativePath = (pathA, pathB) => {
+  let i = 0;
+  for (;i < pathA.length && i < pathB.length; i++) {
+    if (pathA[i] !== pathB[i])
+      break;
+  }
+  return [(pathA.length - i).toString(), ...pathB.slice(i)].join("/");
+};
+function parseDef(def, refs, forceResolution = false) {
+  var _a23;
+  const seenItem = refs.seen.get(def);
+  if (refs.override) {
+    const overrideResult = (_a23 = refs.override) == null ? undefined : _a23.call(refs, def, refs, seenItem, forceResolution);
+    if (overrideResult !== ignoreOverride) {
+      return overrideResult;
+    }
+  }
+  if (seenItem && !forceResolution) {
+    const seenSchema = get$ref(seenItem, refs);
+    if (seenSchema !== undefined) {
+      return seenSchema;
+    }
+  }
+  const newItem = { def, path: refs.currentPath, jsonSchema: undefined };
+  refs.seen.set(def, newItem);
+  const jsonSchemaOrGetter = selectParser(def, def.typeName, refs);
+  const jsonSchema2 = typeof jsonSchemaOrGetter === "function" ? parseDef(jsonSchemaOrGetter(), refs) : jsonSchemaOrGetter;
+  if (jsonSchema2) {
+    addMeta(def, refs, jsonSchema2);
+  }
+  if (refs.postProcess) {
+    const postProcessResult = refs.postProcess(jsonSchema2, def, refs);
+    newItem.jsonSchema = jsonSchema2;
+    return postProcessResult;
+  }
+  newItem.jsonSchema = jsonSchema2;
+  return jsonSchema2;
+}
+var get$ref = (item, refs) => {
+  switch (refs.$refStrategy) {
+    case "root":
+      return { $ref: item.path.join("/") };
+    case "relative":
+      return { $ref: getRelativePath(refs.currentPath, item.path) };
+    case "none":
+    case "seen": {
+      if (item.path.length < refs.currentPath.length && item.path.every((value, index4) => refs.currentPath[index4] === value)) {
+        console.warn(`Recursive reference detected at ${refs.currentPath.join("/")}! Defaulting to any`);
+        return parseAnyDef();
+      }
+      return refs.$refStrategy === "seen" ? parseAnyDef() : undefined;
+    }
+  }
+};
+var addMeta = (def, refs, jsonSchema2) => {
+  if (def.description) {
+    jsonSchema2.description = def.description;
+  }
+  return jsonSchema2;
+};
+var getRefs = (options2) => {
+  const _options = getDefaultOptions(options2);
+  const currentPath = _options.name !== undefined ? [..._options.basePath, _options.definitionPath, _options.name] : _options.basePath;
+  return {
+    ..._options,
+    currentPath,
+    propertyPath: undefined,
+    seen: new Map(Object.entries(_options.definitions).map(([name22, def]) => [
+      def._def,
+      {
+        def: def._def,
+        path: [..._options.basePath, _options.definitionPath, name22],
+        jsonSchema: undefined
+      }
+    ]))
+  };
+};
+var zod3ToJsonSchema = (schema, options2) => {
+  var _a23;
+  const refs = getRefs(options2);
+  let definitions = typeof options2 === "object" && options2.definitions ? Object.entries(options2.definitions).reduce((acc, [name32, schema2]) => {
+    var _a33;
+    return {
+      ...acc,
+      [name32]: (_a33 = parseDef(schema2._def, {
+        ...refs,
+        currentPath: [...refs.basePath, refs.definitionPath, name32]
+      }, true)) != null ? _a33 : parseAnyDef()
+    };
+  }, {}) : undefined;
+  const name22 = typeof options2 === "string" ? options2 : (options2 == null ? undefined : options2.nameStrategy) === "title" ? undefined : options2 == null ? undefined : options2.name;
+  const main = (_a23 = parseDef(schema._def, name22 === undefined ? refs : {
+    ...refs,
+    currentPath: [...refs.basePath, refs.definitionPath, name22]
+  }, false)) != null ? _a23 : parseAnyDef();
+  const title = typeof options2 === "object" && options2.name !== undefined && options2.nameStrategy === "title" ? options2.name : undefined;
+  if (title !== undefined) {
+    main.title = title;
+  }
+  const combined = name22 === undefined ? definitions ? {
+    ...main,
+    [refs.definitionPath]: definitions
+  } : main : {
+    $ref: [
+      ...refs.$refStrategy === "relative" ? [] : refs.basePath,
+      refs.definitionPath,
+      name22
+    ].join("/"),
+    [refs.definitionPath]: {
+      ...definitions,
+      [name22]: main
+    }
+  };
+  combined.$schema = "http://json-schema.org/draft-07/schema#";
+  return combined;
+};
+var schemaSymbol = /* @__PURE__ */ Symbol.for("vercel.ai.schema");
+function lazySchema(createSchema) {
+  let schema;
+  return () => {
+    if (schema == null) {
+      schema = createSchema();
+    }
+    return schema;
+  };
+}
+function jsonSchema(jsonSchema2, {
+  validate
+} = {}) {
+  return {
+    [schemaSymbol]: true,
+    _type: undefined,
+    get jsonSchema() {
+      if (typeof jsonSchema2 === "function") {
+        jsonSchema2 = jsonSchema2();
+      }
+      return jsonSchema2;
+    },
+    validate
+  };
+}
+function isSchema(value) {
+  return typeof value === "object" && value !== null && schemaSymbol in value && value[schemaSymbol] === true && "jsonSchema" in value && "validate" in value;
+}
+function asSchema(schema) {
+  return schema == null ? jsonSchema({ properties: {}, additionalProperties: false }) : isSchema(schema) ? schema : ("~standard" in schema) ? schema["~standard"].vendor === "zod" ? zodSchema(schema) : standardSchema(schema) : schema();
+}
+function standardSchema(standardSchema2) {
+  return jsonSchema(() => addAdditionalPropertiesToJsonSchema(standardSchema2["~standard"].jsonSchema.input({
+    target: "draft-07"
+  })), {
+    validate: async (value) => {
+      const result = await standardSchema2["~standard"].validate(value);
+      return "value" in result ? { success: true, value: result.value } : {
+        success: false,
+        error: new TypeValidationError({
+          value,
+          cause: result.issues
+        })
+      };
+    }
+  });
+}
+function zod3Schema(zodSchema2, options2) {
+  var _a23;
+  const useReferences = (_a23 = options2 == null ? undefined : options2.useReferences) != null ? _a23 : false;
+  return jsonSchema(() => zod3ToJsonSchema(zodSchema2, {
+    $refStrategy: useReferences ? "root" : "none"
+  }), {
+    validate: async (value) => {
+      const result = await zodSchema2.safeParseAsync(value);
+      return result.success ? { success: true, value: result.data } : { success: false, error: result.error };
+    }
+  });
+}
+function zod4Schema(zodSchema2, options2) {
+  var _a23;
+  const useReferences = (_a23 = options2 == null ? undefined : options2.useReferences) != null ? _a23 : false;
+  return jsonSchema(() => addAdditionalPropertiesToJsonSchema(toJSONSchema(zodSchema2, {
+    target: "draft-7",
+    io: "input",
+    reused: useReferences ? "ref" : "inline"
+  })), {
+    validate: async (value) => {
+      const result = await safeParseAsync2(zodSchema2, value);
+      return result.success ? { success: true, value: result.data } : { success: false, error: result.error };
+    }
+  });
+}
+function isZod4Schema(zodSchema2) {
+  return "_zod" in zodSchema2;
+}
+function zodSchema(zodSchema2, options2) {
+  if (isZod4Schema(zodSchema2)) {
+    return zod4Schema(zodSchema2, options2);
+  } else {
+    return zod3Schema(zodSchema2, options2);
+  }
+}
+async function validateTypes({
+  value,
+  schema,
+  context
+}) {
+  const result = await safeValidateTypes({ value, schema, context });
+  if (!result.success) {
+    throw TypeValidationError.wrap({ value, cause: result.error, context });
+  }
+  return result.value;
+}
+async function safeValidateTypes({
+  value,
+  schema,
+  context
+}) {
+  const actualSchema = asSchema(schema);
+  try {
+    if (actualSchema.validate == null) {
+      return { success: true, value, rawValue: value };
+    }
+    const result = await actualSchema.validate(value);
+    if (result.success) {
+      return { success: true, value: result.value, rawValue: value };
+    }
+    return {
+      success: false,
+      error: TypeValidationError.wrap({ value, cause: result.error, context }),
+      rawValue: value
+    };
+  } catch (error48) {
+    return {
+      success: false,
+      error: TypeValidationError.wrap({ value, cause: error48, context }),
+      rawValue: value
+    };
+  }
+}
+async function parseJSON2({
+  text: text4,
+  schema
+}) {
+  try {
+    const value = secureJsonParse(text4);
+    if (schema == null) {
+      return value;
+    }
+    return validateTypes({ value, schema });
+  } catch (error48) {
+    if (JSONParseError.isInstance(error48) || TypeValidationError.isInstance(error48)) {
+      throw error48;
+    }
+    throw new JSONParseError({ text: text4, cause: error48 });
+  }
+}
+async function safeParseJSON({
+  text: text4,
+  schema
+}) {
+  try {
+    const value = secureJsonParse(text4);
+    if (schema == null) {
+      return { success: true, value, rawValue: value };
+    }
+    return await safeValidateTypes({ value, schema });
+  } catch (error48) {
+    return {
+      success: false,
+      error: JSONParseError.isInstance(error48) ? error48 : new JSONParseError({ text: text4, cause: error48 }),
+      rawValue: undefined
+    };
+  }
+}
+function isParsableJson(input) {
+  try {
+    secureJsonParse(input);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+function parseJsonEventStream({
+  stream,
+  schema
+}) {
+  return stream.pipeThrough(new TextDecoderStream).pipeThrough(new EventSourceParserStream).pipeThrough(new TransformStream({
+    async transform({ data: data2 }, controller) {
+      if (data2 === "[DONE]") {
+        return;
+      }
+      controller.enqueue(await safeParseJSON({ text: data2, schema }));
+    }
+  }));
+}
+async function parseProviderOptions({
+  provider,
+  providerOptions,
+  schema
+}) {
+  if ((providerOptions == null ? undefined : providerOptions[provider]) == null) {
+    return;
+  }
+  const parsedProviderOptions = await safeValidateTypes({
+    value: providerOptions[provider],
+    schema
+  });
+  if (!parsedProviderOptions.success) {
+    throw new InvalidArgumentError({
+      argument: "providerOptions",
+      message: `invalid ${provider} provider options`,
+      cause: parsedProviderOptions.error
+    });
+  }
+  return parsedProviderOptions.value;
+}
+var getOriginalFetch2 = () => globalThis.fetch;
+var postJsonToApi = async ({
+  url: url2,
+  headers,
+  body,
+  failedResponseHandler,
+  successfulResponseHandler,
+  abortSignal,
+  fetch: fetch22
+}) => postToApi({
+  url: url2,
+  headers: {
+    "Content-Type": "application/json",
+    ...headers
+  },
+  body: {
+    content: JSON.stringify(body),
+    values: body
+  },
+  failedResponseHandler,
+  successfulResponseHandler,
+  abortSignal,
+  fetch: fetch22
+});
+var postFormDataToApi = async ({
+  url: url2,
+  headers,
+  formData,
+  failedResponseHandler,
+  successfulResponseHandler,
+  abortSignal,
+  fetch: fetch22
+}) => postToApi({
+  url: url2,
+  headers,
+  body: {
+    content: formData,
+    values: Object.fromEntries(formData.entries())
+  },
+  failedResponseHandler,
+  successfulResponseHandler,
+  abortSignal,
+  fetch: fetch22
+});
+var postToApi = async ({
+  url: url2,
+  headers = {},
+  body,
+  successfulResponseHandler,
+  failedResponseHandler,
+  abortSignal,
+  fetch: fetch22 = getOriginalFetch2()
+}) => {
+  try {
+    const response = await fetch22(url2, {
+      method: "POST",
+      headers: withUserAgentSuffix(headers, `ai-sdk/provider-utils/${VERSION}`, getRuntimeEnvironmentUserAgent()),
+      body: body.content,
+      signal: abortSignal
+    });
+    const responseHeaders = extractResponseHeaders(response);
+    if (!response.ok) {
+      let errorInformation;
+      try {
+        errorInformation = await failedResponseHandler({
+          response,
+          url: url2,
+          requestBodyValues: body.values
+        });
+      } catch (error48) {
+        if (isAbortError(error48) || APICallError.isInstance(error48)) {
+          throw error48;
+        }
+        throw new APICallError({
+          message: "Failed to process error response",
+          cause: error48,
+          statusCode: response.status,
+          url: url2,
+          responseHeaders,
+          requestBodyValues: body.values
+        });
+      }
+      throw errorInformation.value;
+    }
+    try {
+      return await successfulResponseHandler({
+        response,
+        url: url2,
+        requestBodyValues: body.values
+      });
+    } catch (error48) {
+      if (error48 instanceof Error) {
+        if (isAbortError(error48) || APICallError.isInstance(error48)) {
+          throw error48;
+        }
+      }
+      throw new APICallError({
+        message: "Failed to process successful response",
+        cause: error48,
+        statusCode: response.status,
+        url: url2,
+        responseHeaders,
+        requestBodyValues: body.values
+      });
+    }
+  } catch (error48) {
+    throw handleFetchError({ error: error48, url: url2, requestBodyValues: body.values });
+  }
+};
+function tool(tool2) {
+  return tool2;
+}
+function createProviderToolFactory({
+  id,
+  inputSchema
+}) {
+  return ({
+    execute,
+    outputSchema,
+    needsApproval,
+    toModelOutput,
+    onInputStart,
+    onInputDelta,
+    onInputAvailable,
+    ...args
+  }) => tool({
+    type: "provider",
+    id,
+    args,
+    inputSchema,
+    outputSchema,
+    execute,
+    needsApproval,
+    toModelOutput,
+    onInputStart,
+    onInputDelta,
+    onInputAvailable
+  });
+}
+function createProviderToolFactoryWithOutputSchema({
+  id,
+  inputSchema,
+  outputSchema,
+  supportsDeferredResults
+}) {
+  return ({
+    execute,
+    needsApproval,
+    toModelOutput,
+    onInputStart,
+    onInputDelta,
+    onInputAvailable,
+    ...args
+  }) => tool({
+    type: "provider",
+    id,
+    args,
+    inputSchema,
+    outputSchema,
+    execute,
+    needsApproval,
+    toModelOutput,
+    onInputStart,
+    onInputDelta,
+    onInputAvailable,
+    supportsDeferredResults
+  });
+}
+async function resolve(value) {
+  if (typeof value === "function") {
+    value = value();
+  }
+  return Promise.resolve(value);
+}
+var createJsonErrorResponseHandler = ({
+  errorSchema,
+  errorToMessage,
+  isRetryable
+}) => async ({ response, url: url2, requestBodyValues }) => {
+  const responseBody = await response.text();
+  const responseHeaders = extractResponseHeaders(response);
+  if (responseBody.trim() === "") {
+    return {
+      responseHeaders,
+      value: new APICallError({
+        message: response.statusText,
+        url: url2,
+        requestBodyValues,
+        statusCode: response.status,
+        responseHeaders,
+        responseBody,
+        isRetryable: isRetryable == null ? undefined : isRetryable(response)
+      })
+    };
+  }
+  try {
+    const parsedError = await parseJSON2({
+      text: responseBody,
+      schema: errorSchema
+    });
+    return {
+      responseHeaders,
+      value: new APICallError({
+        message: errorToMessage(parsedError),
+        url: url2,
+        requestBodyValues,
+        statusCode: response.status,
+        responseHeaders,
+        responseBody,
+        data: parsedError,
+        isRetryable: isRetryable == null ? undefined : isRetryable(response, parsedError)
+      })
+    };
+  } catch (parseError) {
+    return {
+      responseHeaders,
+      value: new APICallError({
+        message: response.statusText,
+        url: url2,
+        requestBodyValues,
+        statusCode: response.status,
+        responseHeaders,
+        responseBody,
+        isRetryable: isRetryable == null ? undefined : isRetryable(response)
+      })
+    };
+  }
+};
+var createEventSourceResponseHandler = (chunkSchema) => async ({ response }) => {
+  const responseHeaders = extractResponseHeaders(response);
+  if (response.body == null) {
+    throw new EmptyResponseBodyError({});
+  }
+  return {
+    responseHeaders,
+    value: parseJsonEventStream({
+      stream: response.body,
+      schema: chunkSchema
+    })
+  };
+};
+var createJsonResponseHandler = (responseSchema) => async ({ response, url: url2, requestBodyValues }) => {
+  const responseBody = await response.text();
+  const parsedResult = await safeParseJSON({
+    text: responseBody,
+    schema: responseSchema
+  });
+  const responseHeaders = extractResponseHeaders(response);
+  if (!parsedResult.success) {
+    throw new APICallError({
+      message: "Invalid JSON response",
+      cause: parsedResult.error,
+      statusCode: response.status,
+      responseHeaders,
+      responseBody,
+      url: url2,
+      requestBodyValues
+    });
+  }
+  return {
+    responseHeaders,
+    value: parsedResult.value,
+    rawValue: parsedResult.rawValue
+  };
+};
+var createBinaryResponseHandler = () => async ({ response, url: url2, requestBodyValues }) => {
+  const responseHeaders = extractResponseHeaders(response);
+  if (!response.body) {
+    throw new APICallError({
+      message: "Response body is empty",
+      url: url2,
+      requestBodyValues,
+      statusCode: response.status,
+      responseHeaders,
+      responseBody: undefined
+    });
+  }
+  try {
+    const buffer = await response.arrayBuffer();
+    return {
+      responseHeaders,
+      value: new Uint8Array(buffer)
+    };
+  } catch (error48) {
+    throw new APICallError({
+      message: "Failed to read response as array buffer",
+      url: url2,
+      requestBodyValues,
+      statusCode: response.status,
+      responseHeaders,
+      responseBody: undefined,
+      cause: error48
+    });
+  }
+};
+function withoutTrailingSlash(url2) {
+  return url2 == null ? undefined : url2.replace(/\/$/, "");
+}
+function isAsyncIterable(obj) {
+  return obj != null && typeof obj[Symbol.asyncIterator] === "function";
+}
+async function* executeTool({
+  execute,
+  input,
+  options: options2
+}) {
+  const result = execute(input, options2);
+  if (isAsyncIterable(result)) {
+    let lastOutput;
+    for await (const output of result) {
+      lastOutput = output;
+      yield { type: "preliminary", output };
+    }
+    yield { type: "final", output: lastOutput };
+  } else {
+    yield { type: "final", output: await result };
+  }
+}
+
+// node_modules/@ai-sdk/openai/dist/index.mjs
+var openaiErrorDataSchema = exports_external.object({
+  error: exports_external.object({
+    message: exports_external.string(),
+    type: exports_external.string().nullish(),
+    param: exports_external.any().nullish(),
+    code: exports_external.union([exports_external.string(), exports_external.number()]).nullish()
+  })
+});
+var openaiFailedResponseHandler = createJsonErrorResponseHandler({
+  errorSchema: openaiErrorDataSchema,
+  errorToMessage: (data2) => data2.error.message
+});
+function getOpenAILanguageModelCapabilities(modelId) {
+  const supportsFlexProcessing = modelId.startsWith("o3") || modelId.startsWith("o4-mini") || modelId.startsWith("gpt-5") && !modelId.startsWith("gpt-5-chat");
+  const supportsPriorityProcessing = modelId.startsWith("gpt-4") || modelId.startsWith("gpt-5") && !modelId.startsWith("gpt-5-nano") && !modelId.startsWith("gpt-5-chat") && !modelId.startsWith("gpt-5.4-nano") || modelId.startsWith("o3") || modelId.startsWith("o4-mini");
+  const isReasoningModel = modelId.startsWith("o1") || modelId.startsWith("o3") || modelId.startsWith("o4-mini") || modelId.startsWith("gpt-5") && !modelId.startsWith("gpt-5-chat");
+  const supportsNonReasoningParameters = modelId.startsWith("gpt-5.1") || modelId.startsWith("gpt-5.2") || modelId.startsWith("gpt-5.3") || modelId.startsWith("gpt-5.4") || modelId.startsWith("gpt-5.5");
+  const systemMessageMode = isReasoningModel ? "developer" : "system";
+  return {
+    supportsFlexProcessing,
+    supportsPriorityProcessing,
+    isReasoningModel,
+    systemMessageMode,
+    supportsNonReasoningParameters
+  };
+}
+function convertOpenAIChatUsage(usage) {
+  var _a16, _b16, _c, _d, _e, _f;
+  if (usage == null) {
+    return {
+      inputTokens: {
+        total: undefined,
+        noCache: undefined,
+        cacheRead: undefined,
+        cacheWrite: undefined
+      },
+      outputTokens: {
+        total: undefined,
+        text: undefined,
+        reasoning: undefined
+      },
+      raw: undefined
+    };
+  }
+  const promptTokens = (_a16 = usage.prompt_tokens) != null ? _a16 : 0;
+  const completionTokens = (_b16 = usage.completion_tokens) != null ? _b16 : 0;
+  const cachedTokens = (_d = (_c = usage.prompt_tokens_details) == null ? undefined : _c.cached_tokens) != null ? _d : 0;
+  const reasoningTokens = (_f = (_e = usage.completion_tokens_details) == null ? undefined : _e.reasoning_tokens) != null ? _f : 0;
+  return {
+    inputTokens: {
+      total: promptTokens,
+      noCache: promptTokens - cachedTokens,
+      cacheRead: cachedTokens,
+      cacheWrite: undefined
+    },
+    outputTokens: {
+      total: completionTokens,
+      text: completionTokens - reasoningTokens,
+      reasoning: reasoningTokens
+    },
+    raw: usage
+  };
+}
+function serializeToolCallArguments(input) {
+  return JSON.stringify(input === undefined ? {} : input);
+}
+function convertToOpenAIChatMessages({
+  prompt,
+  systemMessageMode = "system"
+}) {
+  var _a16;
+  const messages = [];
+  const warnings = [];
+  for (const { role, content } of prompt) {
+    switch (role) {
+      case "system": {
+        switch (systemMessageMode) {
+          case "system": {
+            messages.push({ role: "system", content });
+            break;
+          }
+          case "developer": {
+            messages.push({ role: "developer", content });
+            break;
+          }
+          case "remove": {
+            warnings.push({
+              type: "other",
+              message: "system messages are removed for this model"
+            });
+            break;
+          }
+          default: {
+            const _exhaustiveCheck = systemMessageMode;
+            throw new Error(`Unsupported system message mode: ${_exhaustiveCheck}`);
+          }
+        }
+        break;
+      }
+      case "user": {
+        if (content.length === 1 && content[0].type === "text") {
+          messages.push({ role: "user", content: content[0].text });
+          break;
+        }
+        messages.push({
+          role: "user",
+          content: content.map((part, index4) => {
+            var _a23, _b16, _c;
+            switch (part.type) {
+              case "text": {
+                return { type: "text", text: part.text };
+              }
+              case "file": {
+                if (part.mediaType.startsWith("image/")) {
+                  const mediaType = part.mediaType === "image/*" ? "image/jpeg" : part.mediaType;
+                  return {
+                    type: "image_url",
+                    image_url: {
+                      url: part.data instanceof URL ? part.data.toString() : `data:${mediaType};base64,${convertToBase64(part.data)}`,
+                      detail: (_b16 = (_a23 = part.providerOptions) == null ? undefined : _a23.openai) == null ? undefined : _b16.imageDetail
+                    }
+                  };
+                } else if (part.mediaType.startsWith("audio/")) {
+                  if (part.data instanceof URL) {
+                    throw new UnsupportedFunctionalityError({
+                      functionality: "audio file parts with URLs"
+                    });
+                  }
+                  switch (part.mediaType) {
+                    case "audio/wav": {
+                      return {
+                        type: "input_audio",
+                        input_audio: {
+                          data: convertToBase64(part.data),
+                          format: "wav"
+                        }
+                      };
+                    }
+                    case "audio/mp3":
+                    case "audio/mpeg": {
+                      return {
+                        type: "input_audio",
+                        input_audio: {
+                          data: convertToBase64(part.data),
+                          format: "mp3"
+                        }
+                      };
+                    }
+                    default: {
+                      throw new UnsupportedFunctionalityError({
+                        functionality: `audio content parts with media type ${part.mediaType}`
+                      });
+                    }
+                  }
+                } else if (part.mediaType === "application/pdf") {
+                  if (part.data instanceof URL) {
+                    throw new UnsupportedFunctionalityError({
+                      functionality: "PDF file parts with URLs"
+                    });
+                  }
+                  return {
+                    type: "file",
+                    file: typeof part.data === "string" && part.data.startsWith("file-") ? { file_id: part.data } : {
+                      filename: (_c = part.filename) != null ? _c : `part-${index4}.pdf`,
+                      file_data: `data:application/pdf;base64,${convertToBase64(part.data)}`
+                    }
+                  };
+                } else {
+                  throw new UnsupportedFunctionalityError({
+                    functionality: `file part media type ${part.mediaType}`
+                  });
+                }
+              }
+            }
+          })
+        });
+        break;
+      }
+      case "assistant": {
+        let text4 = "";
+        const toolCalls = [];
+        for (const part of content) {
+          switch (part.type) {
+            case "text": {
+              text4 += part.text;
+              break;
+            }
+            case "tool-call": {
+              toolCalls.push({
+                id: part.toolCallId,
+                type: "function",
+                function: {
+                  name: part.toolName,
+                  arguments: serializeToolCallArguments(part.input)
+                }
+              });
+              break;
+            }
+          }
+        }
+        messages.push({
+          role: "assistant",
+          content: toolCalls.length > 0 ? text4 || null : text4,
+          tool_calls: toolCalls.length > 0 ? toolCalls : undefined
+        });
+        break;
+      }
+      case "tool": {
+        for (const toolResponse of content) {
+          if (toolResponse.type === "tool-approval-response") {
+            continue;
+          }
+          const output = toolResponse.output;
+          let contentValue;
+          switch (output.type) {
+            case "text":
+            case "error-text":
+              contentValue = output.value;
+              break;
+            case "execution-denied":
+              contentValue = (_a16 = output.reason) != null ? _a16 : "Tool execution denied.";
+              break;
+            case "content":
+            case "json":
+            case "error-json":
+              contentValue = JSON.stringify(output.value);
+              break;
+          }
+          messages.push({
+            role: "tool",
+            tool_call_id: toolResponse.toolCallId,
+            content: contentValue
+          });
+        }
+        break;
+      }
+      default: {
+        const _exhaustiveCheck = role;
+        throw new Error(`Unsupported role: ${_exhaustiveCheck}`);
+      }
+    }
+  }
+  return { messages, warnings };
+}
+function getResponseMetadata({
+  id,
+  model,
+  created
+}) {
+  return {
+    id: id != null ? id : undefined,
+    modelId: model != null ? model : undefined,
+    timestamp: created ? new Date(created * 1000) : undefined
+  };
+}
+function mapOpenAIFinishReason(finishReason) {
+  switch (finishReason) {
+    case "stop":
+      return "stop";
+    case "length":
+      return "length";
+    case "content_filter":
+      return "content-filter";
+    case "function_call":
+    case "tool_calls":
+      return "tool-calls";
+    default:
+      return "other";
+  }
+}
+var openaiChatResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  id: exports_external.string().nullish(),
+  created: exports_external.number().nullish(),
+  model: exports_external.string().nullish(),
+  choices: exports_external.array(exports_external.object({
+    message: exports_external.object({
+      role: exports_external.literal("assistant").nullish(),
+      content: exports_external.string().nullish(),
+      tool_calls: exports_external.array(exports_external.object({
+        id: exports_external.string().nullish(),
+        type: exports_external.literal("function"),
+        function: exports_external.object({
+          name: exports_external.string(),
+          arguments: exports_external.string()
+        })
+      })).nullish(),
+      annotations: exports_external.array(exports_external.object({
+        type: exports_external.literal("url_citation"),
+        url_citation: exports_external.object({
+          start_index: exports_external.number(),
+          end_index: exports_external.number(),
+          url: exports_external.string(),
+          title: exports_external.string()
+        })
+      })).nullish()
+    }),
+    index: exports_external.number(),
+    logprobs: exports_external.object({
+      content: exports_external.array(exports_external.object({
+        token: exports_external.string(),
+        logprob: exports_external.number(),
+        top_logprobs: exports_external.array(exports_external.object({
+          token: exports_external.string(),
+          logprob: exports_external.number()
+        }))
+      })).nullish()
+    }).nullish(),
+    finish_reason: exports_external.string().nullish()
+  })),
+  usage: exports_external.object({
+    prompt_tokens: exports_external.number().nullish(),
+    completion_tokens: exports_external.number().nullish(),
+    total_tokens: exports_external.number().nullish(),
+    prompt_tokens_details: exports_external.object({
+      cached_tokens: exports_external.number().nullish()
+    }).nullish(),
+    completion_tokens_details: exports_external.object({
+      reasoning_tokens: exports_external.number().nullish(),
+      accepted_prediction_tokens: exports_external.number().nullish(),
+      rejected_prediction_tokens: exports_external.number().nullish()
+    }).nullish()
+  }).nullish()
+})));
+var openaiChatChunkSchema = lazySchema(() => zodSchema(exports_external.union([
+  exports_external.object({
+    id: exports_external.string().nullish(),
+    created: exports_external.number().nullish(),
+    model: exports_external.string().nullish(),
+    choices: exports_external.array(exports_external.object({
+      delta: exports_external.object({
+        role: exports_external.enum(["assistant"]).nullish(),
+        content: exports_external.string().nullish(),
+        tool_calls: exports_external.array(exports_external.object({
+          index: exports_external.number(),
+          id: exports_external.string().nullish(),
+          type: exports_external.literal("function").nullish(),
+          function: exports_external.object({
+            name: exports_external.string().nullish(),
+            arguments: exports_external.string().nullish()
+          })
+        })).nullish(),
+        annotations: exports_external.array(exports_external.object({
+          type: exports_external.literal("url_citation"),
+          url_citation: exports_external.object({
+            start_index: exports_external.number(),
+            end_index: exports_external.number(),
+            url: exports_external.string(),
+            title: exports_external.string()
+          })
+        })).nullish()
+      }).nullish(),
+      logprobs: exports_external.object({
+        content: exports_external.array(exports_external.object({
+          token: exports_external.string(),
+          logprob: exports_external.number(),
+          top_logprobs: exports_external.array(exports_external.object({
+            token: exports_external.string(),
+            logprob: exports_external.number()
+          }))
+        })).nullish()
+      }).nullish(),
+      finish_reason: exports_external.string().nullish(),
+      index: exports_external.number()
+    })),
+    usage: exports_external.object({
+      prompt_tokens: exports_external.number().nullish(),
+      completion_tokens: exports_external.number().nullish(),
+      total_tokens: exports_external.number().nullish(),
+      prompt_tokens_details: exports_external.object({
+        cached_tokens: exports_external.number().nullish()
+      }).nullish(),
+      completion_tokens_details: exports_external.object({
+        reasoning_tokens: exports_external.number().nullish(),
+        accepted_prediction_tokens: exports_external.number().nullish(),
+        rejected_prediction_tokens: exports_external.number().nullish()
+      }).nullish()
+    }).nullish()
+  }),
+  openaiErrorDataSchema
+])));
+var openaiLanguageModelChatOptions = lazySchema(() => zodSchema(exports_external.object({
+  logitBias: exports_external.record(exports_external.coerce.number(), exports_external.number()).optional(),
+  logprobs: exports_external.union([exports_external.boolean(), exports_external.number()]).optional(),
+  parallelToolCalls: exports_external.boolean().optional(),
+  user: exports_external.string().optional(),
+  reasoningEffort: exports_external.enum(["none", "minimal", "low", "medium", "high", "xhigh"]).optional(),
+  maxCompletionTokens: exports_external.number().optional(),
+  store: exports_external.boolean().optional(),
+  metadata: exports_external.record(exports_external.string().max(64), exports_external.string().max(512)).optional(),
+  prediction: exports_external.record(exports_external.string(), exports_external.any()).optional(),
+  serviceTier: exports_external.enum(["auto", "flex", "priority", "default"]).optional(),
+  strictJsonSchema: exports_external.boolean().optional(),
+  textVerbosity: exports_external.enum(["low", "medium", "high"]).optional(),
+  promptCacheKey: exports_external.string().optional(),
+  promptCacheRetention: exports_external.enum(["in_memory", "24h"]).optional(),
+  safetyIdentifier: exports_external.string().optional(),
+  systemMessageMode: exports_external.enum(["system", "developer", "remove"]).optional(),
+  forceReasoning: exports_external.boolean().optional()
+})));
+function prepareChatTools({
+  tools,
+  toolChoice
+}) {
+  tools = (tools == null ? undefined : tools.length) ? tools : undefined;
+  const toolWarnings = [];
+  if (tools == null) {
+    return { tools: undefined, toolChoice: undefined, toolWarnings };
+  }
+  const openaiTools2 = [];
+  for (const tool2 of tools) {
+    switch (tool2.type) {
+      case "function":
+        openaiTools2.push({
+          type: "function",
+          function: {
+            name: tool2.name,
+            description: tool2.description,
+            parameters: tool2.inputSchema,
+            ...tool2.strict != null ? { strict: tool2.strict } : {}
+          }
+        });
+        break;
+      default:
+        toolWarnings.push({
+          type: "unsupported",
+          feature: `tool type: ${tool2.type}`
+        });
+        break;
+    }
+  }
+  if (toolChoice == null) {
+    return { tools: openaiTools2, toolChoice: undefined, toolWarnings };
+  }
+  const type = toolChoice.type;
+  switch (type) {
+    case "auto":
+    case "none":
+    case "required":
+      return { tools: openaiTools2, toolChoice: type, toolWarnings };
+    case "tool":
+      return {
+        tools: openaiTools2,
+        toolChoice: {
+          type: "function",
+          function: {
+            name: toolChoice.toolName
+          }
+        },
+        toolWarnings
+      };
+    default: {
+      const _exhaustiveCheck = type;
+      throw new UnsupportedFunctionalityError({
+        functionality: `tool choice type: ${_exhaustiveCheck}`
+      });
+    }
+  }
+}
+var OpenAIChatLanguageModel = class {
+  constructor(modelId, config2) {
+    this.specificationVersion = "v3";
+    this.supportedUrls = {
+      "image/*": [/^https?:\/\/.*$/]
+    };
+    this.modelId = modelId;
+    this.config = config2;
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async getArgs({
+    prompt,
+    maxOutputTokens,
+    temperature,
+    topP,
+    topK,
+    frequencyPenalty,
+    presencePenalty,
+    stopSequences,
+    responseFormat,
+    seed,
+    tools,
+    toolChoice,
+    providerOptions
+  }) {
+    var _a16, _b16, _c, _d, _e;
+    const warnings = [];
+    const openaiOptions = (_a16 = await parseProviderOptions({
+      provider: "openai",
+      providerOptions,
+      schema: openaiLanguageModelChatOptions
+    })) != null ? _a16 : {};
+    const modelCapabilities = getOpenAILanguageModelCapabilities(this.modelId);
+    const isReasoningModel = (_b16 = openaiOptions.forceReasoning) != null ? _b16 : modelCapabilities.isReasoningModel;
+    if (topK != null) {
+      warnings.push({ type: "unsupported", feature: "topK" });
+    }
+    const { messages, warnings: messageWarnings } = convertToOpenAIChatMessages({
+      prompt,
+      systemMessageMode: (_c = openaiOptions.systemMessageMode) != null ? _c : isReasoningModel ? "developer" : modelCapabilities.systemMessageMode
+    });
+    warnings.push(...messageWarnings);
+    const strictJsonSchema = (_d = openaiOptions.strictJsonSchema) != null ? _d : true;
+    const baseArgs = {
+      model: this.modelId,
+      logit_bias: openaiOptions.logitBias,
+      logprobs: openaiOptions.logprobs === true || typeof openaiOptions.logprobs === "number" ? true : undefined,
+      top_logprobs: typeof openaiOptions.logprobs === "number" ? openaiOptions.logprobs : typeof openaiOptions.logprobs === "boolean" ? openaiOptions.logprobs ? 0 : undefined : undefined,
+      user: openaiOptions.user,
+      parallel_tool_calls: openaiOptions.parallelToolCalls,
+      max_tokens: maxOutputTokens,
+      temperature,
+      top_p: topP,
+      frequency_penalty: frequencyPenalty,
+      presence_penalty: presencePenalty,
+      response_format: (responseFormat == null ? undefined : responseFormat.type) === "json" ? responseFormat.schema != null ? {
+        type: "json_schema",
+        json_schema: {
+          schema: responseFormat.schema,
+          strict: strictJsonSchema,
+          name: (_e = responseFormat.name) != null ? _e : "response",
+          description: responseFormat.description
+        }
+      } : { type: "json_object" } : undefined,
+      stop: stopSequences,
+      seed,
+      verbosity: openaiOptions.textVerbosity,
+      max_completion_tokens: openaiOptions.maxCompletionTokens,
+      store: openaiOptions.store,
+      metadata: openaiOptions.metadata,
+      prediction: openaiOptions.prediction,
+      reasoning_effort: openaiOptions.reasoningEffort,
+      service_tier: openaiOptions.serviceTier,
+      prompt_cache_key: openaiOptions.promptCacheKey,
+      prompt_cache_retention: openaiOptions.promptCacheRetention,
+      safety_identifier: openaiOptions.safetyIdentifier,
+      messages
+    };
+    if (isReasoningModel) {
+      if (openaiOptions.reasoningEffort !== "none" || !modelCapabilities.supportsNonReasoningParameters) {
+        if (baseArgs.temperature != null) {
+          baseArgs.temperature = undefined;
+          warnings.push({
+            type: "unsupported",
+            feature: "temperature",
+            details: "temperature is not supported for reasoning models"
+          });
+        }
+        if (baseArgs.top_p != null) {
+          baseArgs.top_p = undefined;
+          warnings.push({
+            type: "unsupported",
+            feature: "topP",
+            details: "topP is not supported for reasoning models"
+          });
+        }
+        if (baseArgs.logprobs != null) {
+          baseArgs.logprobs = undefined;
+          warnings.push({
+            type: "other",
+            message: "logprobs is not supported for reasoning models"
+          });
+        }
+      }
+      if (baseArgs.frequency_penalty != null) {
+        baseArgs.frequency_penalty = undefined;
+        warnings.push({
+          type: "unsupported",
+          feature: "frequencyPenalty",
+          details: "frequencyPenalty is not supported for reasoning models"
+        });
+      }
+      if (baseArgs.presence_penalty != null) {
+        baseArgs.presence_penalty = undefined;
+        warnings.push({
+          type: "unsupported",
+          feature: "presencePenalty",
+          details: "presencePenalty is not supported for reasoning models"
+        });
+      }
+      if (baseArgs.logit_bias != null) {
+        baseArgs.logit_bias = undefined;
+        warnings.push({
+          type: "other",
+          message: "logitBias is not supported for reasoning models"
+        });
+      }
+      if (baseArgs.top_logprobs != null) {
+        baseArgs.top_logprobs = undefined;
+        warnings.push({
+          type: "other",
+          message: "topLogprobs is not supported for reasoning models"
+        });
+      }
+      if (baseArgs.max_tokens != null) {
+        if (baseArgs.max_completion_tokens == null) {
+          baseArgs.max_completion_tokens = baseArgs.max_tokens;
+        }
+        baseArgs.max_tokens = undefined;
+      }
+    } else if (this.modelId.startsWith("gpt-4o-search-preview") || this.modelId.startsWith("gpt-4o-mini-search-preview")) {
+      if (baseArgs.temperature != null) {
+        baseArgs.temperature = undefined;
+        warnings.push({
+          type: "unsupported",
+          feature: "temperature",
+          details: "temperature is not supported for the search preview models and has been removed."
+        });
+      }
+    }
+    if (openaiOptions.serviceTier === "flex" && !modelCapabilities.supportsFlexProcessing) {
+      warnings.push({
+        type: "unsupported",
+        feature: "serviceTier",
+        details: "flex processing is only available for o3, o4-mini, and gpt-5 models"
+      });
+      baseArgs.service_tier = undefined;
+    }
+    if (openaiOptions.serviceTier === "priority" && !modelCapabilities.supportsPriorityProcessing) {
+      warnings.push({
+        type: "unsupported",
+        feature: "serviceTier",
+        details: "priority processing is only available for supported models (gpt-4, gpt-5, gpt-5-mini, o3, o4-mini) and requires Enterprise access. gpt-5-nano is not supported"
+      });
+      baseArgs.service_tier = undefined;
+    }
+    const {
+      tools: openaiTools2,
+      toolChoice: openaiToolChoice,
+      toolWarnings
+    } = prepareChatTools({
+      tools,
+      toolChoice
+    });
+    return {
+      args: {
+        ...baseArgs,
+        tools: openaiTools2,
+        tool_choice: openaiToolChoice
+      },
+      warnings: [...warnings, ...toolWarnings]
+    };
+  }
+  async doGenerate(options2) {
+    var _a16, _b16, _c, _d, _e, _f, _g;
+    const { args: body, warnings } = await this.getArgs(options2);
+    const {
+      responseHeaders,
+      value: response,
+      rawValue: rawResponse
+    } = await postJsonToApi({
+      url: this.config.url({
+        path: "/chat/completions",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), options2.headers),
+      body,
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createJsonResponseHandler(openaiChatResponseSchema),
+      abortSignal: options2.abortSignal,
+      fetch: this.config.fetch
+    });
+    const choice = response.choices[0];
+    const content = [];
+    const text4 = choice.message.content;
+    if (text4 != null && text4.length > 0) {
+      content.push({ type: "text", text: text4 });
+    }
+    for (const toolCall of (_a16 = choice.message.tool_calls) != null ? _a16 : []) {
+      content.push({
+        type: "tool-call",
+        toolCallId: (_b16 = toolCall.id) != null ? _b16 : generateId(),
+        toolName: toolCall.function.name,
+        input: toolCall.function.arguments
+      });
+    }
+    for (const annotation of (_c = choice.message.annotations) != null ? _c : []) {
+      content.push({
+        type: "source",
+        sourceType: "url",
+        id: generateId(),
+        url: annotation.url_citation.url,
+        title: annotation.url_citation.title
+      });
+    }
+    const completionTokenDetails = (_d = response.usage) == null ? undefined : _d.completion_tokens_details;
+    const promptTokenDetails = (_e = response.usage) == null ? undefined : _e.prompt_tokens_details;
+    const providerMetadata = { openai: {} };
+    if ((completionTokenDetails == null ? undefined : completionTokenDetails.accepted_prediction_tokens) != null) {
+      providerMetadata.openai.acceptedPredictionTokens = completionTokenDetails == null ? undefined : completionTokenDetails.accepted_prediction_tokens;
+    }
+    if ((completionTokenDetails == null ? undefined : completionTokenDetails.rejected_prediction_tokens) != null) {
+      providerMetadata.openai.rejectedPredictionTokens = completionTokenDetails == null ? undefined : completionTokenDetails.rejected_prediction_tokens;
+    }
+    if (((_f = choice.logprobs) == null ? undefined : _f.content) != null) {
+      providerMetadata.openai.logprobs = choice.logprobs.content;
+    }
+    return {
+      content,
+      finishReason: {
+        unified: mapOpenAIFinishReason(choice.finish_reason),
+        raw: (_g = choice.finish_reason) != null ? _g : undefined
+      },
+      usage: convertOpenAIChatUsage(response.usage),
+      request: { body },
+      response: {
+        ...getResponseMetadata(response),
+        headers: responseHeaders,
+        body: rawResponse
+      },
+      warnings,
+      providerMetadata
+    };
+  }
+  async doStream(options2) {
+    const { args, warnings } = await this.getArgs(options2);
+    const body = {
+      ...args,
+      stream: true,
+      stream_options: {
+        include_usage: true
+      }
+    };
+    const { responseHeaders, value: response } = await postJsonToApi({
+      url: this.config.url({
+        path: "/chat/completions",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), options2.headers),
+      body,
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createEventSourceResponseHandler(openaiChatChunkSchema),
+      abortSignal: options2.abortSignal,
+      fetch: this.config.fetch
+    });
+    const toolCalls = [];
+    let finishReason = {
+      unified: "other",
+      raw: undefined
+    };
+    let usage = undefined;
+    let metadataExtracted = false;
+    let isActiveText = false;
+    const providerMetadata = { openai: {} };
+    return {
+      stream: response.pipeThrough(new TransformStream({
+        start(controller) {
+          controller.enqueue({ type: "stream-start", warnings });
+        },
+        transform(chunk, controller) {
+          var _a16, _b16, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q;
+          if (options2.includeRawChunks) {
+            controller.enqueue({ type: "raw", rawValue: chunk.rawValue });
+          }
+          if (!chunk.success) {
+            finishReason = { unified: "error", raw: undefined };
+            controller.enqueue({ type: "error", error: chunk.error });
+            return;
+          }
+          const value = chunk.value;
+          if ("error" in value) {
+            finishReason = { unified: "error", raw: undefined };
+            controller.enqueue({ type: "error", error: value.error });
+            return;
+          }
+          if (!metadataExtracted) {
+            const metadata = getResponseMetadata(value);
+            if (Object.values(metadata).some(Boolean)) {
+              metadataExtracted = true;
+              controller.enqueue({
+                type: "response-metadata",
+                ...getResponseMetadata(value)
+              });
+            }
+          }
+          if (value.usage != null) {
+            usage = value.usage;
+            if (((_a16 = value.usage.completion_tokens_details) == null ? undefined : _a16.accepted_prediction_tokens) != null) {
+              providerMetadata.openai.acceptedPredictionTokens = (_b16 = value.usage.completion_tokens_details) == null ? undefined : _b16.accepted_prediction_tokens;
+            }
+            if (((_c = value.usage.completion_tokens_details) == null ? undefined : _c.rejected_prediction_tokens) != null) {
+              providerMetadata.openai.rejectedPredictionTokens = (_d = value.usage.completion_tokens_details) == null ? undefined : _d.rejected_prediction_tokens;
+            }
+          }
+          const choice = value.choices[0];
+          if ((choice == null ? undefined : choice.finish_reason) != null) {
+            finishReason = {
+              unified: mapOpenAIFinishReason(choice.finish_reason),
+              raw: choice.finish_reason
+            };
+          }
+          if (((_e = choice == null ? undefined : choice.logprobs) == null ? undefined : _e.content) != null) {
+            providerMetadata.openai.logprobs = choice.logprobs.content;
+          }
+          if ((choice == null ? undefined : choice.delta) == null) {
+            return;
+          }
+          const delta = choice.delta;
+          if (delta.content != null) {
+            if (!isActiveText) {
+              controller.enqueue({ type: "text-start", id: "0" });
+              isActiveText = true;
+            }
+            controller.enqueue({
+              type: "text-delta",
+              id: "0",
+              delta: delta.content
+            });
+          }
+          if (delta.tool_calls != null) {
+            for (const toolCallDelta of delta.tool_calls) {
+              const index4 = toolCallDelta.index;
+              if (toolCalls[index4] == null) {
+                if (toolCallDelta.type != null && toolCallDelta.type !== "function") {
+                  throw new InvalidResponseDataError({
+                    data: toolCallDelta,
+                    message: `Expected 'function' type.`
+                  });
+                }
+                if (toolCallDelta.id == null) {
+                  throw new InvalidResponseDataError({
+                    data: toolCallDelta,
+                    message: `Expected 'id' to be a string.`
+                  });
+                }
+                if (((_f = toolCallDelta.function) == null ? undefined : _f.name) == null) {
+                  throw new InvalidResponseDataError({
+                    data: toolCallDelta,
+                    message: `Expected 'function.name' to be a string.`
+                  });
+                }
+                controller.enqueue({
+                  type: "tool-input-start",
+                  id: toolCallDelta.id,
+                  toolName: toolCallDelta.function.name
+                });
+                toolCalls[index4] = {
+                  id: toolCallDelta.id,
+                  type: "function",
+                  function: {
+                    name: toolCallDelta.function.name,
+                    arguments: (_g = toolCallDelta.function.arguments) != null ? _g : ""
+                  },
+                  hasFinished: false
+                };
+                const toolCall2 = toolCalls[index4];
+                if (((_h = toolCall2.function) == null ? undefined : _h.name) != null && ((_i = toolCall2.function) == null ? undefined : _i.arguments) != null) {
+                  if (toolCall2.function.arguments.length > 0) {
+                    controller.enqueue({
+                      type: "tool-input-delta",
+                      id: toolCall2.id,
+                      delta: toolCall2.function.arguments
+                    });
+                  }
+                  if (isParsableJson(toolCall2.function.arguments)) {
+                    controller.enqueue({
+                      type: "tool-input-end",
+                      id: toolCall2.id
+                    });
+                    controller.enqueue({
+                      type: "tool-call",
+                      toolCallId: (_j = toolCall2.id) != null ? _j : generateId(),
+                      toolName: toolCall2.function.name,
+                      input: toolCall2.function.arguments
+                    });
+                    toolCall2.hasFinished = true;
+                  }
+                }
+                continue;
+              }
+              const toolCall = toolCalls[index4];
+              if (toolCall.hasFinished) {
+                continue;
+              }
+              if (((_k = toolCallDelta.function) == null ? undefined : _k.arguments) != null) {
+                toolCall.function.arguments += (_m = (_l = toolCallDelta.function) == null ? undefined : _l.arguments) != null ? _m : "";
+              }
+              controller.enqueue({
+                type: "tool-input-delta",
+                id: toolCall.id,
+                delta: (_n = toolCallDelta.function.arguments) != null ? _n : ""
+              });
+              if (((_o = toolCall.function) == null ? undefined : _o.name) != null && ((_p = toolCall.function) == null ? undefined : _p.arguments) != null && isParsableJson(toolCall.function.arguments)) {
+                controller.enqueue({
+                  type: "tool-input-end",
+                  id: toolCall.id
+                });
+                controller.enqueue({
+                  type: "tool-call",
+                  toolCallId: (_q = toolCall.id) != null ? _q : generateId(),
+                  toolName: toolCall.function.name,
+                  input: toolCall.function.arguments
+                });
+                toolCall.hasFinished = true;
+              }
+            }
+          }
+          if (delta.annotations != null) {
+            for (const annotation of delta.annotations) {
+              controller.enqueue({
+                type: "source",
+                sourceType: "url",
+                id: generateId(),
+                url: annotation.url_citation.url,
+                title: annotation.url_citation.title
+              });
+            }
+          }
+        },
+        flush(controller) {
+          if (isActiveText) {
+            controller.enqueue({ type: "text-end", id: "0" });
+          }
+          controller.enqueue({
+            type: "finish",
+            finishReason,
+            usage: convertOpenAIChatUsage(usage),
+            ...providerMetadata != null ? { providerMetadata } : {}
+          });
+        }
+      })),
+      request: { body },
+      response: { headers: responseHeaders }
+    };
+  }
+};
+function convertOpenAICompletionUsage(usage) {
+  var _a16, _b16, _c, _d;
+  if (usage == null) {
+    return {
+      inputTokens: {
+        total: undefined,
+        noCache: undefined,
+        cacheRead: undefined,
+        cacheWrite: undefined
+      },
+      outputTokens: {
+        total: undefined,
+        text: undefined,
+        reasoning: undefined
+      },
+      raw: undefined
+    };
+  }
+  const promptTokens = (_a16 = usage.prompt_tokens) != null ? _a16 : 0;
+  const completionTokens = (_b16 = usage.completion_tokens) != null ? _b16 : 0;
+  return {
+    inputTokens: {
+      total: (_c = usage.prompt_tokens) != null ? _c : undefined,
+      noCache: promptTokens,
+      cacheRead: undefined,
+      cacheWrite: undefined
+    },
+    outputTokens: {
+      total: (_d = usage.completion_tokens) != null ? _d : undefined,
+      text: completionTokens,
+      reasoning: undefined
+    },
+    raw: usage
+  };
+}
+function convertToOpenAICompletionPrompt({
+  prompt,
+  user = "user",
+  assistant = "assistant"
+}) {
+  let text4 = "";
+  if (prompt[0].role === "system") {
+    text4 += `${prompt[0].content}
+
+`;
+    prompt = prompt.slice(1);
+  }
+  for (const { role, content } of prompt) {
+    switch (role) {
+      case "system": {
+        throw new InvalidPromptError({
+          message: "Unexpected system message in prompt: ${content}",
+          prompt
+        });
+      }
+      case "user": {
+        const userMessage = content.map((part) => {
+          switch (part.type) {
+            case "text": {
+              return part.text;
+            }
+          }
+        }).filter(Boolean).join("");
+        text4 += `${user}:
+${userMessage}
+
+`;
+        break;
+      }
+      case "assistant": {
+        const assistantMessage = content.map((part) => {
+          switch (part.type) {
+            case "text": {
+              return part.text;
+            }
+            case "tool-call": {
+              throw new UnsupportedFunctionalityError({
+                functionality: "tool-call messages"
+              });
+            }
+          }
+        }).join("");
+        text4 += `${assistant}:
+${assistantMessage}
+
+`;
+        break;
+      }
+      case "tool": {
+        throw new UnsupportedFunctionalityError({
+          functionality: "tool messages"
+        });
+      }
+      default: {
+        const _exhaustiveCheck = role;
+        throw new Error(`Unsupported role: ${_exhaustiveCheck}`);
+      }
+    }
+  }
+  text4 += `${assistant}:
+`;
+  return {
+    prompt: text4,
+    stopSequences: [`
+${user}:`]
+  };
+}
+function getResponseMetadata2({
+  id,
+  model,
+  created
+}) {
+  return {
+    id: id != null ? id : undefined,
+    modelId: model != null ? model : undefined,
+    timestamp: created != null ? new Date(created * 1000) : undefined
+  };
+}
+function mapOpenAIFinishReason2(finishReason) {
+  switch (finishReason) {
+    case "stop":
+      return "stop";
+    case "length":
+      return "length";
+    case "content_filter":
+      return "content-filter";
+    case "function_call":
+    case "tool_calls":
+      return "tool-calls";
+    default:
+      return "other";
+  }
+}
+var openaiCompletionResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  id: exports_external.string().nullish(),
+  created: exports_external.number().nullish(),
+  model: exports_external.string().nullish(),
+  choices: exports_external.array(exports_external.object({
+    text: exports_external.string(),
+    finish_reason: exports_external.string(),
+    logprobs: exports_external.object({
+      tokens: exports_external.array(exports_external.string()),
+      token_logprobs: exports_external.array(exports_external.number()),
+      top_logprobs: exports_external.array(exports_external.record(exports_external.string(), exports_external.number())).nullish()
+    }).nullish()
+  })),
+  usage: exports_external.object({
+    prompt_tokens: exports_external.number(),
+    completion_tokens: exports_external.number(),
+    total_tokens: exports_external.number()
+  }).nullish()
+})));
+var openaiCompletionChunkSchema = lazySchema(() => zodSchema(exports_external.union([
+  exports_external.object({
+    id: exports_external.string().nullish(),
+    created: exports_external.number().nullish(),
+    model: exports_external.string().nullish(),
+    choices: exports_external.array(exports_external.object({
+      text: exports_external.string(),
+      finish_reason: exports_external.string().nullish(),
+      index: exports_external.number(),
+      logprobs: exports_external.object({
+        tokens: exports_external.array(exports_external.string()),
+        token_logprobs: exports_external.array(exports_external.number()),
+        top_logprobs: exports_external.array(exports_external.record(exports_external.string(), exports_external.number())).nullish()
+      }).nullish()
+    })),
+    usage: exports_external.object({
+      prompt_tokens: exports_external.number(),
+      completion_tokens: exports_external.number(),
+      total_tokens: exports_external.number()
+    }).nullish()
+  }),
+  openaiErrorDataSchema
+])));
+var openaiLanguageModelCompletionOptions = lazySchema(() => zodSchema(exports_external.object({
+  echo: exports_external.boolean().optional(),
+  logitBias: exports_external.record(exports_external.string(), exports_external.number()).optional(),
+  suffix: exports_external.string().optional(),
+  user: exports_external.string().optional(),
+  logprobs: exports_external.union([exports_external.boolean(), exports_external.number()]).optional()
+})));
+var OpenAICompletionLanguageModel = class {
+  constructor(modelId, config2) {
+    this.specificationVersion = "v3";
+    this.supportedUrls = {};
+    this.modelId = modelId;
+    this.config = config2;
+  }
+  get providerOptionsName() {
+    return this.config.provider.split(".")[0].trim();
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async getArgs({
+    prompt,
+    maxOutputTokens,
+    temperature,
+    topP,
+    topK,
+    frequencyPenalty,
+    presencePenalty,
+    stopSequences: userStopSequences,
+    responseFormat,
+    tools,
+    toolChoice,
+    seed,
+    providerOptions
+  }) {
+    const warnings = [];
+    const openaiOptions = {
+      ...await parseProviderOptions({
+        provider: "openai",
+        providerOptions,
+        schema: openaiLanguageModelCompletionOptions
+      }),
+      ...await parseProviderOptions({
+        provider: this.providerOptionsName,
+        providerOptions,
+        schema: openaiLanguageModelCompletionOptions
+      })
+    };
+    if (topK != null) {
+      warnings.push({ type: "unsupported", feature: "topK" });
+    }
+    if (tools == null ? undefined : tools.length) {
+      warnings.push({ type: "unsupported", feature: "tools" });
+    }
+    if (toolChoice != null) {
+      warnings.push({ type: "unsupported", feature: "toolChoice" });
+    }
+    if (responseFormat != null && responseFormat.type !== "text") {
+      warnings.push({
+        type: "unsupported",
+        feature: "responseFormat",
+        details: "JSON response format is not supported."
+      });
+    }
+    const { prompt: completionPrompt, stopSequences } = convertToOpenAICompletionPrompt({ prompt });
+    const stop = [...stopSequences != null ? stopSequences : [], ...userStopSequences != null ? userStopSequences : []];
+    return {
+      args: {
+        model: this.modelId,
+        echo: openaiOptions.echo,
+        logit_bias: openaiOptions.logitBias,
+        logprobs: (openaiOptions == null ? undefined : openaiOptions.logprobs) === true ? 0 : (openaiOptions == null ? undefined : openaiOptions.logprobs) === false ? undefined : openaiOptions == null ? undefined : openaiOptions.logprobs,
+        suffix: openaiOptions.suffix,
+        user: openaiOptions.user,
+        max_tokens: maxOutputTokens,
+        temperature,
+        top_p: topP,
+        frequency_penalty: frequencyPenalty,
+        presence_penalty: presencePenalty,
+        seed,
+        prompt: completionPrompt,
+        stop: stop.length > 0 ? stop : undefined
+      },
+      warnings
+    };
+  }
+  async doGenerate(options2) {
+    var _a16;
+    const { args, warnings } = await this.getArgs(options2);
+    const {
+      responseHeaders,
+      value: response,
+      rawValue: rawResponse
+    } = await postJsonToApi({
+      url: this.config.url({
+        path: "/completions",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), options2.headers),
+      body: args,
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createJsonResponseHandler(openaiCompletionResponseSchema),
+      abortSignal: options2.abortSignal,
+      fetch: this.config.fetch
+    });
+    const choice = response.choices[0];
+    const providerMetadata = { openai: {} };
+    if (choice.logprobs != null) {
+      providerMetadata.openai.logprobs = choice.logprobs;
+    }
+    return {
+      content: [{ type: "text", text: choice.text }],
+      usage: convertOpenAICompletionUsage(response.usage),
+      finishReason: {
+        unified: mapOpenAIFinishReason2(choice.finish_reason),
+        raw: (_a16 = choice.finish_reason) != null ? _a16 : undefined
+      },
+      request: { body: args },
+      response: {
+        ...getResponseMetadata2(response),
+        headers: responseHeaders,
+        body: rawResponse
+      },
+      providerMetadata,
+      warnings
+    };
+  }
+  async doStream(options2) {
+    const { args, warnings } = await this.getArgs(options2);
+    const body = {
+      ...args,
+      stream: true,
+      stream_options: {
+        include_usage: true
+      }
+    };
+    const { responseHeaders, value: response } = await postJsonToApi({
+      url: this.config.url({
+        path: "/completions",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), options2.headers),
+      body,
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createEventSourceResponseHandler(openaiCompletionChunkSchema),
+      abortSignal: options2.abortSignal,
+      fetch: this.config.fetch
+    });
+    let finishReason = {
+      unified: "other",
+      raw: undefined
+    };
+    const providerMetadata = { openai: {} };
+    let usage = undefined;
+    let isFirstChunk = true;
+    return {
+      stream: response.pipeThrough(new TransformStream({
+        start(controller) {
+          controller.enqueue({ type: "stream-start", warnings });
+        },
+        transform(chunk, controller) {
+          if (options2.includeRawChunks) {
+            controller.enqueue({ type: "raw", rawValue: chunk.rawValue });
+          }
+          if (!chunk.success) {
+            finishReason = { unified: "error", raw: undefined };
+            controller.enqueue({ type: "error", error: chunk.error });
+            return;
+          }
+          const value = chunk.value;
+          if ("error" in value) {
+            finishReason = { unified: "error", raw: undefined };
+            controller.enqueue({ type: "error", error: value.error });
+            return;
+          }
+          if (isFirstChunk) {
+            isFirstChunk = false;
+            controller.enqueue({
+              type: "response-metadata",
+              ...getResponseMetadata2(value)
+            });
+            controller.enqueue({ type: "text-start", id: "0" });
+          }
+          if (value.usage != null) {
+            usage = value.usage;
+          }
+          const choice = value.choices[0];
+          if ((choice == null ? undefined : choice.finish_reason) != null) {
+            finishReason = {
+              unified: mapOpenAIFinishReason2(choice.finish_reason),
+              raw: choice.finish_reason
+            };
+          }
+          if ((choice == null ? undefined : choice.logprobs) != null) {
+            providerMetadata.openai.logprobs = choice.logprobs;
+          }
+          if ((choice == null ? undefined : choice.text) != null && choice.text.length > 0) {
+            controller.enqueue({
+              type: "text-delta",
+              id: "0",
+              delta: choice.text
+            });
+          }
+        },
+        flush(controller) {
+          if (!isFirstChunk) {
+            controller.enqueue({ type: "text-end", id: "0" });
+          }
+          controller.enqueue({
+            type: "finish",
+            finishReason,
+            providerMetadata,
+            usage: convertOpenAICompletionUsage(usage)
+          });
+        }
+      })),
+      request: { body },
+      response: { headers: responseHeaders }
+    };
+  }
+};
+var openaiEmbeddingModelOptions = lazySchema(() => zodSchema(exports_external.object({
+  dimensions: exports_external.number().optional(),
+  user: exports_external.string().optional()
+})));
+var openaiTextEmbeddingResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  data: exports_external.array(exports_external.object({ embedding: exports_external.array(exports_external.number()) })),
+  usage: exports_external.object({ prompt_tokens: exports_external.number() }).nullish()
+})));
+var OpenAIEmbeddingModel = class {
+  constructor(modelId, config2) {
+    this.specificationVersion = "v3";
+    this.maxEmbeddingsPerCall = 2048;
+    this.supportsParallelCalls = true;
+    this.modelId = modelId;
+    this.config = config2;
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async doEmbed({
+    values,
+    headers,
+    abortSignal,
+    providerOptions
+  }) {
+    var _a16;
+    if (values.length > this.maxEmbeddingsPerCall) {
+      throw new TooManyEmbeddingValuesForCallError({
+        provider: this.provider,
+        modelId: this.modelId,
+        maxEmbeddingsPerCall: this.maxEmbeddingsPerCall,
+        values
+      });
+    }
+    const openaiOptions = (_a16 = await parseProviderOptions({
+      provider: "openai",
+      providerOptions,
+      schema: openaiEmbeddingModelOptions
+    })) != null ? _a16 : {};
+    const {
+      responseHeaders,
+      value: response,
+      rawValue
+    } = await postJsonToApi({
+      url: this.config.url({
+        path: "/embeddings",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), headers),
+      body: {
+        model: this.modelId,
+        input: values,
+        encoding_format: "float",
+        dimensions: openaiOptions.dimensions,
+        user: openaiOptions.user
+      },
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createJsonResponseHandler(openaiTextEmbeddingResponseSchema),
+      abortSignal,
+      fetch: this.config.fetch
+    });
+    return {
+      warnings: [],
+      embeddings: response.data.map((item) => item.embedding),
+      usage: response.usage ? { tokens: response.usage.prompt_tokens } : undefined,
+      response: { headers: responseHeaders, body: rawValue }
+    };
+  }
+};
+var openaiImageResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  created: exports_external.number().nullish(),
+  data: exports_external.array(exports_external.object({
+    b64_json: exports_external.string(),
+    revised_prompt: exports_external.string().nullish()
+  })),
+  background: exports_external.string().nullish(),
+  output_format: exports_external.string().nullish(),
+  size: exports_external.string().nullish(),
+  quality: exports_external.string().nullish(),
+  usage: exports_external.object({
+    input_tokens: exports_external.number().nullish(),
+    output_tokens: exports_external.number().nullish(),
+    total_tokens: exports_external.number().nullish(),
+    input_tokens_details: exports_external.object({
+      image_tokens: exports_external.number().nullish(),
+      text_tokens: exports_external.number().nullish()
+    }).nullish()
+  }).nullish()
+})));
+var modelMaxImagesPerCall = {
+  "dall-e-3": 1,
+  "dall-e-2": 10,
+  "gpt-image-1": 10,
+  "gpt-image-1-mini": 10,
+  "gpt-image-1.5": 10,
+  "gpt-image-2": 10,
+  "chatgpt-image-latest": 10
+};
+var defaultResponseFormatPrefixes = [
+  "chatgpt-image-",
+  "gpt-image-1-mini",
+  "gpt-image-1.5",
+  "gpt-image-1",
+  "gpt-image-2"
+];
+function hasDefaultResponseFormat(modelId) {
+  return defaultResponseFormatPrefixes.some((prefix) => modelId.startsWith(prefix));
+}
+var baseImageModelOptionsObject = exports_external.object({
+  quality: exports_external.enum(["standard", "hd", "low", "medium", "high", "auto"]).optional(),
+  background: exports_external.enum(["transparent", "opaque", "auto"]).optional(),
+  outputFormat: exports_external.enum(["png", "jpeg", "webp"]).optional(),
+  outputCompression: exports_external.number().int().min(0).max(100).optional(),
+  user: exports_external.string().optional()
+});
+var openaiImageModelOptions = lazySchema(() => zodSchema(baseImageModelOptionsObject));
+var openaiImageModelGenerationOptions = lazySchema(() => zodSchema(baseImageModelOptionsObject.extend({
+  style: exports_external.enum(["vivid", "natural"]).optional(),
+  moderation: exports_external.enum(["auto", "low"]).optional()
+})));
+var openaiImageModelEditOptions = lazySchema(() => zodSchema(baseImageModelOptionsObject.extend({
+  inputFidelity: exports_external.enum(["high", "low"]).optional()
+})));
+var OpenAIImageModel = class {
+  constructor(modelId, config2) {
+    this.modelId = modelId;
+    this.config = config2;
+    this.specificationVersion = "v3";
+  }
+  get maxImagesPerCall() {
+    var _a16;
+    return (_a16 = modelMaxImagesPerCall[this.modelId]) != null ? _a16 : 1;
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async doGenerate({
+    prompt,
+    files,
+    mask,
+    n,
+    size,
+    aspectRatio,
+    seed,
+    providerOptions,
+    headers,
+    abortSignal
+  }) {
+    var _a16, _b16, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    const warnings = [];
+    if (aspectRatio != null) {
+      warnings.push({
+        type: "unsupported",
+        feature: "aspectRatio",
+        details: "This model does not support aspect ratio. Use `size` instead."
+      });
+    }
+    if (seed != null) {
+      warnings.push({ type: "unsupported", feature: "seed" });
+    }
+    const currentDate = (_c = (_b16 = (_a16 = this.config._internal) == null ? undefined : _a16.currentDate) == null ? undefined : _b16.call(_a16)) != null ? _c : /* @__PURE__ */ new Date;
+    if (files != null) {
+      const openaiOptions2 = (_d = await parseProviderOptions({
+        provider: "openai",
+        providerOptions,
+        schema: openaiImageModelEditOptions
+      })) != null ? _d : {};
+      const { value: response2, responseHeaders: responseHeaders2 } = await postFormDataToApi({
+        url: this.config.url({
+          path: "/images/edits",
+          modelId: this.modelId
+        }),
+        headers: combineHeaders(this.config.headers(), headers),
+        formData: convertToFormData({
+          model: this.modelId,
+          prompt,
+          image: await Promise.all(files.map((file2) => file2.type === "file" ? new Blob([
+            file2.data instanceof Uint8Array ? new Blob([file2.data], {
+              type: file2.mediaType
+            }) : new Blob([convertBase64ToUint8Array(file2.data)], {
+              type: file2.mediaType
+            })
+          ], { type: file2.mediaType }) : downloadBlob(file2.url))),
+          mask: mask != null ? await fileToBlob(mask) : undefined,
+          n,
+          size,
+          quality: openaiOptions2.quality,
+          background: openaiOptions2.background,
+          output_format: openaiOptions2.outputFormat,
+          output_compression: openaiOptions2.outputCompression,
+          input_fidelity: openaiOptions2.inputFidelity,
+          user: openaiOptions2.user
+        }),
+        failedResponseHandler: openaiFailedResponseHandler,
+        successfulResponseHandler: createJsonResponseHandler(openaiImageResponseSchema),
+        abortSignal,
+        fetch: this.config.fetch
+      });
+      return {
+        images: response2.data.map((item) => item.b64_json),
+        warnings,
+        usage: response2.usage != null ? {
+          inputTokens: (_e = response2.usage.input_tokens) != null ? _e : undefined,
+          outputTokens: (_f = response2.usage.output_tokens) != null ? _f : undefined,
+          totalTokens: (_g = response2.usage.total_tokens) != null ? _g : undefined
+        } : undefined,
+        response: {
+          timestamp: currentDate,
+          modelId: this.modelId,
+          headers: responseHeaders2
+        },
+        providerMetadata: {
+          openai: {
+            images: response2.data.map((item, index4) => {
+              var _a23, _b22, _c2, _d2, _e2, _f2;
+              return {
+                ...item.revised_prompt ? { revisedPrompt: item.revised_prompt } : {},
+                created: (_a23 = response2.created) != null ? _a23 : undefined,
+                size: (_b22 = response2.size) != null ? _b22 : undefined,
+                quality: (_c2 = response2.quality) != null ? _c2 : undefined,
+                background: (_d2 = response2.background) != null ? _d2 : undefined,
+                outputFormat: (_e2 = response2.output_format) != null ? _e2 : undefined,
+                ...distributeTokenDetails((_f2 = response2.usage) == null ? undefined : _f2.input_tokens_details, index4, response2.data.length)
+              };
+            })
+          }
+        }
+      };
+    }
+    const openaiOptions = (_h = await parseProviderOptions({
+      provider: "openai",
+      providerOptions,
+      schema: openaiImageModelGenerationOptions
+    })) != null ? _h : {};
+    const { value: response, responseHeaders } = await postJsonToApi({
+      url: this.config.url({
+        path: "/images/generations",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), headers),
+      body: {
+        model: this.modelId,
+        prompt,
+        n,
+        size,
+        quality: openaiOptions.quality,
+        style: openaiOptions.style,
+        background: openaiOptions.background,
+        moderation: openaiOptions.moderation,
+        output_format: openaiOptions.outputFormat,
+        output_compression: openaiOptions.outputCompression,
+        user: openaiOptions.user,
+        ...!hasDefaultResponseFormat(this.modelId) ? { response_format: "b64_json" } : {}
+      },
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createJsonResponseHandler(openaiImageResponseSchema),
+      abortSignal,
+      fetch: this.config.fetch
+    });
+    return {
+      images: response.data.map((item) => item.b64_json),
+      warnings,
+      usage: response.usage != null ? {
+        inputTokens: (_i = response.usage.input_tokens) != null ? _i : undefined,
+        outputTokens: (_j = response.usage.output_tokens) != null ? _j : undefined,
+        totalTokens: (_k = response.usage.total_tokens) != null ? _k : undefined
+      } : undefined,
+      response: {
+        timestamp: currentDate,
+        modelId: this.modelId,
+        headers: responseHeaders
+      },
+      providerMetadata: {
+        openai: {
+          images: response.data.map((item, index4) => {
+            var _a23, _b22, _c2, _d2, _e2, _f2;
+            return {
+              ...item.revised_prompt ? { revisedPrompt: item.revised_prompt } : {},
+              created: (_a23 = response.created) != null ? _a23 : undefined,
+              size: (_b22 = response.size) != null ? _b22 : undefined,
+              quality: (_c2 = response.quality) != null ? _c2 : undefined,
+              background: (_d2 = response.background) != null ? _d2 : undefined,
+              outputFormat: (_e2 = response.output_format) != null ? _e2 : undefined,
+              ...distributeTokenDetails((_f2 = response.usage) == null ? undefined : _f2.input_tokens_details, index4, response.data.length)
+            };
+          })
+        }
+      }
+    };
+  }
+};
+function distributeTokenDetails(details, index4, total) {
+  if (details == null) {
+    return {};
+  }
+  const result = {};
+  if (details.image_tokens != null) {
+    const base = Math.floor(details.image_tokens / total);
+    const remainder = details.image_tokens - base * (total - 1);
+    result.imageTokens = index4 === total - 1 ? remainder : base;
+  }
+  if (details.text_tokens != null) {
+    const base = Math.floor(details.text_tokens / total);
+    const remainder = details.text_tokens - base * (total - 1);
+    result.textTokens = index4 === total - 1 ? remainder : base;
+  }
+  return result;
+}
+async function fileToBlob(file2) {
+  if (!file2)
+    return;
+  if (file2.type === "url") {
+    return downloadBlob(file2.url);
+  }
+  const data2 = file2.data instanceof Uint8Array ? file2.data : convertBase64ToUint8Array(file2.data);
+  return new Blob([data2], { type: file2.mediaType });
+}
+var applyPatchInputSchema = lazySchema(() => zodSchema(exports_external.object({
+  callId: exports_external.string(),
+  operation: exports_external.discriminatedUnion("type", [
+    exports_external.object({
+      type: exports_external.literal("create_file"),
+      path: exports_external.string(),
+      diff: exports_external.string()
+    }),
+    exports_external.object({
+      type: exports_external.literal("delete_file"),
+      path: exports_external.string()
+    }),
+    exports_external.object({
+      type: exports_external.literal("update_file"),
+      path: exports_external.string(),
+      diff: exports_external.string()
+    })
+  ])
+})));
+var applyPatchOutputSchema = lazySchema(() => zodSchema(exports_external.object({
+  status: exports_external.enum(["completed", "failed"]),
+  output: exports_external.string().optional()
+})));
+var applyPatchArgsSchema = lazySchema(() => zodSchema(exports_external.object({})));
+var applyPatchToolFactory = createProviderToolFactoryWithOutputSchema({
+  id: "openai.apply_patch",
+  inputSchema: applyPatchInputSchema,
+  outputSchema: applyPatchOutputSchema
+});
+var applyPatch = applyPatchToolFactory;
+var codeInterpreterInputSchema = lazySchema(() => zodSchema(exports_external.object({
+  code: exports_external.string().nullish(),
+  containerId: exports_external.string()
+})));
+var codeInterpreterOutputSchema = lazySchema(() => zodSchema(exports_external.object({
+  outputs: exports_external.array(exports_external.discriminatedUnion("type", [
+    exports_external.object({ type: exports_external.literal("logs"), logs: exports_external.string() }),
+    exports_external.object({ type: exports_external.literal("image"), url: exports_external.string() })
+  ])).nullish()
+})));
+var codeInterpreterArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  container: exports_external.union([
+    exports_external.string(),
+    exports_external.object({
+      fileIds: exports_external.array(exports_external.string()).optional()
+    })
+  ]).optional()
+})));
+var codeInterpreterToolFactory = createProviderToolFactoryWithOutputSchema({
+  id: "openai.code_interpreter",
+  inputSchema: codeInterpreterInputSchema,
+  outputSchema: codeInterpreterOutputSchema
+});
+var codeInterpreter = (args = {}) => {
+  return codeInterpreterToolFactory(args);
+};
+var customArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  name: exports_external.string(),
+  description: exports_external.string().optional(),
+  format: exports_external.union([
+    exports_external.object({
+      type: exports_external.literal("grammar"),
+      syntax: exports_external.enum(["regex", "lark"]),
+      definition: exports_external.string()
+    }),
+    exports_external.object({
+      type: exports_external.literal("text")
+    })
+  ]).optional()
+})));
+var customInputSchema = lazySchema(() => zodSchema(exports_external.string()));
+var customToolFactory = createProviderToolFactory({
+  id: "openai.custom",
+  inputSchema: customInputSchema
+});
+var customTool = (args) => customToolFactory(args);
+var comparisonFilterSchema = exports_external.object({
+  key: exports_external.string(),
+  type: exports_external.enum(["eq", "ne", "gt", "gte", "lt", "lte", "in", "nin"]),
+  value: exports_external.union([exports_external.string(), exports_external.number(), exports_external.boolean(), exports_external.array(exports_external.string())])
+});
+var compoundFilterSchema = exports_external.object({
+  type: exports_external.enum(["and", "or"]),
+  filters: exports_external.array(exports_external.union([comparisonFilterSchema, exports_external.lazy(() => compoundFilterSchema)]))
+});
+var fileSearchArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  vectorStoreIds: exports_external.array(exports_external.string()),
+  maxNumResults: exports_external.number().optional(),
+  ranking: exports_external.object({
+    ranker: exports_external.string().optional(),
+    scoreThreshold: exports_external.number().optional()
+  }).optional(),
+  filters: exports_external.union([comparisonFilterSchema, compoundFilterSchema]).optional()
+})));
+var fileSearchOutputSchema = lazySchema(() => zodSchema(exports_external.object({
+  queries: exports_external.array(exports_external.string()),
+  results: exports_external.array(exports_external.object({
+    attributes: exports_external.record(exports_external.string(), exports_external.unknown()),
+    fileId: exports_external.string(),
+    filename: exports_external.string(),
+    score: exports_external.number(),
+    text: exports_external.string()
+  })).nullable()
+})));
+var fileSearch = createProviderToolFactoryWithOutputSchema({
+  id: "openai.file_search",
+  inputSchema: exports_external.object({}),
+  outputSchema: fileSearchOutputSchema
+});
+var imageGenerationArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  background: exports_external.enum(["auto", "opaque", "transparent"]).optional(),
+  inputFidelity: exports_external.enum(["low", "high"]).optional(),
+  inputImageMask: exports_external.object({
+    fileId: exports_external.string().optional(),
+    imageUrl: exports_external.string().optional()
+  }).optional(),
+  model: exports_external.string().optional(),
+  moderation: exports_external.enum(["auto"]).optional(),
+  outputCompression: exports_external.number().int().min(0).max(100).optional(),
+  outputFormat: exports_external.enum(["png", "jpeg", "webp"]).optional(),
+  partialImages: exports_external.number().int().min(0).max(3).optional(),
+  quality: exports_external.enum(["auto", "low", "medium", "high"]).optional(),
+  size: exports_external.enum(["1024x1024", "1024x1536", "1536x1024", "auto"]).optional()
+}).strict()));
+var imageGenerationInputSchema = lazySchema(() => zodSchema(exports_external.object({})));
+var imageGenerationOutputSchema = lazySchema(() => zodSchema(exports_external.object({ result: exports_external.string() })));
+var imageGenerationToolFactory = createProviderToolFactoryWithOutputSchema({
+  id: "openai.image_generation",
+  inputSchema: imageGenerationInputSchema,
+  outputSchema: imageGenerationOutputSchema
+});
+var imageGeneration = (args = {}) => {
+  return imageGenerationToolFactory(args);
+};
+var localShellInputSchema = lazySchema(() => zodSchema(exports_external.object({
+  action: exports_external.object({
+    type: exports_external.literal("exec"),
+    command: exports_external.array(exports_external.string()),
+    timeoutMs: exports_external.number().optional(),
+    user: exports_external.string().optional(),
+    workingDirectory: exports_external.string().optional(),
+    env: exports_external.record(exports_external.string(), exports_external.string()).optional()
+  })
+})));
+var localShellOutputSchema = lazySchema(() => zodSchema(exports_external.object({ output: exports_external.string() })));
+var localShell = createProviderToolFactoryWithOutputSchema({
+  id: "openai.local_shell",
+  inputSchema: localShellInputSchema,
+  outputSchema: localShellOutputSchema
+});
+var shellInputSchema = lazySchema(() => zodSchema(exports_external.object({
+  action: exports_external.object({
+    commands: exports_external.array(exports_external.string()),
+    timeoutMs: exports_external.number().optional(),
+    maxOutputLength: exports_external.number().optional()
+  })
+})));
+var shellOutputSchema = lazySchema(() => zodSchema(exports_external.object({
+  output: exports_external.array(exports_external.object({
+    stdout: exports_external.string(),
+    stderr: exports_external.string(),
+    outcome: exports_external.discriminatedUnion("type", [
+      exports_external.object({ type: exports_external.literal("timeout") }),
+      exports_external.object({ type: exports_external.literal("exit"), exitCode: exports_external.number() })
+    ])
+  }))
+})));
+var shellSkillsSchema = exports_external.array(exports_external.discriminatedUnion("type", [
+  exports_external.object({
+    type: exports_external.literal("skillReference"),
+    skillId: exports_external.string(),
+    version: exports_external.string().optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("inline"),
+    name: exports_external.string(),
+    description: exports_external.string(),
+    source: exports_external.object({
+      type: exports_external.literal("base64"),
+      mediaType: exports_external.literal("application/zip"),
+      data: exports_external.string()
+    })
+  })
+])).optional();
+var shellArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  environment: exports_external.union([
+    exports_external.object({
+      type: exports_external.literal("containerAuto"),
+      fileIds: exports_external.array(exports_external.string()).optional(),
+      memoryLimit: exports_external.enum(["1g", "4g", "16g", "64g"]).optional(),
+      networkPolicy: exports_external.discriminatedUnion("type", [
+        exports_external.object({ type: exports_external.literal("disabled") }),
+        exports_external.object({
+          type: exports_external.literal("allowlist"),
+          allowedDomains: exports_external.array(exports_external.string()),
+          domainSecrets: exports_external.array(exports_external.object({
+            domain: exports_external.string(),
+            name: exports_external.string(),
+            value: exports_external.string()
+          })).optional()
+        })
+      ]).optional(),
+      skills: shellSkillsSchema
+    }),
+    exports_external.object({
+      type: exports_external.literal("containerReference"),
+      containerId: exports_external.string()
+    }),
+    exports_external.object({
+      type: exports_external.literal("local").optional(),
+      skills: exports_external.array(exports_external.object({
+        name: exports_external.string(),
+        description: exports_external.string(),
+        path: exports_external.string()
+      })).optional()
+    })
+  ]).optional()
+})));
+var shell = createProviderToolFactoryWithOutputSchema({
+  id: "openai.shell",
+  inputSchema: shellInputSchema,
+  outputSchema: shellOutputSchema
+});
+var toolSearchArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  execution: exports_external.enum(["server", "client"]).optional(),
+  description: exports_external.string().optional(),
+  parameters: exports_external.record(exports_external.string(), exports_external.unknown()).optional()
+})));
+var toolSearchInputSchema = lazySchema(() => zodSchema(exports_external.object({
+  arguments: exports_external.unknown().optional(),
+  call_id: exports_external.string().nullish()
+})));
+var toolSearchOutputSchema = lazySchema(() => zodSchema(exports_external.object({
+  tools: exports_external.array(exports_external.record(exports_external.string(), exports_external.unknown()))
+})));
+var toolSearchToolFactory = createProviderToolFactoryWithOutputSchema({
+  id: "openai.tool_search",
+  inputSchema: toolSearchInputSchema,
+  outputSchema: toolSearchOutputSchema
+});
+var toolSearch = (args = {}) => toolSearchToolFactory(args);
+var webSearchArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  externalWebAccess: exports_external.boolean().optional(),
+  filters: exports_external.object({ allowedDomains: exports_external.array(exports_external.string()).optional() }).optional(),
+  searchContextSize: exports_external.enum(["low", "medium", "high"]).optional(),
+  userLocation: exports_external.object({
+    type: exports_external.literal("approximate"),
+    country: exports_external.string().optional(),
+    city: exports_external.string().optional(),
+    region: exports_external.string().optional(),
+    timezone: exports_external.string().optional()
+  }).optional()
+})));
+var webSearchInputSchema = lazySchema(() => zodSchema(exports_external.object({})));
+var webSearchOutputSchema = lazySchema(() => zodSchema(exports_external.object({
+  action: exports_external.discriminatedUnion("type", [
+    exports_external.object({
+      type: exports_external.literal("search"),
+      query: exports_external.string().optional(),
+      queries: exports_external.array(exports_external.string()).optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("openPage"),
+      url: exports_external.string().nullish()
+    }),
+    exports_external.object({
+      type: exports_external.literal("findInPage"),
+      url: exports_external.string().nullish(),
+      pattern: exports_external.string().nullish()
+    })
+  ]).optional(),
+  sources: exports_external.array(exports_external.discriminatedUnion("type", [
+    exports_external.object({ type: exports_external.literal("url"), url: exports_external.string() }),
+    exports_external.object({ type: exports_external.literal("api"), name: exports_external.string() })
+  ])).optional()
+})));
+var webSearchToolFactory = createProviderToolFactoryWithOutputSchema({
+  id: "openai.web_search",
+  inputSchema: webSearchInputSchema,
+  outputSchema: webSearchOutputSchema
+});
+var webSearch = (args = {}) => webSearchToolFactory(args);
+var webSearchPreviewArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  searchContextSize: exports_external.enum(["low", "medium", "high"]).optional(),
+  userLocation: exports_external.object({
+    type: exports_external.literal("approximate"),
+    country: exports_external.string().optional(),
+    city: exports_external.string().optional(),
+    region: exports_external.string().optional(),
+    timezone: exports_external.string().optional()
+  }).optional()
+})));
+var webSearchPreviewInputSchema = lazySchema(() => zodSchema(exports_external.object({})));
+var webSearchPreviewOutputSchema = lazySchema(() => zodSchema(exports_external.object({
+  action: exports_external.discriminatedUnion("type", [
+    exports_external.object({
+      type: exports_external.literal("search"),
+      query: exports_external.string().optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("openPage"),
+      url: exports_external.string().nullish()
+    }),
+    exports_external.object({
+      type: exports_external.literal("findInPage"),
+      url: exports_external.string().nullish(),
+      pattern: exports_external.string().nullish()
+    })
+  ]).optional()
+})));
+var webSearchPreview = createProviderToolFactoryWithOutputSchema({
+  id: "openai.web_search_preview",
+  inputSchema: webSearchPreviewInputSchema,
+  outputSchema: webSearchPreviewOutputSchema
+});
+var jsonValueSchema = exports_external.lazy(() => exports_external.union([
+  exports_external.string(),
+  exports_external.number(),
+  exports_external.boolean(),
+  exports_external.null(),
+  exports_external.array(jsonValueSchema),
+  exports_external.record(exports_external.string(), jsonValueSchema)
+]));
+var mcpArgsSchema = lazySchema(() => zodSchema(exports_external.object({
+  serverLabel: exports_external.string(),
+  allowedTools: exports_external.union([
+    exports_external.array(exports_external.string()),
+    exports_external.object({
+      readOnly: exports_external.boolean().optional(),
+      toolNames: exports_external.array(exports_external.string()).optional()
+    })
+  ]).optional(),
+  authorization: exports_external.string().optional(),
+  connectorId: exports_external.string().optional(),
+  headers: exports_external.record(exports_external.string(), exports_external.string()).optional(),
+  requireApproval: exports_external.union([
+    exports_external.enum(["always", "never"]),
+    exports_external.object({
+      never: exports_external.object({
+        toolNames: exports_external.array(exports_external.string()).optional()
+      }).optional()
+    })
+  ]).optional(),
+  serverDescription: exports_external.string().optional(),
+  serverUrl: exports_external.string().optional()
+}).refine((v) => v.serverUrl != null || v.connectorId != null, "One of serverUrl or connectorId must be provided.")));
+var mcpInputSchema = lazySchema(() => zodSchema(exports_external.object({})));
+var mcpOutputSchema = lazySchema(() => zodSchema(exports_external.object({
+  type: exports_external.literal("call"),
+  serverLabel: exports_external.string(),
+  name: exports_external.string(),
+  arguments: exports_external.string(),
+  output: exports_external.string().nullish(),
+  error: exports_external.union([exports_external.string(), jsonValueSchema]).optional()
+})));
+var mcpToolFactory = createProviderToolFactoryWithOutputSchema({
+  id: "openai.mcp",
+  inputSchema: mcpInputSchema,
+  outputSchema: mcpOutputSchema
+});
+var mcp = (args) => mcpToolFactory(args);
+var openaiTools = {
+  applyPatch,
+  customTool,
+  codeInterpreter,
+  fileSearch,
+  imageGeneration,
+  localShell,
+  shell,
+  webSearchPreview,
+  webSearch,
+  mcp,
+  toolSearch
+};
+function convertOpenAIResponsesUsage(usage) {
+  var _a16, _b16, _c, _d;
+  if (usage == null) {
+    return {
+      inputTokens: {
+        total: undefined,
+        noCache: undefined,
+        cacheRead: undefined,
+        cacheWrite: undefined
+      },
+      outputTokens: {
+        total: undefined,
+        text: undefined,
+        reasoning: undefined
+      },
+      raw: undefined
+    };
+  }
+  const inputTokens = usage.input_tokens;
+  const outputTokens = usage.output_tokens;
+  const cachedTokens = (_b16 = (_a16 = usage.input_tokens_details) == null ? undefined : _a16.cached_tokens) != null ? _b16 : 0;
+  const reasoningTokens = (_d = (_c = usage.output_tokens_details) == null ? undefined : _c.reasoning_tokens) != null ? _d : 0;
+  return {
+    inputTokens: {
+      total: inputTokens,
+      noCache: inputTokens - cachedTokens,
+      cacheRead: cachedTokens,
+      cacheWrite: undefined
+    },
+    outputTokens: {
+      total: outputTokens,
+      text: outputTokens - reasoningTokens,
+      reasoning: reasoningTokens
+    },
+    raw: usage
+  };
+}
+function serializeToolCallArguments2(input) {
+  return JSON.stringify(input === undefined ? {} : input);
+}
+function isFileId(data2, prefixes) {
+  if (!prefixes)
+    return false;
+  return prefixes.some((prefix) => data2.startsWith(prefix));
+}
+async function convertToOpenAIResponsesInput({
+  prompt,
+  toolNameMapping,
+  systemMessageMode,
+  providerOptionsName,
+  fileIdPrefixes,
+  passThroughUnsupportedFiles = false,
+  store,
+  hasConversation = false,
+  hasPreviousResponseId = false,
+  hasLocalShellTool = false,
+  hasShellTool = false,
+  hasApplyPatchTool = false,
+  customProviderToolNames
+}) {
+  var _a16, _b16, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
+  let input = [];
+  const warnings = [];
+  const processedApprovalIds = /* @__PURE__ */ new Set;
+  for (const { role, content } of prompt) {
+    switch (role) {
+      case "system": {
+        switch (systemMessageMode) {
+          case "system": {
+            input.push({ role: "system", content });
+            break;
+          }
+          case "developer": {
+            input.push({ role: "developer", content });
+            break;
+          }
+          case "remove": {
+            warnings.push({
+              type: "other",
+              message: "system messages are removed for this model"
+            });
+            break;
+          }
+          default: {
+            const _exhaustiveCheck = systemMessageMode;
+            throw new Error(`Unsupported system message mode: ${_exhaustiveCheck}`);
+          }
+        }
+        break;
+      }
+      case "user": {
+        input.push({
+          role: "user",
+          content: content.map((part, index4) => {
+            var _a23, _b22, _c2;
+            switch (part.type) {
+              case "text": {
+                return { type: "input_text", text: part.text };
+              }
+              case "file": {
+                const mediaType = part.mediaType === "image/*" ? "image/jpeg" : part.mediaType;
+                if (mediaType.startsWith("image/")) {
+                  return {
+                    type: "input_image",
+                    ...part.data instanceof URL ? { image_url: part.data.toString() } : typeof part.data === "string" && isFileId(part.data, fileIdPrefixes) ? { file_id: part.data } : {
+                      image_url: `data:${mediaType};base64,${convertToBase64(part.data)}`
+                    },
+                    detail: (_b22 = (_a23 = part.providerOptions) == null ? undefined : _a23[providerOptionsName]) == null ? undefined : _b22.imageDetail
+                  };
+                }
+                if (part.data instanceof URL) {
+                  return {
+                    type: "input_file",
+                    file_url: part.data.toString()
+                  };
+                }
+                if (mediaType !== "application/pdf" && !passThroughUnsupportedFiles) {
+                  throw new UnsupportedFunctionalityError({
+                    functionality: `file part media type ${mediaType}`
+                  });
+                }
+                return {
+                  type: "input_file",
+                  ...typeof part.data === "string" && isFileId(part.data, fileIdPrefixes) ? { file_id: part.data } : {
+                    filename: (_c2 = part.filename) != null ? _c2 : mediaType === "application/pdf" ? `part-${index4}.pdf` : `part-${index4}`,
+                    file_data: `data:${mediaType};base64,${convertToBase64(part.data)}`
+                  }
+                };
+              }
+            }
+          })
+        });
+        break;
+      }
+      case "assistant": {
+        const reasoningMessages = {};
+        for (const part of content) {
+          switch (part.type) {
+            case "text": {
+              const providerOpts = (_a16 = part.providerOptions) == null ? undefined : _a16[providerOptionsName];
+              const id = providerOpts == null ? undefined : providerOpts.itemId;
+              const phase = providerOpts == null ? undefined : providerOpts.phase;
+              if (hasConversation && id != null) {
+                break;
+              }
+              if (store && id != null) {
+                input.push({ type: "item_reference", id });
+                break;
+              }
+              input.push({
+                role: "assistant",
+                content: [{ type: "output_text", text: part.text }],
+                id,
+                ...phase != null && { phase }
+              });
+              break;
+            }
+            case "tool-call": {
+              const id = (_f = (_c = (_b16 = part.providerOptions) == null ? undefined : _b16[providerOptionsName]) == null ? undefined : _c.itemId) != null ? _f : (_e = (_d = part.providerMetadata) == null ? undefined : _d[providerOptionsName]) == null ? undefined : _e.itemId;
+              const namespace = (_k = (_h = (_g = part.providerOptions) == null ? undefined : _g[providerOptionsName]) == null ? undefined : _h.namespace) != null ? _k : (_j = (_i = part.providerMetadata) == null ? undefined : _i[providerOptionsName]) == null ? undefined : _j.namespace;
+              if (hasConversation && id != null) {
+                break;
+              }
+              const resolvedToolName = toolNameMapping.toProviderToolName(part.toolName);
+              if (resolvedToolName === "tool_search") {
+                if (store && id != null) {
+                  input.push({ type: "item_reference", id });
+                  break;
+                }
+                const parsedInput = typeof part.input === "string" ? await parseJSON2({
+                  text: part.input,
+                  schema: toolSearchInputSchema
+                }) : await validateTypes({
+                  value: part.input,
+                  schema: toolSearchInputSchema
+                });
+                const execution = parsedInput.call_id != null ? "client" : "server";
+                input.push({
+                  type: "tool_search_call",
+                  id: id != null ? id : part.toolCallId,
+                  execution,
+                  call_id: (_l = parsedInput.call_id) != null ? _l : null,
+                  status: "completed",
+                  arguments: parsedInput.arguments
+                });
+                break;
+              }
+              if (part.providerExecuted) {
+                if (store && id != null) {
+                  input.push({ type: "item_reference", id });
+                }
+                break;
+              }
+              if (store && id != null) {
+                if (hasPreviousResponseId) {
+                  break;
+                }
+                input.push({ type: "item_reference", id });
+                break;
+              }
+              if (hasLocalShellTool && resolvedToolName === "local_shell") {
+                const parsedInput = await validateTypes({
+                  value: part.input,
+                  schema: localShellInputSchema
+                });
+                input.push({
+                  type: "local_shell_call",
+                  call_id: part.toolCallId,
+                  id,
+                  action: {
+                    type: "exec",
+                    command: parsedInput.action.command,
+                    timeout_ms: parsedInput.action.timeoutMs,
+                    user: parsedInput.action.user,
+                    working_directory: parsedInput.action.workingDirectory,
+                    env: parsedInput.action.env
+                  }
+                });
+                break;
+              }
+              if (hasShellTool && resolvedToolName === "shell") {
+                const parsedInput = await validateTypes({
+                  value: part.input,
+                  schema: shellInputSchema
+                });
+                input.push({
+                  type: "shell_call",
+                  call_id: part.toolCallId,
+                  id,
+                  status: "completed",
+                  action: {
+                    commands: parsedInput.action.commands,
+                    timeout_ms: parsedInput.action.timeoutMs,
+                    max_output_length: parsedInput.action.maxOutputLength
+                  }
+                });
+                break;
+              }
+              if (hasApplyPatchTool && resolvedToolName === "apply_patch") {
+                const parsedInput = await validateTypes({
+                  value: part.input,
+                  schema: applyPatchInputSchema
+                });
+                input.push({
+                  type: "apply_patch_call",
+                  call_id: parsedInput.callId,
+                  id,
+                  status: "completed",
+                  operation: parsedInput.operation
+                });
+                break;
+              }
+              if (customProviderToolNames == null ? undefined : customProviderToolNames.has(resolvedToolName)) {
+                input.push({
+                  type: "custom_tool_call",
+                  call_id: part.toolCallId,
+                  name: resolvedToolName,
+                  input: typeof part.input === "string" ? part.input : JSON.stringify(part.input),
+                  id
+                });
+                break;
+              }
+              input.push({
+                type: "function_call",
+                call_id: part.toolCallId,
+                name: resolvedToolName,
+                arguments: serializeToolCallArguments2(part.input),
+                id,
+                ...namespace != null && { namespace }
+              });
+              break;
+            }
+            case "tool-result": {
+              if (part.output.type === "execution-denied" || part.output.type === "json" && typeof part.output.value === "object" && part.output.value != null && "type" in part.output.value && part.output.value.type === "execution-denied") {
+                break;
+              }
+              if (hasConversation) {
+                break;
+              }
+              const resolvedResultToolName = toolNameMapping.toProviderToolName(part.toolName);
+              if (resolvedResultToolName === "tool_search") {
+                const itemId = (_o = (_n = (_m = part.providerOptions) == null ? undefined : _m[providerOptionsName]) == null ? undefined : _n.itemId) != null ? _o : part.toolCallId;
+                if (store) {
+                  input.push({ type: "item_reference", id: itemId });
+                } else if (part.output.type === "json") {
+                  const parsedOutput = await validateTypes({
+                    value: part.output.value,
+                    schema: toolSearchOutputSchema
+                  });
+                  input.push({
+                    type: "tool_search_output",
+                    id: itemId,
+                    execution: "server",
+                    call_id: null,
+                    status: "completed",
+                    tools: parsedOutput.tools
+                  });
+                }
+                break;
+              }
+              if (hasShellTool && resolvedResultToolName === "shell") {
+                if (part.output.type === "json") {
+                  const parsedOutput = await validateTypes({
+                    value: part.output.value,
+                    schema: shellOutputSchema
+                  });
+                  input.push({
+                    type: "shell_call_output",
+                    call_id: part.toolCallId,
+                    output: parsedOutput.output.map((item) => ({
+                      stdout: item.stdout,
+                      stderr: item.stderr,
+                      outcome: item.outcome.type === "timeout" ? { type: "timeout" } : {
+                        type: "exit",
+                        exit_code: item.outcome.exitCode
+                      }
+                    }))
+                  });
+                }
+                break;
+              }
+              if (store) {
+                const itemId = (_r = (_q = (_p = part.providerOptions) == null ? undefined : _p[providerOptionsName]) == null ? undefined : _q.itemId) != null ? _r : part.toolCallId;
+                input.push({ type: "item_reference", id: itemId });
+              } else {
+                warnings.push({
+                  type: "other",
+                  message: `Results for OpenAI tool ${part.toolName} are not sent to the API when store is false`
+                });
+              }
+              break;
+            }
+            case "reasoning": {
+              const providerOptions = await parseProviderOptions({
+                provider: providerOptionsName,
+                providerOptions: part.providerOptions,
+                schema: openaiResponsesReasoningProviderOptionsSchema
+              });
+              const reasoningId = providerOptions == null ? undefined : providerOptions.itemId;
+              if ((hasConversation || hasPreviousResponseId) && reasoningId != null) {
+                break;
+              }
+              if (reasoningId != null) {
+                const reasoningMessage = reasoningMessages[reasoningId];
+                if (store) {
+                  if (reasoningMessage === undefined) {
+                    input.push({ type: "item_reference", id: reasoningId });
+                    reasoningMessages[reasoningId] = {
+                      type: "reasoning",
+                      id: reasoningId,
+                      summary: []
+                    };
+                  }
+                } else {
+                  const summaryParts = [];
+                  if (part.text.length > 0) {
+                    summaryParts.push({
+                      type: "summary_text",
+                      text: part.text
+                    });
+                  } else if (reasoningMessage !== undefined) {
+                    warnings.push({
+                      type: "other",
+                      message: `Cannot append empty reasoning part to existing reasoning sequence. Skipping reasoning part: ${JSON.stringify(part)}.`
+                    });
+                  }
+                  if (reasoningMessage === undefined) {
+                    reasoningMessages[reasoningId] = {
+                      type: "reasoning",
+                      id: reasoningId,
+                      encrypted_content: providerOptions == null ? undefined : providerOptions.reasoningEncryptedContent,
+                      summary: summaryParts
+                    };
+                    input.push(reasoningMessages[reasoningId]);
+                  } else {
+                    reasoningMessage.summary.push(...summaryParts);
+                    if ((providerOptions == null ? undefined : providerOptions.reasoningEncryptedContent) != null) {
+                      reasoningMessage.encrypted_content = providerOptions.reasoningEncryptedContent;
+                    }
+                  }
+                }
+              } else {
+                const encryptedContent = providerOptions == null ? undefined : providerOptions.reasoningEncryptedContent;
+                if (encryptedContent != null) {
+                  const summaryParts = [];
+                  if (part.text.length > 0) {
+                    summaryParts.push({
+                      type: "summary_text",
+                      text: part.text
+                    });
+                  }
+                  input.push({
+                    type: "reasoning",
+                    encrypted_content: encryptedContent,
+                    summary: summaryParts
+                  });
+                } else {
+                  warnings.push({
+                    type: "other",
+                    message: `Non-OpenAI reasoning parts are not supported. Skipping reasoning part: ${JSON.stringify(part)}.`
+                  });
+                }
+              }
+              break;
+            }
+          }
+        }
+        break;
+      }
+      case "tool": {
+        for (const part of content) {
+          if (part.type === "tool-approval-response") {
+            const approvalResponse = part;
+            if (processedApprovalIds.has(approvalResponse.approvalId)) {
+              continue;
+            }
+            processedApprovalIds.add(approvalResponse.approvalId);
+            if (store) {
+              input.push({
+                type: "item_reference",
+                id: approvalResponse.approvalId
+              });
+            }
+            input.push({
+              type: "mcp_approval_response",
+              approval_request_id: approvalResponse.approvalId,
+              approve: approvalResponse.approved
+            });
+            continue;
+          }
+          const output = part.output;
+          if (output.type === "execution-denied") {
+            const approvalId = (_t = (_s = output.providerOptions) == null ? undefined : _s.openai) == null ? undefined : _t.approvalId;
+            if (approvalId) {
+              continue;
+            }
+          }
+          const resolvedToolName = toolNameMapping.toProviderToolName(part.toolName);
+          if (resolvedToolName === "tool_search" && output.type === "json") {
+            const parsedOutput = await validateTypes({
+              value: output.value,
+              schema: toolSearchOutputSchema
+            });
+            input.push({
+              type: "tool_search_output",
+              execution: "client",
+              call_id: part.toolCallId,
+              status: "completed",
+              tools: parsedOutput.tools
+            });
+            continue;
+          }
+          if (hasLocalShellTool && resolvedToolName === "local_shell" && output.type === "json") {
+            const parsedOutput = await validateTypes({
+              value: output.value,
+              schema: localShellOutputSchema
+            });
+            input.push({
+              type: "local_shell_call_output",
+              call_id: part.toolCallId,
+              output: parsedOutput.output
+            });
+            continue;
+          }
+          if (hasShellTool && resolvedToolName === "shell" && output.type === "json") {
+            const parsedOutput = await validateTypes({
+              value: output.value,
+              schema: shellOutputSchema
+            });
+            input.push({
+              type: "shell_call_output",
+              call_id: part.toolCallId,
+              output: parsedOutput.output.map((item) => ({
+                stdout: item.stdout,
+                stderr: item.stderr,
+                outcome: item.outcome.type === "timeout" ? { type: "timeout" } : {
+                  type: "exit",
+                  exit_code: item.outcome.exitCode
+                }
+              }))
+            });
+            continue;
+          }
+          if (hasApplyPatchTool && part.toolName === "apply_patch" && output.type === "json") {
+            const parsedOutput = await validateTypes({
+              value: output.value,
+              schema: applyPatchOutputSchema
+            });
+            input.push({
+              type: "apply_patch_call_output",
+              call_id: part.toolCallId,
+              status: parsedOutput.status,
+              output: parsedOutput.output
+            });
+            continue;
+          }
+          if (customProviderToolNames == null ? undefined : customProviderToolNames.has(resolvedToolName)) {
+            let outputValue;
+            switch (output.type) {
+              case "text":
+              case "error-text":
+                outputValue = output.value;
+                break;
+              case "execution-denied":
+                outputValue = (_u = output.reason) != null ? _u : "Tool execution denied.";
+                break;
+              case "json":
+              case "error-json":
+                outputValue = JSON.stringify(output.value);
+                break;
+              case "content":
+                outputValue = output.value.map((item) => {
+                  var _a23, _b22, _c2, _d2, _e2;
+                  switch (item.type) {
+                    case "text":
+                      return { type: "input_text", text: item.text };
+                    case "image-data":
+                      return {
+                        type: "input_image",
+                        image_url: `data:${item.mediaType};base64,${item.data}`,
+                        detail: (_b22 = (_a23 = item.providerOptions) == null ? undefined : _a23[providerOptionsName]) == null ? undefined : _b22.imageDetail
+                      };
+                    case "image-url":
+                      return {
+                        type: "input_image",
+                        image_url: item.url,
+                        detail: (_d2 = (_c2 = item.providerOptions) == null ? undefined : _c2[providerOptionsName]) == null ? undefined : _d2.imageDetail
+                      };
+                    case "file-data":
+                      return {
+                        type: "input_file",
+                        filename: (_e2 = item.filename) != null ? _e2 : "data",
+                        file_data: `data:${item.mediaType};base64,${item.data}`
+                      };
+                    case "file-url":
+                      return {
+                        type: "input_file",
+                        file_url: item.url
+                      };
+                    default:
+                      warnings.push({
+                        type: "other",
+                        message: `unsupported custom tool content part type: ${item.type}`
+                      });
+                      return;
+                  }
+                }).filter(isNonNullable);
+                break;
+              default:
+                outputValue = "";
+            }
+            input.push({
+              type: "custom_tool_call_output",
+              call_id: part.toolCallId,
+              output: outputValue
+            });
+            continue;
+          }
+          let contentValue;
+          switch (output.type) {
+            case "text":
+            case "error-text":
+              contentValue = output.value;
+              break;
+            case "execution-denied":
+              contentValue = (_v = output.reason) != null ? _v : "Tool execution denied.";
+              break;
+            case "json":
+            case "error-json":
+              contentValue = JSON.stringify(output.value);
+              break;
+            case "content":
+              contentValue = output.value.map((item) => {
+                var _a23, _b22, _c2, _d2, _e2;
+                switch (item.type) {
+                  case "text": {
+                    return { type: "input_text", text: item.text };
+                  }
+                  case "image-data": {
+                    return {
+                      type: "input_image",
+                      image_url: `data:${item.mediaType};base64,${item.data}`,
+                      detail: (_b22 = (_a23 = item.providerOptions) == null ? undefined : _a23[providerOptionsName]) == null ? undefined : _b22.imageDetail
+                    };
+                  }
+                  case "image-url": {
+                    return {
+                      type: "input_image",
+                      image_url: item.url,
+                      detail: (_d2 = (_c2 = item.providerOptions) == null ? undefined : _c2[providerOptionsName]) == null ? undefined : _d2.imageDetail
+                    };
+                  }
+                  case "file-data": {
+                    return {
+                      type: "input_file",
+                      filename: (_e2 = item.filename) != null ? _e2 : "data",
+                      file_data: `data:${item.mediaType};base64,${item.data}`
+                    };
+                  }
+                  case "file-url": {
+                    return {
+                      type: "input_file",
+                      file_url: item.url
+                    };
+                  }
+                  default: {
+                    warnings.push({
+                      type: "other",
+                      message: `unsupported tool content part type: ${item.type}`
+                    });
+                    return;
+                  }
+                }
+              }).filter(isNonNullable);
+              break;
+          }
+          input.push({
+            type: "function_call_output",
+            call_id: part.toolCallId,
+            output: contentValue
+          });
+        }
+        break;
+      }
+      default: {
+        const _exhaustiveCheck = role;
+        throw new Error(`Unsupported role: ${_exhaustiveCheck}`);
+      }
+    }
+  }
+  if (!store && input.some((item) => ("type" in item) && item.type === "reasoning" && item.encrypted_content == null)) {
+    warnings.push({
+      type: "other",
+      message: "Reasoning parts without encrypted content are not supported when store is false. Skipping reasoning parts."
+    });
+    input = input.filter((item) => !("type" in item) || item.type !== "reasoning" || item.encrypted_content != null);
+  }
+  return { input, warnings };
+}
+var openaiResponsesReasoningProviderOptionsSchema = exports_external.object({
+  itemId: exports_external.string().nullish(),
+  reasoningEncryptedContent: exports_external.string().nullish()
+});
+function mapOpenAIResponseFinishReason({
+  finishReason,
+  hasFunctionCall
+}) {
+  switch (finishReason) {
+    case undefined:
+    case null:
+      return hasFunctionCall ? "tool-calls" : "stop";
+    case "max_output_tokens":
+      return "length";
+    case "content_filter":
+      return "content-filter";
+    default:
+      return hasFunctionCall ? "tool-calls" : "other";
+  }
+}
+var jsonValueSchema2 = exports_external.lazy(() => exports_external.union([
+  exports_external.string(),
+  exports_external.number(),
+  exports_external.boolean(),
+  exports_external.null(),
+  exports_external.array(jsonValueSchema2),
+  exports_external.record(exports_external.string(), jsonValueSchema2.optional())
+]));
+var openaiResponsesChunkSchema = lazySchema(() => zodSchema(exports_external.union([
+  exports_external.object({
+    type: exports_external.literal("response.output_text.delta"),
+    item_id: exports_external.string(),
+    delta: exports_external.string(),
+    logprobs: exports_external.array(exports_external.object({
+      token: exports_external.string(),
+      logprob: exports_external.number(),
+      top_logprobs: exports_external.array(exports_external.object({
+        token: exports_external.string(),
+        logprob: exports_external.number()
+      }))
+    })).nullish()
+  }),
+  exports_external.object({
+    type: exports_external.enum(["response.completed", "response.incomplete"]),
+    response: exports_external.object({
+      incomplete_details: exports_external.object({ reason: exports_external.string() }).nullish(),
+      usage: exports_external.object({
+        input_tokens: exports_external.number(),
+        input_tokens_details: exports_external.object({ cached_tokens: exports_external.number().nullish() }).nullish(),
+        output_tokens: exports_external.number(),
+        output_tokens_details: exports_external.object({ reasoning_tokens: exports_external.number().nullish() }).nullish()
+      }),
+      service_tier: exports_external.string().nullish()
+    })
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.failed"),
+    response: exports_external.object({
+      error: exports_external.object({
+        code: exports_external.string().nullish(),
+        message: exports_external.string()
+      }).nullish(),
+      incomplete_details: exports_external.object({ reason: exports_external.string() }).nullish(),
+      usage: exports_external.object({
+        input_tokens: exports_external.number(),
+        input_tokens_details: exports_external.object({ cached_tokens: exports_external.number().nullish() }).nullish(),
+        output_tokens: exports_external.number(),
+        output_tokens_details: exports_external.object({ reasoning_tokens: exports_external.number().nullish() }).nullish()
+      }).nullish(),
+      service_tier: exports_external.string().nullish()
+    })
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.created"),
+    response: exports_external.object({
+      id: exports_external.string(),
+      created_at: exports_external.number(),
+      model: exports_external.string(),
+      service_tier: exports_external.string().nullish()
+    })
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.output_item.added"),
+    output_index: exports_external.number(),
+    item: exports_external.discriminatedUnion("type", [
+      exports_external.object({
+        type: exports_external.literal("message"),
+        id: exports_external.string(),
+        phase: exports_external.enum(["commentary", "final_answer"]).nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("reasoning"),
+        id: exports_external.string(),
+        encrypted_content: exports_external.string().nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("function_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        name: exports_external.string(),
+        arguments: exports_external.string(),
+        namespace: exports_external.string().nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("web_search_call"),
+        id: exports_external.string(),
+        status: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("computer_call"),
+        id: exports_external.string(),
+        status: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("file_search_call"),
+        id: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("image_generation_call"),
+        id: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("code_interpreter_call"),
+        id: exports_external.string(),
+        container_id: exports_external.string(),
+        code: exports_external.string().nullable(),
+        outputs: exports_external.array(exports_external.discriminatedUnion("type", [
+          exports_external.object({ type: exports_external.literal("logs"), logs: exports_external.string() }),
+          exports_external.object({ type: exports_external.literal("image"), url: exports_external.string() })
+        ])).nullable(),
+        status: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("mcp_call"),
+        id: exports_external.string(),
+        status: exports_external.string(),
+        approval_request_id: exports_external.string().nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("mcp_list_tools"),
+        id: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("mcp_approval_request"),
+        id: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("apply_patch_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        status: exports_external.enum(["in_progress", "completed"]),
+        operation: exports_external.discriminatedUnion("type", [
+          exports_external.object({
+            type: exports_external.literal("create_file"),
+            path: exports_external.string(),
+            diff: exports_external.string()
+          }),
+          exports_external.object({
+            type: exports_external.literal("delete_file"),
+            path: exports_external.string()
+          }),
+          exports_external.object({
+            type: exports_external.literal("update_file"),
+            path: exports_external.string(),
+            diff: exports_external.string()
+          })
+        ])
+      }),
+      exports_external.object({
+        type: exports_external.literal("custom_tool_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        name: exports_external.string(),
+        input: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("shell_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+        action: exports_external.object({
+          commands: exports_external.array(exports_external.string())
+        })
+      }),
+      exports_external.object({
+        type: exports_external.literal("shell_call_output"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+        output: exports_external.array(exports_external.object({
+          stdout: exports_external.string(),
+          stderr: exports_external.string(),
+          outcome: exports_external.discriminatedUnion("type", [
+            exports_external.object({ type: exports_external.literal("timeout") }),
+            exports_external.object({
+              type: exports_external.literal("exit"),
+              exit_code: exports_external.number()
+            })
+          ])
+        }))
+      }),
+      exports_external.object({
+        type: exports_external.literal("tool_search_call"),
+        id: exports_external.string(),
+        execution: exports_external.enum(["server", "client"]),
+        call_id: exports_external.string().nullable(),
+        status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+        arguments: exports_external.unknown()
+      }),
+      exports_external.object({
+        type: exports_external.literal("tool_search_output"),
+        id: exports_external.string(),
+        execution: exports_external.enum(["server", "client"]),
+        call_id: exports_external.string().nullable(),
+        status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+        tools: exports_external.array(exports_external.record(exports_external.string(), jsonValueSchema2.optional()))
+      })
+    ])
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.output_item.done"),
+    output_index: exports_external.number(),
+    item: exports_external.discriminatedUnion("type", [
+      exports_external.object({
+        type: exports_external.literal("message"),
+        id: exports_external.string(),
+        phase: exports_external.enum(["commentary", "final_answer"]).nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("reasoning"),
+        id: exports_external.string(),
+        encrypted_content: exports_external.string().nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("function_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        name: exports_external.string(),
+        arguments: exports_external.string(),
+        status: exports_external.literal("completed"),
+        namespace: exports_external.string().nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("custom_tool_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        name: exports_external.string(),
+        input: exports_external.string(),
+        status: exports_external.literal("completed")
+      }),
+      exports_external.object({
+        type: exports_external.literal("code_interpreter_call"),
+        id: exports_external.string(),
+        code: exports_external.string().nullable(),
+        container_id: exports_external.string(),
+        outputs: exports_external.array(exports_external.discriminatedUnion("type", [
+          exports_external.object({ type: exports_external.literal("logs"), logs: exports_external.string() }),
+          exports_external.object({ type: exports_external.literal("image"), url: exports_external.string() })
+        ])).nullable()
+      }),
+      exports_external.object({
+        type: exports_external.literal("image_generation_call"),
+        id: exports_external.string(),
+        result: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("web_search_call"),
+        id: exports_external.string(),
+        status: exports_external.string(),
+        action: exports_external.discriminatedUnion("type", [
+          exports_external.object({
+            type: exports_external.literal("search"),
+            query: exports_external.string().nullish(),
+            queries: exports_external.array(exports_external.string()).nullish(),
+            sources: exports_external.array(exports_external.discriminatedUnion("type", [
+              exports_external.object({ type: exports_external.literal("url"), url: exports_external.string() }),
+              exports_external.object({ type: exports_external.literal("api"), name: exports_external.string() })
+            ])).nullish()
+          }),
+          exports_external.object({
+            type: exports_external.literal("open_page"),
+            url: exports_external.string().nullish()
+          }),
+          exports_external.object({
+            type: exports_external.literal("find_in_page"),
+            url: exports_external.string().nullish(),
+            pattern: exports_external.string().nullish()
+          })
+        ]).nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("file_search_call"),
+        id: exports_external.string(),
+        queries: exports_external.array(exports_external.string()),
+        results: exports_external.array(exports_external.object({
+          attributes: exports_external.record(exports_external.string(), exports_external.union([exports_external.string(), exports_external.number(), exports_external.boolean()])),
+          file_id: exports_external.string(),
+          filename: exports_external.string(),
+          score: exports_external.number(),
+          text: exports_external.string()
+        })).nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("local_shell_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        action: exports_external.object({
+          type: exports_external.literal("exec"),
+          command: exports_external.array(exports_external.string()),
+          timeout_ms: exports_external.number().optional(),
+          user: exports_external.string().optional(),
+          working_directory: exports_external.string().optional(),
+          env: exports_external.record(exports_external.string(), exports_external.string()).optional()
+        })
+      }),
+      exports_external.object({
+        type: exports_external.literal("computer_call"),
+        id: exports_external.string(),
+        status: exports_external.literal("completed")
+      }),
+      exports_external.object({
+        type: exports_external.literal("mcp_call"),
+        id: exports_external.string(),
+        status: exports_external.string(),
+        arguments: exports_external.string(),
+        name: exports_external.string(),
+        server_label: exports_external.string(),
+        output: exports_external.string().nullish(),
+        error: exports_external.union([
+          exports_external.string(),
+          exports_external.object({
+            type: exports_external.string().optional(),
+            code: exports_external.union([exports_external.number(), exports_external.string()]).optional(),
+            message: exports_external.string().optional()
+          }).loose()
+        ]).nullish(),
+        approval_request_id: exports_external.string().nullish()
+      }),
+      exports_external.object({
+        type: exports_external.literal("mcp_list_tools"),
+        id: exports_external.string(),
+        server_label: exports_external.string(),
+        tools: exports_external.array(exports_external.object({
+          name: exports_external.string(),
+          description: exports_external.string().optional(),
+          input_schema: exports_external.any(),
+          annotations: exports_external.record(exports_external.string(), exports_external.unknown()).optional()
+        })),
+        error: exports_external.union([
+          exports_external.string(),
+          exports_external.object({
+            type: exports_external.string().optional(),
+            code: exports_external.union([exports_external.number(), exports_external.string()]).optional(),
+            message: exports_external.string().optional()
+          }).loose()
+        ]).optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("mcp_approval_request"),
+        id: exports_external.string(),
+        server_label: exports_external.string(),
+        name: exports_external.string(),
+        arguments: exports_external.string(),
+        approval_request_id: exports_external.string().optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("apply_patch_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        status: exports_external.enum(["in_progress", "completed"]),
+        operation: exports_external.discriminatedUnion("type", [
+          exports_external.object({
+            type: exports_external.literal("create_file"),
+            path: exports_external.string(),
+            diff: exports_external.string()
+          }),
+          exports_external.object({
+            type: exports_external.literal("delete_file"),
+            path: exports_external.string()
+          }),
+          exports_external.object({
+            type: exports_external.literal("update_file"),
+            path: exports_external.string(),
+            diff: exports_external.string()
+          })
+        ])
+      }),
+      exports_external.object({
+        type: exports_external.literal("shell_call"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+        action: exports_external.object({
+          commands: exports_external.array(exports_external.string())
+        })
+      }),
+      exports_external.object({
+        type: exports_external.literal("shell_call_output"),
+        id: exports_external.string(),
+        call_id: exports_external.string(),
+        status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+        output: exports_external.array(exports_external.object({
+          stdout: exports_external.string(),
+          stderr: exports_external.string(),
+          outcome: exports_external.discriminatedUnion("type", [
+            exports_external.object({ type: exports_external.literal("timeout") }),
+            exports_external.object({
+              type: exports_external.literal("exit"),
+              exit_code: exports_external.number()
+            })
+          ])
+        }))
+      }),
+      exports_external.object({
+        type: exports_external.literal("tool_search_call"),
+        id: exports_external.string(),
+        execution: exports_external.enum(["server", "client"]),
+        call_id: exports_external.string().nullable(),
+        status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+        arguments: exports_external.unknown()
+      }),
+      exports_external.object({
+        type: exports_external.literal("tool_search_output"),
+        id: exports_external.string(),
+        execution: exports_external.enum(["server", "client"]),
+        call_id: exports_external.string().nullable(),
+        status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+        tools: exports_external.array(exports_external.record(exports_external.string(), jsonValueSchema2.optional()))
+      })
+    ])
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.function_call_arguments.delta"),
+    item_id: exports_external.string(),
+    output_index: exports_external.number(),
+    delta: exports_external.string()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.custom_tool_call_input.delta"),
+    item_id: exports_external.string(),
+    output_index: exports_external.number(),
+    delta: exports_external.string()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.image_generation_call.partial_image"),
+    item_id: exports_external.string(),
+    output_index: exports_external.number(),
+    partial_image_b64: exports_external.string()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.code_interpreter_call_code.delta"),
+    item_id: exports_external.string(),
+    output_index: exports_external.number(),
+    delta: exports_external.string()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.code_interpreter_call_code.done"),
+    item_id: exports_external.string(),
+    output_index: exports_external.number(),
+    code: exports_external.string()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.output_text.annotation.added"),
+    annotation: exports_external.discriminatedUnion("type", [
+      exports_external.object({
+        type: exports_external.literal("url_citation"),
+        start_index: exports_external.number(),
+        end_index: exports_external.number(),
+        url: exports_external.string(),
+        title: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("file_citation"),
+        file_id: exports_external.string(),
+        filename: exports_external.string(),
+        index: exports_external.number()
+      }),
+      exports_external.object({
+        type: exports_external.literal("container_file_citation"),
+        container_id: exports_external.string(),
+        file_id: exports_external.string(),
+        filename: exports_external.string(),
+        start_index: exports_external.number(),
+        end_index: exports_external.number()
+      }),
+      exports_external.object({
+        type: exports_external.literal("file_path"),
+        file_id: exports_external.string(),
+        index: exports_external.number()
+      })
+    ])
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.reasoning_summary_part.added"),
+    item_id: exports_external.string(),
+    summary_index: exports_external.number()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.reasoning_summary_text.delta"),
+    item_id: exports_external.string(),
+    summary_index: exports_external.number(),
+    delta: exports_external.string()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.reasoning_summary_part.done"),
+    item_id: exports_external.string(),
+    summary_index: exports_external.number()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.apply_patch_call_operation_diff.delta"),
+    item_id: exports_external.string(),
+    output_index: exports_external.number(),
+    delta: exports_external.string(),
+    obfuscation: exports_external.string().nullish()
+  }),
+  exports_external.object({
+    type: exports_external.literal("response.apply_patch_call_operation_diff.done"),
+    item_id: exports_external.string(),
+    output_index: exports_external.number(),
+    diff: exports_external.string()
+  }),
+  exports_external.object({
+    type: exports_external.literal("error"),
+    sequence_number: exports_external.number(),
+    error: exports_external.object({
+      type: exports_external.string(),
+      code: exports_external.string(),
+      message: exports_external.string(),
+      param: exports_external.string().nullish()
+    })
+  }),
+  exports_external.object({ type: exports_external.string() }).loose().transform((value) => ({
+    type: "unknown_chunk",
+    message: value.type
+  }))
+])));
+var openaiResponsesResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  id: exports_external.string().optional(),
+  created_at: exports_external.number().optional(),
+  error: exports_external.object({
+    message: exports_external.string(),
+    type: exports_external.string(),
+    param: exports_external.string().nullish(),
+    code: exports_external.string()
+  }).nullish(),
+  model: exports_external.string().optional(),
+  output: exports_external.array(exports_external.discriminatedUnion("type", [
+    exports_external.object({
+      type: exports_external.literal("message"),
+      role: exports_external.literal("assistant"),
+      id: exports_external.string(),
+      phase: exports_external.enum(["commentary", "final_answer"]).nullish(),
+      content: exports_external.array(exports_external.object({
+        type: exports_external.literal("output_text"),
+        text: exports_external.string(),
+        logprobs: exports_external.array(exports_external.object({
+          token: exports_external.string(),
+          logprob: exports_external.number(),
+          top_logprobs: exports_external.array(exports_external.object({
+            token: exports_external.string(),
+            logprob: exports_external.number()
+          }))
+        })).nullish(),
+        annotations: exports_external.array(exports_external.discriminatedUnion("type", [
+          exports_external.object({
+            type: exports_external.literal("url_citation"),
+            start_index: exports_external.number(),
+            end_index: exports_external.number(),
+            url: exports_external.string(),
+            title: exports_external.string()
+          }),
+          exports_external.object({
+            type: exports_external.literal("file_citation"),
+            file_id: exports_external.string(),
+            filename: exports_external.string(),
+            index: exports_external.number()
+          }),
+          exports_external.object({
+            type: exports_external.literal("container_file_citation"),
+            container_id: exports_external.string(),
+            file_id: exports_external.string(),
+            filename: exports_external.string(),
+            start_index: exports_external.number(),
+            end_index: exports_external.number()
+          }),
+          exports_external.object({
+            type: exports_external.literal("file_path"),
+            file_id: exports_external.string(),
+            index: exports_external.number()
+          })
+        ]))
+      }))
+    }),
+    exports_external.object({
+      type: exports_external.literal("web_search_call"),
+      id: exports_external.string(),
+      status: exports_external.string(),
+      action: exports_external.discriminatedUnion("type", [
+        exports_external.object({
+          type: exports_external.literal("search"),
+          query: exports_external.string().nullish(),
+          queries: exports_external.array(exports_external.string()).nullish(),
+          sources: exports_external.array(exports_external.discriminatedUnion("type", [
+            exports_external.object({ type: exports_external.literal("url"), url: exports_external.string() }),
+            exports_external.object({
+              type: exports_external.literal("api"),
+              name: exports_external.string()
+            })
+          ])).nullish()
+        }),
+        exports_external.object({
+          type: exports_external.literal("open_page"),
+          url: exports_external.string().nullish()
+        }),
+        exports_external.object({
+          type: exports_external.literal("find_in_page"),
+          url: exports_external.string().nullish(),
+          pattern: exports_external.string().nullish()
+        })
+      ]).nullish()
+    }),
+    exports_external.object({
+      type: exports_external.literal("file_search_call"),
+      id: exports_external.string(),
+      queries: exports_external.array(exports_external.string()),
+      results: exports_external.array(exports_external.object({
+        attributes: exports_external.record(exports_external.string(), exports_external.union([exports_external.string(), exports_external.number(), exports_external.boolean()])),
+        file_id: exports_external.string(),
+        filename: exports_external.string(),
+        score: exports_external.number(),
+        text: exports_external.string()
+      })).nullish()
+    }),
+    exports_external.object({
+      type: exports_external.literal("code_interpreter_call"),
+      id: exports_external.string(),
+      code: exports_external.string().nullable(),
+      container_id: exports_external.string(),
+      outputs: exports_external.array(exports_external.discriminatedUnion("type", [
+        exports_external.object({ type: exports_external.literal("logs"), logs: exports_external.string() }),
+        exports_external.object({ type: exports_external.literal("image"), url: exports_external.string() })
+      ])).nullable()
+    }),
+    exports_external.object({
+      type: exports_external.literal("image_generation_call"),
+      id: exports_external.string(),
+      result: exports_external.string()
+    }),
+    exports_external.object({
+      type: exports_external.literal("local_shell_call"),
+      id: exports_external.string(),
+      call_id: exports_external.string(),
+      action: exports_external.object({
+        type: exports_external.literal("exec"),
+        command: exports_external.array(exports_external.string()),
+        timeout_ms: exports_external.number().optional(),
+        user: exports_external.string().optional(),
+        working_directory: exports_external.string().optional(),
+        env: exports_external.record(exports_external.string(), exports_external.string()).optional()
+      })
+    }),
+    exports_external.object({
+      type: exports_external.literal("function_call"),
+      call_id: exports_external.string(),
+      name: exports_external.string(),
+      arguments: exports_external.string(),
+      id: exports_external.string(),
+      namespace: exports_external.string().nullish()
+    }),
+    exports_external.object({
+      type: exports_external.literal("custom_tool_call"),
+      call_id: exports_external.string(),
+      name: exports_external.string(),
+      input: exports_external.string(),
+      id: exports_external.string()
+    }),
+    exports_external.object({
+      type: exports_external.literal("computer_call"),
+      id: exports_external.string(),
+      status: exports_external.string().optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("reasoning"),
+      id: exports_external.string(),
+      encrypted_content: exports_external.string().nullish(),
+      summary: exports_external.array(exports_external.object({
+        type: exports_external.literal("summary_text"),
+        text: exports_external.string()
+      }))
+    }),
+    exports_external.object({
+      type: exports_external.literal("mcp_call"),
+      id: exports_external.string(),
+      status: exports_external.string(),
+      arguments: exports_external.string(),
+      name: exports_external.string(),
+      server_label: exports_external.string(),
+      output: exports_external.string().nullish(),
+      error: exports_external.union([
+        exports_external.string(),
+        exports_external.object({
+          type: exports_external.string().optional(),
+          code: exports_external.union([exports_external.number(), exports_external.string()]).optional(),
+          message: exports_external.string().optional()
+        }).loose()
+      ]).nullish(),
+      approval_request_id: exports_external.string().nullish()
+    }),
+    exports_external.object({
+      type: exports_external.literal("mcp_list_tools"),
+      id: exports_external.string(),
+      server_label: exports_external.string(),
+      tools: exports_external.array(exports_external.object({
+        name: exports_external.string(),
+        description: exports_external.string().optional(),
+        input_schema: exports_external.any(),
+        annotations: exports_external.record(exports_external.string(), exports_external.unknown()).optional()
+      })),
+      error: exports_external.union([
+        exports_external.string(),
+        exports_external.object({
+          type: exports_external.string().optional(),
+          code: exports_external.union([exports_external.number(), exports_external.string()]).optional(),
+          message: exports_external.string().optional()
+        }).loose()
+      ]).optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("mcp_approval_request"),
+      id: exports_external.string(),
+      server_label: exports_external.string(),
+      name: exports_external.string(),
+      arguments: exports_external.string(),
+      approval_request_id: exports_external.string().optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("apply_patch_call"),
+      id: exports_external.string(),
+      call_id: exports_external.string(),
+      status: exports_external.enum(["in_progress", "completed"]),
+      operation: exports_external.discriminatedUnion("type", [
+        exports_external.object({
+          type: exports_external.literal("create_file"),
+          path: exports_external.string(),
+          diff: exports_external.string()
+        }),
+        exports_external.object({
+          type: exports_external.literal("delete_file"),
+          path: exports_external.string()
+        }),
+        exports_external.object({
+          type: exports_external.literal("update_file"),
+          path: exports_external.string(),
+          diff: exports_external.string()
+        })
+      ])
+    }),
+    exports_external.object({
+      type: exports_external.literal("shell_call"),
+      id: exports_external.string(),
+      call_id: exports_external.string(),
+      status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+      action: exports_external.object({
+        commands: exports_external.array(exports_external.string())
+      })
+    }),
+    exports_external.object({
+      type: exports_external.literal("shell_call_output"),
+      id: exports_external.string(),
+      call_id: exports_external.string(),
+      status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+      output: exports_external.array(exports_external.object({
+        stdout: exports_external.string(),
+        stderr: exports_external.string(),
+        outcome: exports_external.discriminatedUnion("type", [
+          exports_external.object({ type: exports_external.literal("timeout") }),
+          exports_external.object({
+            type: exports_external.literal("exit"),
+            exit_code: exports_external.number()
+          })
+        ])
+      }))
+    }),
+    exports_external.object({
+      type: exports_external.literal("tool_search_call"),
+      id: exports_external.string(),
+      execution: exports_external.enum(["server", "client"]),
+      call_id: exports_external.string().nullable(),
+      status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+      arguments: exports_external.unknown()
+    }),
+    exports_external.object({
+      type: exports_external.literal("tool_search_output"),
+      id: exports_external.string(),
+      execution: exports_external.enum(["server", "client"]),
+      call_id: exports_external.string().nullable(),
+      status: exports_external.enum(["in_progress", "completed", "incomplete"]),
+      tools: exports_external.array(exports_external.record(exports_external.string(), jsonValueSchema2.optional()))
+    })
+  ])).optional(),
+  service_tier: exports_external.string().nullish(),
+  incomplete_details: exports_external.object({ reason: exports_external.string() }).nullish(),
+  usage: exports_external.object({
+    input_tokens: exports_external.number(),
+    input_tokens_details: exports_external.object({ cached_tokens: exports_external.number().nullish() }).nullish(),
+    output_tokens: exports_external.number(),
+    output_tokens_details: exports_external.object({ reasoning_tokens: exports_external.number().nullish() }).nullish()
+  }).optional()
+})));
+var TOP_LOGPROBS_MAX = 20;
+var openaiResponsesReasoningModelIds = [
+  "o1",
+  "o1-2024-12-17",
+  "o3",
+  "o3-2025-04-16",
+  "o3-mini",
+  "o3-mini-2025-01-31",
+  "o4-mini",
+  "o4-mini-2025-04-16",
+  "gpt-5",
+  "gpt-5-2025-08-07",
+  "gpt-5-codex",
+  "gpt-5-mini",
+  "gpt-5-mini-2025-08-07",
+  "gpt-5-nano",
+  "gpt-5-nano-2025-08-07",
+  "gpt-5-pro",
+  "gpt-5-pro-2025-10-06",
+  "gpt-5.1",
+  "gpt-5.1-chat-latest",
+  "gpt-5.1-codex-mini",
+  "gpt-5.1-codex",
+  "gpt-5.1-codex-max",
+  "gpt-5.2",
+  "gpt-5.2-chat-latest",
+  "gpt-5.2-pro",
+  "gpt-5.2-codex",
+  "gpt-5.3-chat-latest",
+  "gpt-5.3-codex",
+  "gpt-5.4",
+  "gpt-5.4-2026-03-05",
+  "gpt-5.4-mini",
+  "gpt-5.4-mini-2026-03-17",
+  "gpt-5.4-nano",
+  "gpt-5.4-nano-2026-03-17",
+  "gpt-5.4-pro",
+  "gpt-5.4-pro-2026-03-05",
+  "gpt-5.5",
+  "gpt-5.5-2026-04-23"
+];
+var openaiResponsesModelIds = [
+  "gpt-4.1",
+  "gpt-4.1-2025-04-14",
+  "gpt-4.1-mini",
+  "gpt-4.1-mini-2025-04-14",
+  "gpt-4.1-nano",
+  "gpt-4.1-nano-2025-04-14",
+  "gpt-4o",
+  "gpt-4o-2024-05-13",
+  "gpt-4o-2024-08-06",
+  "gpt-4o-2024-11-20",
+  "gpt-4o-audio-preview",
+  "gpt-4o-audio-preview-2024-12-17",
+  "gpt-4o-search-preview",
+  "gpt-4o-search-preview-2025-03-11",
+  "gpt-4o-mini-search-preview",
+  "gpt-4o-mini-search-preview-2025-03-11",
+  "gpt-4o-mini",
+  "gpt-4o-mini-2024-07-18",
+  "gpt-3.5-turbo-0125",
+  "gpt-3.5-turbo",
+  "gpt-3.5-turbo-1106",
+  "gpt-5-chat-latest",
+  ...openaiResponsesReasoningModelIds
+];
+var openaiLanguageModelResponsesOptionsSchema = lazySchema(() => zodSchema(exports_external.object({
+  conversation: exports_external.string().nullish(),
+  include: exports_external.array(exports_external.enum([
+    "reasoning.encrypted_content",
+    "file_search_call.results",
+    "message.output_text.logprobs"
+  ])).nullish(),
+  instructions: exports_external.string().nullish(),
+  logprobs: exports_external.union([exports_external.boolean(), exports_external.number().min(1).max(TOP_LOGPROBS_MAX)]).optional(),
+  maxToolCalls: exports_external.number().nullish(),
+  metadata: exports_external.any().nullish(),
+  parallelToolCalls: exports_external.boolean().nullish(),
+  previousResponseId: exports_external.string().nullish(),
+  promptCacheKey: exports_external.string().nullish(),
+  promptCacheRetention: exports_external.enum(["in_memory", "24h"]).nullish(),
+  reasoningEffort: exports_external.string().nullish(),
+  reasoningSummary: exports_external.string().nullish(),
+  safetyIdentifier: exports_external.string().nullish(),
+  serviceTier: exports_external.enum(["auto", "flex", "priority", "default"]).nullish(),
+  store: exports_external.boolean().nullish(),
+  passThroughUnsupportedFiles: exports_external.boolean().optional(),
+  strictJsonSchema: exports_external.boolean().nullish(),
+  textVerbosity: exports_external.enum(["low", "medium", "high"]).nullish(),
+  truncation: exports_external.enum(["auto", "disabled"]).nullish(),
+  user: exports_external.string().nullish(),
+  systemMessageMode: exports_external.enum(["system", "developer", "remove"]).optional(),
+  forceReasoning: exports_external.boolean().optional(),
+  allowedTools: exports_external.object({
+    toolNames: exports_external.array(exports_external.string()).min(1),
+    mode: exports_external.enum(["auto", "required"]).optional()
+  }).optional()
+})));
+async function prepareResponsesTools({
+  tools,
+  toolChoice,
+  allowedTools,
+  toolNameMapping,
+  customProviderToolNames
+}) {
+  var _a16, _b16, _c;
+  tools = (tools == null ? undefined : tools.length) ? tools : undefined;
+  const toolWarnings = [];
+  if (tools == null) {
+    return { tools: undefined, toolChoice: undefined, toolWarnings };
+  }
+  const openaiTools2 = [];
+  const resolvedCustomProviderToolNames = customProviderToolNames != null ? customProviderToolNames : /* @__PURE__ */ new Set;
+  for (const tool2 of tools) {
+    switch (tool2.type) {
+      case "function": {
+        const openaiOptions = (_a16 = tool2.providerOptions) == null ? undefined : _a16.openai;
+        const deferLoading = openaiOptions == null ? undefined : openaiOptions.deferLoading;
+        openaiTools2.push({
+          type: "function",
+          name: tool2.name,
+          description: tool2.description,
+          parameters: tool2.inputSchema,
+          ...tool2.strict != null ? { strict: tool2.strict } : {},
+          ...deferLoading != null ? { defer_loading: deferLoading } : {}
+        });
+        break;
+      }
+      case "provider": {
+        switch (tool2.id) {
+          case "openai.file_search": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: fileSearchArgsSchema
+            });
+            openaiTools2.push({
+              type: "file_search",
+              vector_store_ids: args.vectorStoreIds,
+              max_num_results: args.maxNumResults,
+              ranking_options: args.ranking ? {
+                ranker: args.ranking.ranker,
+                score_threshold: args.ranking.scoreThreshold
+              } : undefined,
+              filters: args.filters
+            });
+            break;
+          }
+          case "openai.local_shell": {
+            openaiTools2.push({
+              type: "local_shell"
+            });
+            break;
+          }
+          case "openai.shell": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: shellArgsSchema
+            });
+            openaiTools2.push({
+              type: "shell",
+              ...args.environment && {
+                environment: mapShellEnvironment(args.environment)
+              }
+            });
+            break;
+          }
+          case "openai.apply_patch": {
+            openaiTools2.push({
+              type: "apply_patch"
+            });
+            break;
+          }
+          case "openai.web_search_preview": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: webSearchPreviewArgsSchema
+            });
+            openaiTools2.push({
+              type: "web_search_preview",
+              search_context_size: args.searchContextSize,
+              user_location: args.userLocation
+            });
+            break;
+          }
+          case "openai.web_search": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: webSearchArgsSchema
+            });
+            openaiTools2.push({
+              type: "web_search",
+              filters: args.filters != null ? { allowed_domains: args.filters.allowedDomains } : undefined,
+              external_web_access: args.externalWebAccess,
+              search_context_size: args.searchContextSize,
+              user_location: args.userLocation
+            });
+            break;
+          }
+          case "openai.code_interpreter": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: codeInterpreterArgsSchema
+            });
+            openaiTools2.push({
+              type: "code_interpreter",
+              container: args.container == null ? { type: "auto", file_ids: undefined } : typeof args.container === "string" ? args.container : { type: "auto", file_ids: args.container.fileIds }
+            });
+            break;
+          }
+          case "openai.image_generation": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: imageGenerationArgsSchema
+            });
+            openaiTools2.push({
+              type: "image_generation",
+              background: args.background,
+              input_fidelity: args.inputFidelity,
+              input_image_mask: args.inputImageMask ? {
+                file_id: args.inputImageMask.fileId,
+                image_url: args.inputImageMask.imageUrl
+              } : undefined,
+              model: args.model,
+              moderation: args.moderation,
+              partial_images: args.partialImages,
+              quality: args.quality,
+              output_compression: args.outputCompression,
+              output_format: args.outputFormat,
+              size: args.size
+            });
+            break;
+          }
+          case "openai.mcp": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: mcpArgsSchema
+            });
+            const mapApprovalFilter = (filter5) => ({
+              tool_names: filter5.toolNames
+            });
+            const requireApproval = args.requireApproval;
+            const requireApprovalParam = requireApproval == null ? undefined : typeof requireApproval === "string" ? requireApproval : requireApproval.never != null ? { never: mapApprovalFilter(requireApproval.never) } : undefined;
+            openaiTools2.push({
+              type: "mcp",
+              server_label: args.serverLabel,
+              allowed_tools: Array.isArray(args.allowedTools) ? args.allowedTools : args.allowedTools ? {
+                read_only: args.allowedTools.readOnly,
+                tool_names: args.allowedTools.toolNames
+              } : undefined,
+              authorization: args.authorization,
+              connector_id: args.connectorId,
+              headers: args.headers,
+              require_approval: requireApprovalParam != null ? requireApprovalParam : "never",
+              server_description: args.serverDescription,
+              server_url: args.serverUrl
+            });
+            break;
+          }
+          case "openai.custom": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: customArgsSchema
+            });
+            openaiTools2.push({
+              type: "custom",
+              name: args.name,
+              description: args.description,
+              format: args.format
+            });
+            resolvedCustomProviderToolNames.add(args.name);
+            break;
+          }
+          case "openai.tool_search": {
+            const args = await validateTypes({
+              value: tool2.args,
+              schema: toolSearchArgsSchema
+            });
+            openaiTools2.push({
+              type: "tool_search",
+              ...args.execution != null ? { execution: args.execution } : {},
+              ...args.description != null ? { description: args.description } : {},
+              ...args.parameters != null ? { parameters: args.parameters } : {}
+            });
+            break;
+          }
+        }
+        break;
+      }
+      default:
+        toolWarnings.push({
+          type: "unsupported",
+          feature: `function tool ${tool2}`
+        });
+        break;
+    }
+  }
+  if (allowedTools != null) {
+    return {
+      tools: openaiTools2,
+      toolChoice: {
+        type: "allowed_tools",
+        mode: (_b16 = allowedTools.mode) != null ? _b16 : "auto",
+        tools: allowedTools.toolNames.map((name15) => {
+          var _a23;
+          return {
+            type: "function",
+            name: (_a23 = toolNameMapping == null ? undefined : toolNameMapping.toProviderToolName(name15)) != null ? _a23 : name15
+          };
+        })
+      },
+      toolWarnings
+    };
+  }
+  if (toolChoice == null) {
+    return { tools: openaiTools2, toolChoice: undefined, toolWarnings };
+  }
+  const type = toolChoice.type;
+  switch (type) {
+    case "auto":
+    case "none":
+    case "required":
+      return { tools: openaiTools2, toolChoice: type, toolWarnings };
+    case "tool": {
+      const resolvedToolName = (_c = toolNameMapping == null ? undefined : toolNameMapping.toProviderToolName(toolChoice.toolName)) != null ? _c : toolChoice.toolName;
+      return {
+        tools: openaiTools2,
+        toolChoice: resolvedToolName === "code_interpreter" || resolvedToolName === "file_search" || resolvedToolName === "image_generation" || resolvedToolName === "web_search_preview" || resolvedToolName === "web_search" || resolvedToolName === "mcp" || resolvedToolName === "apply_patch" ? { type: resolvedToolName } : resolvedCustomProviderToolNames.has(resolvedToolName) ? { type: "custom", name: resolvedToolName } : { type: "function", name: resolvedToolName },
+        toolWarnings
+      };
+    }
+    default: {
+      const _exhaustiveCheck = type;
+      throw new UnsupportedFunctionalityError({
+        functionality: `tool choice type: ${_exhaustiveCheck}`
+      });
+    }
+  }
+}
+function mapShellEnvironment(environment) {
+  if (environment.type === "containerReference") {
+    const env2 = environment;
+    return {
+      type: "container_reference",
+      container_id: env2.containerId
+    };
+  }
+  if (environment.type === "containerAuto") {
+    const env2 = environment;
+    return {
+      type: "container_auto",
+      file_ids: env2.fileIds,
+      memory_limit: env2.memoryLimit,
+      network_policy: env2.networkPolicy == null ? undefined : env2.networkPolicy.type === "disabled" ? { type: "disabled" } : {
+        type: "allowlist",
+        allowed_domains: env2.networkPolicy.allowedDomains,
+        domain_secrets: env2.networkPolicy.domainSecrets
+      },
+      skills: mapShellSkills(env2.skills)
+    };
+  }
+  const env = environment;
+  return {
+    type: "local",
+    skills: env.skills
+  };
+}
+function mapShellSkills(skills) {
+  return skills == null ? undefined : skills.map((skill) => skill.type === "skillReference" ? {
+    type: "skill_reference",
+    skill_id: skill.skillId,
+    version: skill.version
+  } : {
+    type: "inline",
+    name: skill.name,
+    description: skill.description,
+    source: {
+      type: "base64",
+      media_type: skill.source.mediaType,
+      data: skill.source.data
+    }
+  });
+}
+function extractApprovalRequestIdToToolCallIdMapping(prompt) {
+  var _a16, _b16;
+  const mapping = {};
+  for (const message of prompt) {
+    if (message.role !== "assistant")
+      continue;
+    for (const part of message.content) {
+      if (part.type !== "tool-call")
+        continue;
+      const approvalRequestId = (_b16 = (_a16 = part.providerOptions) == null ? undefined : _a16.openai) == null ? undefined : _b16.approvalRequestId;
+      if (approvalRequestId != null) {
+        mapping[approvalRequestId] = part.toolCallId;
+      }
+    }
+  }
+  return mapping;
+}
+var OpenAIResponsesLanguageModel = class {
+  constructor(modelId, config2) {
+    this.specificationVersion = "v3";
+    this.supportedUrls = {
+      "image/*": [/^https?:\/\/.*$/],
+      "application/pdf": [/^https?:\/\/.*$/]
+    };
+    this.modelId = modelId;
+    this.config = config2;
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async getArgs({
+    maxOutputTokens,
+    temperature,
+    stopSequences,
+    topP,
+    topK,
+    presencePenalty,
+    frequencyPenalty,
+    seed,
+    prompt,
+    providerOptions,
+    tools,
+    toolChoice,
+    responseFormat
+  }) {
+    var _a16, _b16, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    const warnings = [];
+    const modelCapabilities = getOpenAILanguageModelCapabilities(this.modelId);
+    if (topK != null) {
+      warnings.push({ type: "unsupported", feature: "topK" });
+    }
+    if (seed != null) {
+      warnings.push({ type: "unsupported", feature: "seed" });
+    }
+    if (presencePenalty != null) {
+      warnings.push({ type: "unsupported", feature: "presencePenalty" });
+    }
+    if (frequencyPenalty != null) {
+      warnings.push({ type: "unsupported", feature: "frequencyPenalty" });
+    }
+    if (stopSequences != null) {
+      warnings.push({ type: "unsupported", feature: "stopSequences" });
+    }
+    const providerOptionsName = this.config.provider.includes("azure") ? "azure" : "openai";
+    let openaiOptions = await parseProviderOptions({
+      provider: providerOptionsName,
+      providerOptions,
+      schema: openaiLanguageModelResponsesOptionsSchema
+    });
+    if (openaiOptions == null && providerOptionsName !== "openai") {
+      openaiOptions = await parseProviderOptions({
+        provider: "openai",
+        providerOptions,
+        schema: openaiLanguageModelResponsesOptionsSchema
+      });
+    }
+    const isReasoningModel = (_a16 = openaiOptions == null ? undefined : openaiOptions.forceReasoning) != null ? _a16 : modelCapabilities.isReasoningModel;
+    if ((openaiOptions == null ? undefined : openaiOptions.conversation) && (openaiOptions == null ? undefined : openaiOptions.previousResponseId)) {
+      warnings.push({
+        type: "unsupported",
+        feature: "conversation",
+        details: "conversation and previousResponseId cannot be used together"
+      });
+    }
+    const toolNameMapping = createToolNameMapping({
+      tools,
+      providerToolNames: {
+        "openai.code_interpreter": "code_interpreter",
+        "openai.file_search": "file_search",
+        "openai.image_generation": "image_generation",
+        "openai.local_shell": "local_shell",
+        "openai.shell": "shell",
+        "openai.web_search": "web_search",
+        "openai.web_search_preview": "web_search_preview",
+        "openai.mcp": "mcp",
+        "openai.apply_patch": "apply_patch",
+        "openai.tool_search": "tool_search"
+      },
+      resolveProviderToolName: (tool2) => tool2.id === "openai.custom" ? tool2.args.name : undefined
+    });
+    const customProviderToolNames = /* @__PURE__ */ new Set;
+    const {
+      tools: openaiTools2,
+      toolChoice: openaiToolChoice,
+      toolWarnings
+    } = await prepareResponsesTools({
+      tools,
+      toolChoice,
+      allowedTools: (_b16 = openaiOptions == null ? undefined : openaiOptions.allowedTools) != null ? _b16 : undefined,
+      toolNameMapping,
+      customProviderToolNames
+    });
+    const { input, warnings: inputWarnings } = await convertToOpenAIResponsesInput({
+      prompt,
+      toolNameMapping,
+      systemMessageMode: (_c = openaiOptions == null ? undefined : openaiOptions.systemMessageMode) != null ? _c : isReasoningModel ? "developer" : modelCapabilities.systemMessageMode,
+      providerOptionsName,
+      fileIdPrefixes: this.config.fileIdPrefixes,
+      passThroughUnsupportedFiles: (_d = openaiOptions == null ? undefined : openaiOptions.passThroughUnsupportedFiles) != null ? _d : false,
+      store: (_e = openaiOptions == null ? undefined : openaiOptions.store) != null ? _e : true,
+      hasConversation: (openaiOptions == null ? undefined : openaiOptions.conversation) != null,
+      hasPreviousResponseId: (openaiOptions == null ? undefined : openaiOptions.previousResponseId) != null,
+      hasLocalShellTool: hasOpenAITool("openai.local_shell"),
+      hasShellTool: hasOpenAITool("openai.shell"),
+      hasApplyPatchTool: hasOpenAITool("openai.apply_patch"),
+      customProviderToolNames: customProviderToolNames.size > 0 ? customProviderToolNames : undefined
+    });
+    warnings.push(...inputWarnings);
+    const strictJsonSchema = (_f = openaiOptions == null ? undefined : openaiOptions.strictJsonSchema) != null ? _f : true;
+    let include = openaiOptions == null ? undefined : openaiOptions.include;
+    function addInclude(key) {
+      if (include == null) {
+        include = [key];
+      } else if (!include.includes(key)) {
+        include = [...include, key];
+      }
+    }
+    function hasOpenAITool(id) {
+      return (tools == null ? undefined : tools.find((tool2) => tool2.type === "provider" && tool2.id === id)) != null;
+    }
+    const topLogprobs = typeof (openaiOptions == null ? undefined : openaiOptions.logprobs) === "number" ? openaiOptions == null ? undefined : openaiOptions.logprobs : (openaiOptions == null ? undefined : openaiOptions.logprobs) === true ? TOP_LOGPROBS_MAX : undefined;
+    if (topLogprobs) {
+      addInclude("message.output_text.logprobs");
+    }
+    const webSearchToolName = (_g = tools == null ? undefined : tools.find((tool2) => tool2.type === "provider" && (tool2.id === "openai.web_search" || tool2.id === "openai.web_search_preview"))) == null ? undefined : _g.name;
+    if (webSearchToolName) {
+      addInclude("web_search_call.action.sources");
+    }
+    if (hasOpenAITool("openai.code_interpreter")) {
+      addInclude("code_interpreter_call.outputs");
+    }
+    const store = openaiOptions == null ? undefined : openaiOptions.store;
+    if (store === false && isReasoningModel) {
+      addInclude("reasoning.encrypted_content");
+    }
+    const baseArgs = {
+      model: this.modelId,
+      input,
+      temperature,
+      top_p: topP,
+      max_output_tokens: maxOutputTokens,
+      ...((responseFormat == null ? undefined : responseFormat.type) === "json" || (openaiOptions == null ? undefined : openaiOptions.textVerbosity)) && {
+        text: {
+          ...(responseFormat == null ? undefined : responseFormat.type) === "json" && {
+            format: responseFormat.schema != null ? {
+              type: "json_schema",
+              strict: strictJsonSchema,
+              name: (_h = responseFormat.name) != null ? _h : "response",
+              description: responseFormat.description,
+              schema: responseFormat.schema
+            } : { type: "json_object" }
+          },
+          ...(openaiOptions == null ? undefined : openaiOptions.textVerbosity) && {
+            verbosity: openaiOptions.textVerbosity
+          }
+        }
+      },
+      conversation: openaiOptions == null ? undefined : openaiOptions.conversation,
+      max_tool_calls: openaiOptions == null ? undefined : openaiOptions.maxToolCalls,
+      metadata: openaiOptions == null ? undefined : openaiOptions.metadata,
+      parallel_tool_calls: openaiOptions == null ? undefined : openaiOptions.parallelToolCalls,
+      previous_response_id: openaiOptions == null ? undefined : openaiOptions.previousResponseId,
+      store,
+      user: openaiOptions == null ? undefined : openaiOptions.user,
+      instructions: openaiOptions == null ? undefined : openaiOptions.instructions,
+      service_tier: openaiOptions == null ? undefined : openaiOptions.serviceTier,
+      include,
+      prompt_cache_key: openaiOptions == null ? undefined : openaiOptions.promptCacheKey,
+      prompt_cache_retention: openaiOptions == null ? undefined : openaiOptions.promptCacheRetention,
+      safety_identifier: openaiOptions == null ? undefined : openaiOptions.safetyIdentifier,
+      top_logprobs: topLogprobs,
+      truncation: openaiOptions == null ? undefined : openaiOptions.truncation,
+      ...isReasoningModel && ((openaiOptions == null ? undefined : openaiOptions.reasoningEffort) != null || (openaiOptions == null ? undefined : openaiOptions.reasoningSummary) != null) && {
+        reasoning: {
+          ...(openaiOptions == null ? undefined : openaiOptions.reasoningEffort) != null && {
+            effort: openaiOptions.reasoningEffort
+          },
+          ...(openaiOptions == null ? undefined : openaiOptions.reasoningSummary) != null && {
+            summary: openaiOptions.reasoningSummary
+          }
+        }
+      }
+    };
+    if (isReasoningModel) {
+      if (!((openaiOptions == null ? undefined : openaiOptions.reasoningEffort) === "none" && modelCapabilities.supportsNonReasoningParameters)) {
+        if (baseArgs.temperature != null) {
+          baseArgs.temperature = undefined;
+          warnings.push({
+            type: "unsupported",
+            feature: "temperature",
+            details: "temperature is not supported for reasoning models"
+          });
+        }
+        if (baseArgs.top_p != null) {
+          baseArgs.top_p = undefined;
+          warnings.push({
+            type: "unsupported",
+            feature: "topP",
+            details: "topP is not supported for reasoning models"
+          });
+        }
+      }
+    } else {
+      if ((openaiOptions == null ? undefined : openaiOptions.reasoningEffort) != null) {
+        warnings.push({
+          type: "unsupported",
+          feature: "reasoningEffort",
+          details: "reasoningEffort is not supported for non-reasoning models"
+        });
+      }
+      if ((openaiOptions == null ? undefined : openaiOptions.reasoningSummary) != null) {
+        warnings.push({
+          type: "unsupported",
+          feature: "reasoningSummary",
+          details: "reasoningSummary is not supported for non-reasoning models"
+        });
+      }
+    }
+    if ((openaiOptions == null ? undefined : openaiOptions.serviceTier) === "flex" && !modelCapabilities.supportsFlexProcessing) {
+      warnings.push({
+        type: "unsupported",
+        feature: "serviceTier",
+        details: "flex processing is only available for o3, o4-mini, and gpt-5 models"
+      });
+      delete baseArgs.service_tier;
+    }
+    if ((openaiOptions == null ? undefined : openaiOptions.serviceTier) === "priority" && !modelCapabilities.supportsPriorityProcessing) {
+      warnings.push({
+        type: "unsupported",
+        feature: "serviceTier",
+        details: "priority processing is only available for supported models (gpt-4, gpt-5, gpt-5-mini, o3, o4-mini) and requires Enterprise access. gpt-5-nano is not supported"
+      });
+      delete baseArgs.service_tier;
+    }
+    const shellToolEnvType = (_k = (_j = (_i = tools == null ? undefined : tools.find((tool2) => tool2.type === "provider" && tool2.id === "openai.shell")) == null ? undefined : _i.args) == null ? undefined : _j.environment) == null ? undefined : _k.type;
+    const isShellProviderExecuted = shellToolEnvType === "containerAuto" || shellToolEnvType === "containerReference";
+    return {
+      webSearchToolName,
+      args: {
+        ...baseArgs,
+        tools: openaiTools2,
+        tool_choice: openaiToolChoice
+      },
+      warnings: [...warnings, ...toolWarnings],
+      store,
+      toolNameMapping,
+      providerOptionsName,
+      isShellProviderExecuted
+    };
+  }
+  async doGenerate(options2) {
+    var _a16, _b16, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+    const {
+      args: body,
+      warnings,
+      webSearchToolName,
+      toolNameMapping,
+      providerOptionsName,
+      isShellProviderExecuted
+    } = await this.getArgs(options2);
+    const url2 = this.config.url({
+      path: "/responses",
+      modelId: this.modelId
+    });
+    const approvalRequestIdToDummyToolCallIdFromPrompt = extractApprovalRequestIdToToolCallIdMapping(options2.prompt);
+    const {
+      responseHeaders,
+      value: response,
+      rawValue: rawResponse
+    } = await postJsonToApi({
+      url: url2,
+      headers: combineHeaders(this.config.headers(), options2.headers),
+      body,
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createJsonResponseHandler(openaiResponsesResponseSchema),
+      abortSignal: options2.abortSignal,
+      fetch: this.config.fetch
+    });
+    if (response.error) {
+      throw new APICallError({
+        message: response.error.message,
+        url: url2,
+        requestBodyValues: body,
+        statusCode: 400,
+        responseHeaders,
+        responseBody: rawResponse,
+        isRetryable: false
+      });
+    }
+    const content = [];
+    const logprobs = [];
+    let hasFunctionCall = false;
+    const hostedToolSearchCallIds = [];
+    for (const part of response.output) {
+      switch (part.type) {
+        case "reasoning": {
+          if (part.summary.length === 0) {
+            part.summary.push({ type: "summary_text", text: "" });
+          }
+          for (const summary of part.summary) {
+            content.push({
+              type: "reasoning",
+              text: summary.text,
+              providerMetadata: {
+                [providerOptionsName]: {
+                  itemId: part.id,
+                  reasoningEncryptedContent: (_a16 = part.encrypted_content) != null ? _a16 : null
+                }
+              }
+            });
+          }
+          break;
+        }
+        case "image_generation_call": {
+          content.push({
+            type: "tool-call",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName("image_generation"),
+            input: "{}",
+            providerExecuted: true
+          });
+          content.push({
+            type: "tool-result",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName("image_generation"),
+            result: {
+              result: part.result
+            }
+          });
+          break;
+        }
+        case "tool_search_call": {
+          const toolCallId = (_b16 = part.call_id) != null ? _b16 : part.id;
+          const isHosted = part.execution === "server";
+          if (isHosted) {
+            hostedToolSearchCallIds.push(toolCallId);
+          }
+          content.push({
+            type: "tool-call",
+            toolCallId,
+            toolName: toolNameMapping.toCustomToolName("tool_search"),
+            input: JSON.stringify({
+              arguments: part.arguments,
+              call_id: part.call_id
+            }),
+            ...isHosted ? { providerExecuted: true } : {},
+            providerMetadata: {
+              [providerOptionsName]: {
+                itemId: part.id
+              }
+            }
+          });
+          break;
+        }
+        case "tool_search_output": {
+          const toolCallId = (_d = (_c = part.call_id) != null ? _c : hostedToolSearchCallIds.shift()) != null ? _d : part.id;
+          content.push({
+            type: "tool-result",
+            toolCallId,
+            toolName: toolNameMapping.toCustomToolName("tool_search"),
+            result: {
+              tools: part.tools
+            },
+            providerMetadata: {
+              [providerOptionsName]: {
+                itemId: part.id
+              }
+            }
+          });
+          break;
+        }
+        case "local_shell_call": {
+          content.push({
+            type: "tool-call",
+            toolCallId: part.call_id,
+            toolName: toolNameMapping.toCustomToolName("local_shell"),
+            input: JSON.stringify({
+              action: part.action
+            }),
+            providerMetadata: {
+              [providerOptionsName]: {
+                itemId: part.id
+              }
+            }
+          });
+          break;
+        }
+        case "shell_call": {
+          content.push({
+            type: "tool-call",
+            toolCallId: part.call_id,
+            toolName: toolNameMapping.toCustomToolName("shell"),
+            input: JSON.stringify({
+              action: {
+                commands: part.action.commands
+              }
+            }),
+            ...isShellProviderExecuted && { providerExecuted: true },
+            providerMetadata: {
+              [providerOptionsName]: {
+                itemId: part.id
+              }
+            }
+          });
+          break;
+        }
+        case "shell_call_output": {
+          content.push({
+            type: "tool-result",
+            toolCallId: part.call_id,
+            toolName: toolNameMapping.toCustomToolName("shell"),
+            result: {
+              output: part.output.map((item) => ({
+                stdout: item.stdout,
+                stderr: item.stderr,
+                outcome: item.outcome.type === "exit" ? {
+                  type: "exit",
+                  exitCode: item.outcome.exit_code
+                } : { type: "timeout" }
+              }))
+            }
+          });
+          break;
+        }
+        case "message": {
+          for (const contentPart of part.content) {
+            if (((_f = (_e = options2.providerOptions) == null ? undefined : _e[providerOptionsName]) == null ? undefined : _f.logprobs) && contentPart.logprobs) {
+              logprobs.push(contentPart.logprobs);
+            }
+            const providerMetadata2 = {
+              itemId: part.id,
+              ...part.phase != null && { phase: part.phase },
+              ...contentPart.annotations.length > 0 && {
+                annotations: contentPart.annotations
+              }
+            };
+            content.push({
+              type: "text",
+              text: contentPart.text,
+              providerMetadata: {
+                [providerOptionsName]: providerMetadata2
+              }
+            });
+            for (const annotation of contentPart.annotations) {
+              if (annotation.type === "url_citation") {
+                content.push({
+                  type: "source",
+                  sourceType: "url",
+                  id: (_i = (_h = (_g = this.config).generateId) == null ? undefined : _h.call(_g)) != null ? _i : generateId(),
+                  url: annotation.url,
+                  title: annotation.title
+                });
+              } else if (annotation.type === "file_citation") {
+                content.push({
+                  type: "source",
+                  sourceType: "document",
+                  id: (_l = (_k = (_j = this.config).generateId) == null ? undefined : _k.call(_j)) != null ? _l : generateId(),
+                  mediaType: "text/plain",
+                  title: annotation.filename,
+                  filename: annotation.filename,
+                  providerMetadata: {
+                    [providerOptionsName]: {
+                      type: annotation.type,
+                      fileId: annotation.file_id,
+                      index: annotation.index
+                    }
+                  }
+                });
+              } else if (annotation.type === "container_file_citation") {
+                content.push({
+                  type: "source",
+                  sourceType: "document",
+                  id: (_o = (_n = (_m = this.config).generateId) == null ? undefined : _n.call(_m)) != null ? _o : generateId(),
+                  mediaType: "text/plain",
+                  title: annotation.filename,
+                  filename: annotation.filename,
+                  providerMetadata: {
+                    [providerOptionsName]: {
+                      type: annotation.type,
+                      fileId: annotation.file_id,
+                      containerId: annotation.container_id
+                    }
+                  }
+                });
+              } else if (annotation.type === "file_path") {
+                content.push({
+                  type: "source",
+                  sourceType: "document",
+                  id: (_r = (_q = (_p = this.config).generateId) == null ? undefined : _q.call(_p)) != null ? _r : generateId(),
+                  mediaType: "application/octet-stream",
+                  title: annotation.file_id,
+                  filename: annotation.file_id,
+                  providerMetadata: {
+                    [providerOptionsName]: {
+                      type: annotation.type,
+                      fileId: annotation.file_id,
+                      index: annotation.index
+                    }
+                  }
+                });
+              }
+            }
+          }
+          break;
+        }
+        case "function_call": {
+          hasFunctionCall = true;
+          content.push({
+            type: "tool-call",
+            toolCallId: part.call_id,
+            toolName: part.name,
+            input: part.arguments,
+            providerMetadata: {
+              [providerOptionsName]: {
+                itemId: part.id,
+                ...part.namespace != null && { namespace: part.namespace }
+              }
+            }
+          });
+          break;
+        }
+        case "custom_tool_call": {
+          hasFunctionCall = true;
+          const toolName = toolNameMapping.toCustomToolName(part.name);
+          content.push({
+            type: "tool-call",
+            toolCallId: part.call_id,
+            toolName,
+            input: JSON.stringify(part.input),
+            providerMetadata: {
+              [providerOptionsName]: {
+                itemId: part.id
+              }
+            }
+          });
+          break;
+        }
+        case "web_search_call": {
+          content.push({
+            type: "tool-call",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName(webSearchToolName != null ? webSearchToolName : "web_search"),
+            input: JSON.stringify({}),
+            providerExecuted: true
+          });
+          content.push({
+            type: "tool-result",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName(webSearchToolName != null ? webSearchToolName : "web_search"),
+            result: mapWebSearchOutput(part.action)
+          });
+          break;
+        }
+        case "mcp_call": {
+          const toolCallId = part.approval_request_id != null ? (_s = approvalRequestIdToDummyToolCallIdFromPrompt[part.approval_request_id]) != null ? _s : part.id : part.id;
+          const toolName = `mcp.${part.name}`;
+          content.push({
+            type: "tool-call",
+            toolCallId,
+            toolName,
+            input: part.arguments,
+            providerExecuted: true,
+            dynamic: true
+          });
+          content.push({
+            type: "tool-result",
+            toolCallId,
+            toolName,
+            result: {
+              type: "call",
+              serverLabel: part.server_label,
+              name: part.name,
+              arguments: part.arguments,
+              ...part.output != null ? { output: part.output } : {},
+              ...part.error != null ? { error: part.error } : {}
+            },
+            providerMetadata: {
+              [providerOptionsName]: {
+                itemId: part.id
+              }
+            }
+          });
+          break;
+        }
+        case "mcp_list_tools": {
+          break;
+        }
+        case "mcp_approval_request": {
+          const approvalRequestId = (_t = part.approval_request_id) != null ? _t : part.id;
+          const dummyToolCallId = (_w = (_v = (_u = this.config).generateId) == null ? undefined : _v.call(_u)) != null ? _w : generateId();
+          const toolName = `mcp.${part.name}`;
+          content.push({
+            type: "tool-call",
+            toolCallId: dummyToolCallId,
+            toolName,
+            input: part.arguments,
+            providerExecuted: true,
+            dynamic: true
+          });
+          content.push({
+            type: "tool-approval-request",
+            approvalId: approvalRequestId,
+            toolCallId: dummyToolCallId
+          });
+          break;
+        }
+        case "computer_call": {
+          content.push({
+            type: "tool-call",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName("computer_use"),
+            input: "",
+            providerExecuted: true
+          });
+          content.push({
+            type: "tool-result",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName("computer_use"),
+            result: {
+              type: "computer_use_tool_result",
+              status: part.status || "completed"
+            }
+          });
+          break;
+        }
+        case "file_search_call": {
+          content.push({
+            type: "tool-call",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName("file_search"),
+            input: "{}",
+            providerExecuted: true
+          });
+          content.push({
+            type: "tool-result",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName("file_search"),
+            result: {
+              queries: part.queries,
+              results: (_y = (_x = part.results) == null ? undefined : _x.map((result) => ({
+                attributes: result.attributes,
+                fileId: result.file_id,
+                filename: result.filename,
+                score: result.score,
+                text: result.text
+              }))) != null ? _y : null
+            }
+          });
+          break;
+        }
+        case "code_interpreter_call": {
+          content.push({
+            type: "tool-call",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName("code_interpreter"),
+            input: JSON.stringify({
+              code: part.code,
+              containerId: part.container_id
+            }),
+            providerExecuted: true
+          });
+          content.push({
+            type: "tool-result",
+            toolCallId: part.id,
+            toolName: toolNameMapping.toCustomToolName("code_interpreter"),
+            result: {
+              outputs: part.outputs
+            }
+          });
+          break;
+        }
+        case "apply_patch_call": {
+          content.push({
+            type: "tool-call",
+            toolCallId: part.call_id,
+            toolName: toolNameMapping.toCustomToolName("apply_patch"),
+            input: JSON.stringify({
+              callId: part.call_id,
+              operation: part.operation
+            }),
+            providerMetadata: {
+              [providerOptionsName]: {
+                itemId: part.id
+              }
+            }
+          });
+          break;
+        }
+      }
+    }
+    const providerMetadata = {
+      [providerOptionsName]: {
+        responseId: response.id,
+        ...logprobs.length > 0 ? { logprobs } : {},
+        ...typeof response.service_tier === "string" ? { serviceTier: response.service_tier } : {}
+      }
+    };
+    const usage = response.usage;
+    return {
+      content,
+      finishReason: {
+        unified: mapOpenAIResponseFinishReason({
+          finishReason: (_z = response.incomplete_details) == null ? undefined : _z.reason,
+          hasFunctionCall
+        }),
+        raw: (_B = (_A = response.incomplete_details) == null ? undefined : _A.reason) != null ? _B : undefined
+      },
+      usage: convertOpenAIResponsesUsage(usage),
+      request: { body },
+      response: {
+        id: response.id,
+        timestamp: new Date(response.created_at * 1000),
+        modelId: response.model,
+        headers: responseHeaders,
+        body: rawResponse
+      },
+      providerMetadata,
+      warnings
+    };
+  }
+  async doStream(options2) {
+    const {
+      args: body,
+      warnings,
+      webSearchToolName,
+      toolNameMapping,
+      store,
+      providerOptionsName,
+      isShellProviderExecuted
+    } = await this.getArgs(options2);
+    const { responseHeaders, value: response } = await postJsonToApi({
+      url: this.config.url({
+        path: "/responses",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), options2.headers),
+      body: {
+        ...body,
+        stream: true
+      },
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createEventSourceResponseHandler(openaiResponsesChunkSchema),
+      abortSignal: options2.abortSignal,
+      fetch: this.config.fetch
+    });
+    const self2 = this;
+    const approvalRequestIdToDummyToolCallIdFromPrompt = extractApprovalRequestIdToToolCallIdMapping(options2.prompt);
+    const approvalRequestIdToDummyToolCallIdFromStream = /* @__PURE__ */ new Map;
+    let finishReason = {
+      unified: "other",
+      raw: undefined
+    };
+    let usage = undefined;
+    const logprobs = [];
+    let responseId = null;
+    const ongoingToolCalls = {};
+    const ongoingAnnotations = [];
+    let activeMessagePhase;
+    let hasFunctionCall = false;
+    const activeReasoning = {};
+    let serviceTier;
+    const hostedToolSearchCallIds = [];
+    return {
+      stream: response.pipeThrough(new TransformStream({
+        start(controller) {
+          controller.enqueue({ type: "stream-start", warnings });
+        },
+        transform(chunk, controller) {
+          var _a16, _b16, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L;
+          if (options2.includeRawChunks) {
+            controller.enqueue({ type: "raw", rawValue: chunk.rawValue });
+          }
+          if (!chunk.success) {
+            finishReason = { unified: "error", raw: undefined };
+            controller.enqueue({ type: "error", error: chunk.error });
+            return;
+          }
+          const value = chunk.value;
+          if (isResponseOutputItemAddedChunk(value)) {
+            if (value.item.type === "function_call") {
+              ongoingToolCalls[value.output_index] = {
+                toolName: value.item.name,
+                toolCallId: value.item.call_id
+              };
+              controller.enqueue({
+                type: "tool-input-start",
+                id: value.item.call_id,
+                toolName: value.item.name
+              });
+            } else if (value.item.type === "custom_tool_call") {
+              const toolName = toolNameMapping.toCustomToolName(value.item.name);
+              ongoingToolCalls[value.output_index] = {
+                toolName,
+                toolCallId: value.item.call_id
+              };
+              controller.enqueue({
+                type: "tool-input-start",
+                id: value.item.call_id,
+                toolName
+              });
+            } else if (value.item.type === "web_search_call") {
+              ongoingToolCalls[value.output_index] = {
+                toolName: toolNameMapping.toCustomToolName(webSearchToolName != null ? webSearchToolName : "web_search"),
+                toolCallId: value.item.id
+              };
+              controller.enqueue({
+                type: "tool-input-start",
+                id: value.item.id,
+                toolName: toolNameMapping.toCustomToolName(webSearchToolName != null ? webSearchToolName : "web_search"),
+                providerExecuted: true
+              });
+              controller.enqueue({
+                type: "tool-input-end",
+                id: value.item.id
+              });
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName(webSearchToolName != null ? webSearchToolName : "web_search"),
+                input: JSON.stringify({}),
+                providerExecuted: true
+              });
+            } else if (value.item.type === "computer_call") {
+              ongoingToolCalls[value.output_index] = {
+                toolName: toolNameMapping.toCustomToolName("computer_use"),
+                toolCallId: value.item.id
+              };
+              controller.enqueue({
+                type: "tool-input-start",
+                id: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("computer_use"),
+                providerExecuted: true
+              });
+            } else if (value.item.type === "code_interpreter_call") {
+              ongoingToolCalls[value.output_index] = {
+                toolName: toolNameMapping.toCustomToolName("code_interpreter"),
+                toolCallId: value.item.id,
+                codeInterpreter: {
+                  containerId: value.item.container_id
+                }
+              };
+              controller.enqueue({
+                type: "tool-input-start",
+                id: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("code_interpreter"),
+                providerExecuted: true
+              });
+              controller.enqueue({
+                type: "tool-input-delta",
+                id: value.item.id,
+                delta: `{"containerId":"${value.item.container_id}","code":"`
+              });
+            } else if (value.item.type === "file_search_call") {
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("file_search"),
+                input: "{}",
+                providerExecuted: true
+              });
+            } else if (value.item.type === "image_generation_call") {
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("image_generation"),
+                input: "{}",
+                providerExecuted: true
+              });
+            } else if (value.item.type === "tool_search_call") {
+              const toolCallId = value.item.id;
+              const toolName = toolNameMapping.toCustomToolName("tool_search");
+              const isHosted = value.item.execution === "server";
+              ongoingToolCalls[value.output_index] = {
+                toolName,
+                toolCallId,
+                toolSearchExecution: (_a16 = value.item.execution) != null ? _a16 : "server"
+              };
+              if (isHosted) {
+                controller.enqueue({
+                  type: "tool-input-start",
+                  id: toolCallId,
+                  toolName,
+                  providerExecuted: true
+                });
+              }
+            } else if (value.item.type === "tool_search_output") {} else if (value.item.type === "mcp_call" || value.item.type === "mcp_list_tools" || value.item.type === "mcp_approval_request") {} else if (value.item.type === "apply_patch_call") {
+              const { call_id: callId, operation } = value.item;
+              ongoingToolCalls[value.output_index] = {
+                toolName: toolNameMapping.toCustomToolName("apply_patch"),
+                toolCallId: callId,
+                applyPatch: {
+                  hasDiff: operation.type === "delete_file",
+                  endEmitted: operation.type === "delete_file"
+                }
+              };
+              controller.enqueue({
+                type: "tool-input-start",
+                id: callId,
+                toolName: toolNameMapping.toCustomToolName("apply_patch")
+              });
+              if (operation.type === "delete_file") {
+                const inputString = JSON.stringify({
+                  callId,
+                  operation
+                });
+                controller.enqueue({
+                  type: "tool-input-delta",
+                  id: callId,
+                  delta: inputString
+                });
+                controller.enqueue({
+                  type: "tool-input-end",
+                  id: callId
+                });
+              } else {
+                controller.enqueue({
+                  type: "tool-input-delta",
+                  id: callId,
+                  delta: `{"callId":"${escapeJSONDelta(callId)}","operation":{"type":"${escapeJSONDelta(operation.type)}","path":"${escapeJSONDelta(operation.path)}","diff":"`
+                });
+              }
+            } else if (value.item.type === "shell_call") {
+              ongoingToolCalls[value.output_index] = {
+                toolName: toolNameMapping.toCustomToolName("shell"),
+                toolCallId: value.item.call_id
+              };
+            } else if (value.item.type === "shell_call_output") {} else if (value.item.type === "message") {
+              ongoingAnnotations.splice(0, ongoingAnnotations.length);
+              activeMessagePhase = (_b16 = value.item.phase) != null ? _b16 : undefined;
+              controller.enqueue({
+                type: "text-start",
+                id: value.item.id,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item.id,
+                    ...value.item.phase != null && {
+                      phase: value.item.phase
+                    }
+                  }
+                }
+              });
+            } else if (isResponseOutputItemAddedChunk(value) && value.item.type === "reasoning") {
+              activeReasoning[value.item.id] = {
+                encryptedContent: value.item.encrypted_content,
+                summaryParts: { 0: "active" }
+              };
+              controller.enqueue({
+                type: "reasoning-start",
+                id: `${value.item.id}:0`,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item.id,
+                    reasoningEncryptedContent: (_c = value.item.encrypted_content) != null ? _c : null
+                  }
+                }
+              });
+            }
+          } else if (isResponseOutputItemDoneChunk(value)) {
+            if (value.item.type === "message") {
+              const phase = (_d = value.item.phase) != null ? _d : activeMessagePhase;
+              activeMessagePhase = undefined;
+              controller.enqueue({
+                type: "text-end",
+                id: value.item.id,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item.id,
+                    ...phase != null && { phase },
+                    ...ongoingAnnotations.length > 0 && {
+                      annotations: ongoingAnnotations
+                    }
+                  }
+                }
+              });
+            } else if (value.item.type === "function_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              hasFunctionCall = true;
+              controller.enqueue({
+                type: "tool-input-end",
+                id: value.item.call_id,
+                ...value.item.namespace != null && {
+                  providerMetadata: {
+                    [providerOptionsName]: {
+                      namespace: value.item.namespace
+                    }
+                  }
+                }
+              });
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: value.item.call_id,
+                toolName: value.item.name,
+                input: value.item.arguments,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item.id,
+                    ...value.item.namespace != null && {
+                      namespace: value.item.namespace
+                    }
+                  }
+                }
+              });
+            } else if (value.item.type === "custom_tool_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              hasFunctionCall = true;
+              const toolName = toolNameMapping.toCustomToolName(value.item.name);
+              controller.enqueue({
+                type: "tool-input-end",
+                id: value.item.call_id
+              });
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: value.item.call_id,
+                toolName,
+                input: JSON.stringify(value.item.input),
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item.id
+                  }
+                }
+              });
+            } else if (value.item.type === "web_search_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              controller.enqueue({
+                type: "tool-result",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName(webSearchToolName != null ? webSearchToolName : "web_search"),
+                result: mapWebSearchOutput(value.item.action)
+              });
+            } else if (value.item.type === "computer_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              controller.enqueue({
+                type: "tool-input-end",
+                id: value.item.id
+              });
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("computer_use"),
+                input: "",
+                providerExecuted: true
+              });
+              controller.enqueue({
+                type: "tool-result",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("computer_use"),
+                result: {
+                  type: "computer_use_tool_result",
+                  status: value.item.status || "completed"
+                }
+              });
+            } else if (value.item.type === "file_search_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              controller.enqueue({
+                type: "tool-result",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("file_search"),
+                result: {
+                  queries: value.item.queries,
+                  results: (_f = (_e = value.item.results) == null ? undefined : _e.map((result) => ({
+                    attributes: result.attributes,
+                    fileId: result.file_id,
+                    filename: result.filename,
+                    score: result.score,
+                    text: result.text
+                  }))) != null ? _f : null
+                }
+              });
+            } else if (value.item.type === "code_interpreter_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              controller.enqueue({
+                type: "tool-result",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("code_interpreter"),
+                result: {
+                  outputs: value.item.outputs
+                }
+              });
+            } else if (value.item.type === "image_generation_call") {
+              controller.enqueue({
+                type: "tool-result",
+                toolCallId: value.item.id,
+                toolName: toolNameMapping.toCustomToolName("image_generation"),
+                result: {
+                  result: value.item.result
+                }
+              });
+            } else if (value.item.type === "tool_search_call") {
+              const toolCall = ongoingToolCalls[value.output_index];
+              const isHosted = value.item.execution === "server";
+              if (toolCall != null) {
+                const toolCallId = isHosted ? toolCall.toolCallId : (_g = value.item.call_id) != null ? _g : value.item.id;
+                if (isHosted) {
+                  hostedToolSearchCallIds.push(toolCallId);
+                } else {
+                  controller.enqueue({
+                    type: "tool-input-start",
+                    id: toolCallId,
+                    toolName: toolCall.toolName
+                  });
+                }
+                controller.enqueue({
+                  type: "tool-input-end",
+                  id: toolCallId
+                });
+                controller.enqueue({
+                  type: "tool-call",
+                  toolCallId,
+                  toolName: toolCall.toolName,
+                  input: JSON.stringify({
+                    arguments: value.item.arguments,
+                    call_id: isHosted ? null : toolCallId
+                  }),
+                  ...isHosted ? { providerExecuted: true } : {},
+                  providerMetadata: {
+                    [providerOptionsName]: {
+                      itemId: value.item.id
+                    }
+                  }
+                });
+              }
+              ongoingToolCalls[value.output_index] = undefined;
+            } else if (value.item.type === "tool_search_output") {
+              const toolCallId = (_i = (_h = value.item.call_id) != null ? _h : hostedToolSearchCallIds.shift()) != null ? _i : value.item.id;
+              controller.enqueue({
+                type: "tool-result",
+                toolCallId,
+                toolName: toolNameMapping.toCustomToolName("tool_search"),
+                result: {
+                  tools: value.item.tools
+                },
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item.id
+                  }
+                }
+              });
+            } else if (value.item.type === "mcp_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              const approvalRequestId = (_j = value.item.approval_request_id) != null ? _j : undefined;
+              const aliasedToolCallId = approvalRequestId != null ? (_l = (_k = approvalRequestIdToDummyToolCallIdFromStream.get(approvalRequestId)) != null ? _k : approvalRequestIdToDummyToolCallIdFromPrompt[approvalRequestId]) != null ? _l : value.item.id : value.item.id;
+              const toolName = `mcp.${value.item.name}`;
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: aliasedToolCallId,
+                toolName,
+                input: value.item.arguments,
+                providerExecuted: true,
+                dynamic: true
+              });
+              controller.enqueue({
+                type: "tool-result",
+                toolCallId: aliasedToolCallId,
+                toolName,
+                result: {
+                  type: "call",
+                  serverLabel: value.item.server_label,
+                  name: value.item.name,
+                  arguments: value.item.arguments,
+                  ...value.item.output != null ? { output: value.item.output } : {},
+                  ...value.item.error != null ? { error: value.item.error } : {}
+                },
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item.id
+                  }
+                }
+              });
+            } else if (value.item.type === "mcp_list_tools") {
+              ongoingToolCalls[value.output_index] = undefined;
+            } else if (value.item.type === "apply_patch_call") {
+              const toolCall = ongoingToolCalls[value.output_index];
+              if ((toolCall == null ? undefined : toolCall.applyPatch) && !toolCall.applyPatch.endEmitted && value.item.operation.type !== "delete_file") {
+                if (!toolCall.applyPatch.hasDiff) {
+                  controller.enqueue({
+                    type: "tool-input-delta",
+                    id: toolCall.toolCallId,
+                    delta: escapeJSONDelta(value.item.operation.diff)
+                  });
+                }
+                controller.enqueue({
+                  type: "tool-input-delta",
+                  id: toolCall.toolCallId,
+                  delta: '"}}'
+                });
+                controller.enqueue({
+                  type: "tool-input-end",
+                  id: toolCall.toolCallId
+                });
+                toolCall.applyPatch.endEmitted = true;
+              }
+              if (toolCall && value.item.status === "completed") {
+                controller.enqueue({
+                  type: "tool-call",
+                  toolCallId: toolCall.toolCallId,
+                  toolName: toolNameMapping.toCustomToolName("apply_patch"),
+                  input: JSON.stringify({
+                    callId: value.item.call_id,
+                    operation: value.item.operation
+                  }),
+                  providerMetadata: {
+                    [providerOptionsName]: {
+                      itemId: value.item.id
+                    }
+                  }
+                });
+              }
+              ongoingToolCalls[value.output_index] = undefined;
+            } else if (value.item.type === "mcp_approval_request") {
+              ongoingToolCalls[value.output_index] = undefined;
+              const dummyToolCallId = (_o = (_n = (_m = self2.config).generateId) == null ? undefined : _n.call(_m)) != null ? _o : generateId();
+              const approvalRequestId = (_p = value.item.approval_request_id) != null ? _p : value.item.id;
+              approvalRequestIdToDummyToolCallIdFromStream.set(approvalRequestId, dummyToolCallId);
+              const toolName = `mcp.${value.item.name}`;
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: dummyToolCallId,
+                toolName,
+                input: value.item.arguments,
+                providerExecuted: true,
+                dynamic: true
+              });
+              controller.enqueue({
+                type: "tool-approval-request",
+                approvalId: approvalRequestId,
+                toolCallId: dummyToolCallId
+              });
+            } else if (value.item.type === "local_shell_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: value.item.call_id,
+                toolName: toolNameMapping.toCustomToolName("local_shell"),
+                input: JSON.stringify({
+                  action: {
+                    type: "exec",
+                    command: value.item.action.command,
+                    timeoutMs: value.item.action.timeout_ms,
+                    user: value.item.action.user,
+                    workingDirectory: value.item.action.working_directory,
+                    env: value.item.action.env
+                  }
+                }),
+                providerMetadata: {
+                  [providerOptionsName]: { itemId: value.item.id }
+                }
+              });
+            } else if (value.item.type === "shell_call") {
+              ongoingToolCalls[value.output_index] = undefined;
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: value.item.call_id,
+                toolName: toolNameMapping.toCustomToolName("shell"),
+                input: JSON.stringify({
+                  action: {
+                    commands: value.item.action.commands
+                  }
+                }),
+                ...isShellProviderExecuted && {
+                  providerExecuted: true
+                },
+                providerMetadata: {
+                  [providerOptionsName]: { itemId: value.item.id }
+                }
+              });
+            } else if (value.item.type === "shell_call_output") {
+              controller.enqueue({
+                type: "tool-result",
+                toolCallId: value.item.call_id,
+                toolName: toolNameMapping.toCustomToolName("shell"),
+                result: {
+                  output: value.item.output.map((item) => ({
+                    stdout: item.stdout,
+                    stderr: item.stderr,
+                    outcome: item.outcome.type === "exit" ? {
+                      type: "exit",
+                      exitCode: item.outcome.exit_code
+                    } : { type: "timeout" }
+                  }))
+                }
+              });
+            } else if (value.item.type === "reasoning") {
+              const activeReasoningPart = activeReasoning[value.item.id];
+              const summaryPartIndices = Object.entries(activeReasoningPart.summaryParts).filter(([_, status]) => status === "active" || status === "can-conclude").map(([summaryIndex]) => summaryIndex);
+              for (const summaryIndex of summaryPartIndices) {
+                controller.enqueue({
+                  type: "reasoning-end",
+                  id: `${value.item.id}:${summaryIndex}`,
+                  providerMetadata: {
+                    [providerOptionsName]: {
+                      itemId: value.item.id,
+                      reasoningEncryptedContent: (_q = value.item.encrypted_content) != null ? _q : null
+                    }
+                  }
+                });
+              }
+              delete activeReasoning[value.item.id];
+            }
+          } else if (isResponseFunctionCallArgumentsDeltaChunk(value)) {
+            const toolCall = ongoingToolCalls[value.output_index];
+            if (toolCall != null) {
+              controller.enqueue({
+                type: "tool-input-delta",
+                id: toolCall.toolCallId,
+                delta: value.delta
+              });
+            }
+          } else if (isResponseCustomToolCallInputDeltaChunk(value)) {
+            const toolCall = ongoingToolCalls[value.output_index];
+            if (toolCall != null) {
+              controller.enqueue({
+                type: "tool-input-delta",
+                id: toolCall.toolCallId,
+                delta: value.delta
+              });
+            }
+          } else if (isResponseApplyPatchCallOperationDiffDeltaChunk(value)) {
+            const toolCall = ongoingToolCalls[value.output_index];
+            if (toolCall == null ? undefined : toolCall.applyPatch) {
+              controller.enqueue({
+                type: "tool-input-delta",
+                id: toolCall.toolCallId,
+                delta: escapeJSONDelta(value.delta)
+              });
+              toolCall.applyPatch.hasDiff = true;
+            }
+          } else if (isResponseApplyPatchCallOperationDiffDoneChunk(value)) {
+            const toolCall = ongoingToolCalls[value.output_index];
+            if ((toolCall == null ? undefined : toolCall.applyPatch) && !toolCall.applyPatch.endEmitted) {
+              if (!toolCall.applyPatch.hasDiff) {
+                controller.enqueue({
+                  type: "tool-input-delta",
+                  id: toolCall.toolCallId,
+                  delta: escapeJSONDelta(value.diff)
+                });
+                toolCall.applyPatch.hasDiff = true;
+              }
+              controller.enqueue({
+                type: "tool-input-delta",
+                id: toolCall.toolCallId,
+                delta: '"}}'
+              });
+              controller.enqueue({
+                type: "tool-input-end",
+                id: toolCall.toolCallId
+              });
+              toolCall.applyPatch.endEmitted = true;
+            }
+          } else if (isResponseImageGenerationCallPartialImageChunk(value)) {
+            controller.enqueue({
+              type: "tool-result",
+              toolCallId: value.item_id,
+              toolName: toolNameMapping.toCustomToolName("image_generation"),
+              result: {
+                result: value.partial_image_b64
+              },
+              preliminary: true
+            });
+          } else if (isResponseCodeInterpreterCallCodeDeltaChunk(value)) {
+            const toolCall = ongoingToolCalls[value.output_index];
+            if (toolCall != null) {
+              controller.enqueue({
+                type: "tool-input-delta",
+                id: toolCall.toolCallId,
+                delta: escapeJSONDelta(value.delta)
+              });
+            }
+          } else if (isResponseCodeInterpreterCallCodeDoneChunk(value)) {
+            const toolCall = ongoingToolCalls[value.output_index];
+            if (toolCall != null) {
+              controller.enqueue({
+                type: "tool-input-delta",
+                id: toolCall.toolCallId,
+                delta: '"}'
+              });
+              controller.enqueue({
+                type: "tool-input-end",
+                id: toolCall.toolCallId
+              });
+              controller.enqueue({
+                type: "tool-call",
+                toolCallId: toolCall.toolCallId,
+                toolName: toolNameMapping.toCustomToolName("code_interpreter"),
+                input: JSON.stringify({
+                  code: value.code,
+                  containerId: toolCall.codeInterpreter.containerId
+                }),
+                providerExecuted: true
+              });
+            }
+          } else if (isResponseCreatedChunk(value)) {
+            responseId = value.response.id;
+            controller.enqueue({
+              type: "response-metadata",
+              id: value.response.id,
+              timestamp: new Date(value.response.created_at * 1000),
+              modelId: value.response.model
+            });
+          } else if (isTextDeltaChunk(value)) {
+            controller.enqueue({
+              type: "text-delta",
+              id: value.item_id,
+              delta: value.delta
+            });
+            if (((_s = (_r = options2.providerOptions) == null ? undefined : _r[providerOptionsName]) == null ? undefined : _s.logprobs) && value.logprobs) {
+              logprobs.push(value.logprobs);
+            }
+          } else if (value.type === "response.reasoning_summary_part.added") {
+            if (value.summary_index > 0) {
+              const activeReasoningPart = activeReasoning[value.item_id];
+              activeReasoningPart.summaryParts[value.summary_index] = "active";
+              for (const summaryIndex of Object.keys(activeReasoningPart.summaryParts)) {
+                if (activeReasoningPart.summaryParts[summaryIndex] === "can-conclude") {
+                  controller.enqueue({
+                    type: "reasoning-end",
+                    id: `${value.item_id}:${summaryIndex}`,
+                    providerMetadata: {
+                      [providerOptionsName]: {
+                        itemId: value.item_id
+                      }
+                    }
+                  });
+                  activeReasoningPart.summaryParts[summaryIndex] = "concluded";
+                }
+              }
+              controller.enqueue({
+                type: "reasoning-start",
+                id: `${value.item_id}:${value.summary_index}`,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item_id,
+                    reasoningEncryptedContent: (_u = (_t = activeReasoning[value.item_id]) == null ? undefined : _t.encryptedContent) != null ? _u : null
+                  }
+                }
+              });
+            }
+          } else if (value.type === "response.reasoning_summary_text.delta") {
+            controller.enqueue({
+              type: "reasoning-delta",
+              id: `${value.item_id}:${value.summary_index}`,
+              delta: value.delta,
+              providerMetadata: {
+                [providerOptionsName]: {
+                  itemId: value.item_id
+                }
+              }
+            });
+          } else if (value.type === "response.reasoning_summary_part.done") {
+            if (store) {
+              controller.enqueue({
+                type: "reasoning-end",
+                id: `${value.item_id}:${value.summary_index}`,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    itemId: value.item_id
+                  }
+                }
+              });
+              activeReasoning[value.item_id].summaryParts[value.summary_index] = "concluded";
+            } else {
+              activeReasoning[value.item_id].summaryParts[value.summary_index] = "can-conclude";
+            }
+          } else if (isResponseFinishedChunk(value)) {
+            finishReason = {
+              unified: mapOpenAIResponseFinishReason({
+                finishReason: (_v = value.response.incomplete_details) == null ? undefined : _v.reason,
+                hasFunctionCall
+              }),
+              raw: (_x = (_w = value.response.incomplete_details) == null ? undefined : _w.reason) != null ? _x : undefined
+            };
+            usage = value.response.usage;
+            if (typeof value.response.service_tier === "string") {
+              serviceTier = value.response.service_tier;
+            }
+          } else if (isResponseFailedChunk(value)) {
+            const incompleteReason = (_y = value.response.incomplete_details) == null ? undefined : _y.reason;
+            finishReason = {
+              unified: incompleteReason ? mapOpenAIResponseFinishReason({
+                finishReason: incompleteReason,
+                hasFunctionCall
+              }) : "error",
+              raw: incompleteReason != null ? incompleteReason : "error"
+            };
+            usage = (_z = value.response.usage) != null ? _z : undefined;
+          } else if (isResponseAnnotationAddedChunk(value)) {
+            ongoingAnnotations.push(value.annotation);
+            if (value.annotation.type === "url_citation") {
+              controller.enqueue({
+                type: "source",
+                sourceType: "url",
+                id: (_C = (_B = (_A = self2.config).generateId) == null ? undefined : _B.call(_A)) != null ? _C : generateId(),
+                url: value.annotation.url,
+                title: value.annotation.title
+              });
+            } else if (value.annotation.type === "file_citation") {
+              controller.enqueue({
+                type: "source",
+                sourceType: "document",
+                id: (_F = (_E = (_D = self2.config).generateId) == null ? undefined : _E.call(_D)) != null ? _F : generateId(),
+                mediaType: "text/plain",
+                title: value.annotation.filename,
+                filename: value.annotation.filename,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    type: value.annotation.type,
+                    fileId: value.annotation.file_id,
+                    index: value.annotation.index
+                  }
+                }
+              });
+            } else if (value.annotation.type === "container_file_citation") {
+              controller.enqueue({
+                type: "source",
+                sourceType: "document",
+                id: (_I = (_H = (_G = self2.config).generateId) == null ? undefined : _H.call(_G)) != null ? _I : generateId(),
+                mediaType: "text/plain",
+                title: value.annotation.filename,
+                filename: value.annotation.filename,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    type: value.annotation.type,
+                    fileId: value.annotation.file_id,
+                    containerId: value.annotation.container_id
+                  }
+                }
+              });
+            } else if (value.annotation.type === "file_path") {
+              controller.enqueue({
+                type: "source",
+                sourceType: "document",
+                id: (_L = (_K = (_J = self2.config).generateId) == null ? undefined : _K.call(_J)) != null ? _L : generateId(),
+                mediaType: "application/octet-stream",
+                title: value.annotation.file_id,
+                filename: value.annotation.file_id,
+                providerMetadata: {
+                  [providerOptionsName]: {
+                    type: value.annotation.type,
+                    fileId: value.annotation.file_id,
+                    index: value.annotation.index
+                  }
+                }
+              });
+            }
+          } else if (isErrorChunk(value)) {
+            controller.enqueue({ type: "error", error: value });
+          }
+        },
+        flush(controller) {
+          const providerMetadata = {
+            [providerOptionsName]: {
+              responseId,
+              ...logprobs.length > 0 ? { logprobs } : {},
+              ...serviceTier !== undefined ? { serviceTier } : {}
+            }
+          };
+          controller.enqueue({
+            type: "finish",
+            finishReason,
+            usage: convertOpenAIResponsesUsage(usage),
+            providerMetadata
+          });
+        }
+      })),
+      request: { body },
+      response: { headers: responseHeaders }
+    };
+  }
+};
+function isTextDeltaChunk(chunk) {
+  return chunk.type === "response.output_text.delta";
+}
+function isResponseOutputItemDoneChunk(chunk) {
+  return chunk.type === "response.output_item.done";
+}
+function isResponseFinishedChunk(chunk) {
+  return chunk.type === "response.completed" || chunk.type === "response.incomplete";
+}
+function isResponseFailedChunk(chunk) {
+  return chunk.type === "response.failed";
+}
+function isResponseCreatedChunk(chunk) {
+  return chunk.type === "response.created";
+}
+function isResponseFunctionCallArgumentsDeltaChunk(chunk) {
+  return chunk.type === "response.function_call_arguments.delta";
+}
+function isResponseCustomToolCallInputDeltaChunk(chunk) {
+  return chunk.type === "response.custom_tool_call_input.delta";
+}
+function isResponseImageGenerationCallPartialImageChunk(chunk) {
+  return chunk.type === "response.image_generation_call.partial_image";
+}
+function isResponseCodeInterpreterCallCodeDeltaChunk(chunk) {
+  return chunk.type === "response.code_interpreter_call_code.delta";
+}
+function isResponseCodeInterpreterCallCodeDoneChunk(chunk) {
+  return chunk.type === "response.code_interpreter_call_code.done";
+}
+function isResponseApplyPatchCallOperationDiffDeltaChunk(chunk) {
+  return chunk.type === "response.apply_patch_call_operation_diff.delta";
+}
+function isResponseApplyPatchCallOperationDiffDoneChunk(chunk) {
+  return chunk.type === "response.apply_patch_call_operation_diff.done";
+}
+function isResponseOutputItemAddedChunk(chunk) {
+  return chunk.type === "response.output_item.added";
+}
+function isResponseAnnotationAddedChunk(chunk) {
+  return chunk.type === "response.output_text.annotation.added";
+}
+function isErrorChunk(chunk) {
+  return chunk.type === "error";
+}
+function mapWebSearchOutput(action) {
+  var _a16;
+  if (action == null) {
+    return {};
+  }
+  switch (action.type) {
+    case "search":
+      return {
+        action: {
+          type: "search",
+          query: (_a16 = action.query) != null ? _a16 : undefined,
+          ...action.queries != null && { queries: action.queries }
+        },
+        ...action.sources != null && { sources: action.sources }
+      };
+    case "open_page":
+      return { action: { type: "openPage", url: action.url } };
+    case "find_in_page":
+      return {
+        action: {
+          type: "findInPage",
+          url: action.url,
+          pattern: action.pattern
+        }
+      };
+  }
+}
+function escapeJSONDelta(delta) {
+  return JSON.stringify(delta).slice(1, -1);
+}
+var openaiSpeechModelOptionsSchema = lazySchema(() => zodSchema(exports_external.object({
+  instructions: exports_external.string().nullish(),
+  speed: exports_external.number().min(0.25).max(4).default(1).nullish()
+})));
+var OpenAISpeechModel = class {
+  constructor(modelId, config2) {
+    this.modelId = modelId;
+    this.config = config2;
+    this.specificationVersion = "v3";
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async getArgs({
+    text: text4,
+    voice = "alloy",
+    outputFormat = "mp3",
+    speed,
+    instructions,
+    language,
+    providerOptions
+  }) {
+    const warnings = [];
+    const openAIOptions = await parseProviderOptions({
+      provider: "openai",
+      providerOptions,
+      schema: openaiSpeechModelOptionsSchema
+    });
+    const requestBody = {
+      model: this.modelId,
+      input: text4,
+      voice,
+      response_format: "mp3",
+      speed,
+      instructions
+    };
+    if (outputFormat) {
+      if (["mp3", "opus", "aac", "flac", "wav", "pcm"].includes(outputFormat)) {
+        requestBody.response_format = outputFormat;
+      } else {
+        warnings.push({
+          type: "unsupported",
+          feature: "outputFormat",
+          details: `Unsupported output format: ${outputFormat}. Using mp3 instead.`
+        });
+      }
+    }
+    if (openAIOptions) {
+      const speechModelOptions = {};
+      for (const key in speechModelOptions) {
+        const value = speechModelOptions[key];
+        if (value !== undefined) {
+          requestBody[key] = value;
+        }
+      }
+    }
+    if (language) {
+      warnings.push({
+        type: "unsupported",
+        feature: "language",
+        details: `OpenAI speech models do not support language selection. Language parameter "${language}" was ignored.`
+      });
+    }
+    return {
+      requestBody,
+      warnings
+    };
+  }
+  async doGenerate(options2) {
+    var _a16, _b16, _c;
+    const currentDate = (_c = (_b16 = (_a16 = this.config._internal) == null ? undefined : _a16.currentDate) == null ? undefined : _b16.call(_a16)) != null ? _c : /* @__PURE__ */ new Date;
+    const { requestBody, warnings } = await this.getArgs(options2);
+    const {
+      value: audio,
+      responseHeaders,
+      rawValue: rawResponse
+    } = await postJsonToApi({
+      url: this.config.url({
+        path: "/audio/speech",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), options2.headers),
+      body: requestBody,
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createBinaryResponseHandler(),
+      abortSignal: options2.abortSignal,
+      fetch: this.config.fetch
+    });
+    return {
+      audio,
+      warnings,
+      request: {
+        body: JSON.stringify(requestBody)
+      },
+      response: {
+        timestamp: currentDate,
+        modelId: this.modelId,
+        headers: responseHeaders,
+        body: rawResponse
+      }
+    };
+  }
+};
+var openaiTranscriptionResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  text: exports_external.string(),
+  language: exports_external.string().nullish(),
+  duration: exports_external.number().nullish(),
+  words: exports_external.array(exports_external.object({
+    word: exports_external.string(),
+    start: exports_external.number(),
+    end: exports_external.number()
+  })).nullish(),
+  segments: exports_external.array(exports_external.object({
+    id: exports_external.number(),
+    seek: exports_external.number(),
+    start: exports_external.number(),
+    end: exports_external.number(),
+    text: exports_external.string(),
+    tokens: exports_external.array(exports_external.number()),
+    temperature: exports_external.number(),
+    avg_logprob: exports_external.number(),
+    compression_ratio: exports_external.number(),
+    no_speech_prob: exports_external.number()
+  })).nullish()
+})));
+var openAITranscriptionModelOptions = lazySchema(() => zodSchema(exports_external.object({
+  include: exports_external.array(exports_external.string()).optional(),
+  language: exports_external.string().optional(),
+  prompt: exports_external.string().optional(),
+  temperature: exports_external.number().min(0).max(1).default(0).optional(),
+  timestampGranularities: exports_external.array(exports_external.enum(["word", "segment"])).default(["segment"]).optional()
+})));
+var languageMap = {
+  afrikaans: "af",
+  arabic: "ar",
+  armenian: "hy",
+  azerbaijani: "az",
+  belarusian: "be",
+  bosnian: "bs",
+  bulgarian: "bg",
+  catalan: "ca",
+  chinese: "zh",
+  croatian: "hr",
+  czech: "cs",
+  danish: "da",
+  dutch: "nl",
+  english: "en",
+  estonian: "et",
+  finnish: "fi",
+  french: "fr",
+  galician: "gl",
+  german: "de",
+  greek: "el",
+  hebrew: "he",
+  hindi: "hi",
+  hungarian: "hu",
+  icelandic: "is",
+  indonesian: "id",
+  italian: "it",
+  japanese: "ja",
+  kannada: "kn",
+  kazakh: "kk",
+  korean: "ko",
+  latvian: "lv",
+  lithuanian: "lt",
+  macedonian: "mk",
+  malay: "ms",
+  marathi: "mr",
+  maori: "mi",
+  nepali: "ne",
+  norwegian: "no",
+  persian: "fa",
+  polish: "pl",
+  portuguese: "pt",
+  romanian: "ro",
+  russian: "ru",
+  serbian: "sr",
+  slovak: "sk",
+  slovenian: "sl",
+  spanish: "es",
+  swahili: "sw",
+  swedish: "sv",
+  tagalog: "tl",
+  tamil: "ta",
+  thai: "th",
+  turkish: "tr",
+  ukrainian: "uk",
+  urdu: "ur",
+  vietnamese: "vi",
+  welsh: "cy"
+};
+var OpenAITranscriptionModel = class {
+  constructor(modelId, config2) {
+    this.modelId = modelId;
+    this.config = config2;
+    this.specificationVersion = "v3";
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async getArgs({
+    audio,
+    mediaType,
+    providerOptions
+  }) {
+    const warnings = [];
+    const openAIOptions = await parseProviderOptions({
+      provider: "openai",
+      providerOptions,
+      schema: openAITranscriptionModelOptions
+    });
+    const formData = new FormData;
+    const blob = audio instanceof Uint8Array ? new Blob([audio]) : new Blob([convertBase64ToUint8Array(audio)]);
+    formData.append("model", this.modelId);
+    const fileExtension = mediaTypeToExtension(mediaType);
+    formData.append("file", new File([blob], "audio", { type: mediaType }), `audio.${fileExtension}`);
+    if (openAIOptions) {
+      const transcriptionModelOptions = {
+        include: openAIOptions.include,
+        language: openAIOptions.language,
+        prompt: openAIOptions.prompt,
+        response_format: [
+          "gpt-4o-transcribe",
+          "gpt-4o-mini-transcribe"
+        ].includes(this.modelId) ? "json" : "verbose_json",
+        temperature: openAIOptions.temperature,
+        timestamp_granularities: openAIOptions.timestampGranularities
+      };
+      for (const [key, value] of Object.entries(transcriptionModelOptions)) {
+        if (value != null) {
+          if (Array.isArray(value)) {
+            for (const item of value) {
+              formData.append(`${key}[]`, String(item));
+            }
+          } else {
+            formData.append(key, String(value));
+          }
+        }
+      }
+    }
+    return {
+      formData,
+      warnings
+    };
+  }
+  async doGenerate(options2) {
+    var _a16, _b16, _c, _d, _e, _f, _g, _h;
+    const currentDate = (_c = (_b16 = (_a16 = this.config._internal) == null ? undefined : _a16.currentDate) == null ? undefined : _b16.call(_a16)) != null ? _c : /* @__PURE__ */ new Date;
+    const { formData, warnings } = await this.getArgs(options2);
+    const {
+      value: response,
+      responseHeaders,
+      rawValue: rawResponse
+    } = await postFormDataToApi({
+      url: this.config.url({
+        path: "/audio/transcriptions",
+        modelId: this.modelId
+      }),
+      headers: combineHeaders(this.config.headers(), options2.headers),
+      formData,
+      failedResponseHandler: openaiFailedResponseHandler,
+      successfulResponseHandler: createJsonResponseHandler(openaiTranscriptionResponseSchema),
+      abortSignal: options2.abortSignal,
+      fetch: this.config.fetch
+    });
+    const language = response.language != null && response.language in languageMap ? languageMap[response.language] : undefined;
+    return {
+      text: response.text,
+      segments: (_g = (_f = (_d = response.segments) == null ? undefined : _d.map((segment) => ({
+        text: segment.text,
+        startSecond: segment.start,
+        endSecond: segment.end
+      }))) != null ? _f : (_e = response.words) == null ? undefined : _e.map((word) => ({
+        text: word.word,
+        startSecond: word.start,
+        endSecond: word.end
+      }))) != null ? _g : [],
+      language,
+      durationInSeconds: (_h = response.duration) != null ? _h : undefined,
+      warnings,
+      response: {
+        timestamp: currentDate,
+        modelId: this.modelId,
+        headers: responseHeaders,
+        body: rawResponse
+      }
+    };
+  }
+};
+var VERSION2 = "3.0.68";
+function createOpenAI(options2 = {}) {
+  var _a16, _b16;
+  const baseURL = (_a16 = withoutTrailingSlash(loadOptionalSetting({
+    settingValue: options2.baseURL,
+    environmentVariableName: "OPENAI_BASE_URL"
+  }))) != null ? _a16 : "https://api.openai.com/v1";
+  const providerName = (_b16 = options2.name) != null ? _b16 : "openai";
+  const getHeaders = () => withUserAgentSuffix({
+    Authorization: `Bearer ${loadApiKey({
+      apiKey: options2.apiKey,
+      environmentVariableName: "OPENAI_API_KEY",
+      description: "OpenAI"
+    })}`,
+    "OpenAI-Organization": options2.organization,
+    "OpenAI-Project": options2.project,
+    ...options2.headers
+  }, `ai-sdk/openai/${VERSION2}`);
+  const createChatModel = (modelId) => new OpenAIChatLanguageModel(modelId, {
+    provider: `${providerName}.chat`,
+    url: ({ path }) => `${baseURL}${path}`,
+    headers: getHeaders,
+    fetch: options2.fetch
+  });
+  const createCompletionModel = (modelId) => new OpenAICompletionLanguageModel(modelId, {
+    provider: `${providerName}.completion`,
+    url: ({ path }) => `${baseURL}${path}`,
+    headers: getHeaders,
+    fetch: options2.fetch
+  });
+  const createEmbeddingModel = (modelId) => new OpenAIEmbeddingModel(modelId, {
+    provider: `${providerName}.embedding`,
+    url: ({ path }) => `${baseURL}${path}`,
+    headers: getHeaders,
+    fetch: options2.fetch
+  });
+  const createImageModel = (modelId) => new OpenAIImageModel(modelId, {
+    provider: `${providerName}.image`,
+    url: ({ path }) => `${baseURL}${path}`,
+    headers: getHeaders,
+    fetch: options2.fetch
+  });
+  const createTranscriptionModel = (modelId) => new OpenAITranscriptionModel(modelId, {
+    provider: `${providerName}.transcription`,
+    url: ({ path }) => `${baseURL}${path}`,
+    headers: getHeaders,
+    fetch: options2.fetch
+  });
+  const createSpeechModel = (modelId) => new OpenAISpeechModel(modelId, {
+    provider: `${providerName}.speech`,
+    url: ({ path }) => `${baseURL}${path}`,
+    headers: getHeaders,
+    fetch: options2.fetch
+  });
+  const createLanguageModel = (modelId) => {
+    if (new.target) {
+      throw new Error("The OpenAI model function cannot be called with the new keyword.");
+    }
+    return createResponsesModel(modelId);
+  };
+  const createResponsesModel = (modelId) => {
+    return new OpenAIResponsesLanguageModel(modelId, {
+      provider: `${providerName}.responses`,
+      url: ({ path }) => `${baseURL}${path}`,
+      headers: getHeaders,
+      fetch: options2.fetch,
+      fileIdPrefixes: ["file-"]
+    });
+  };
+  const provider = function(modelId) {
+    return createLanguageModel(modelId);
+  };
+  provider.specificationVersion = "v3";
+  provider.languageModel = createLanguageModel;
+  provider.chat = createChatModel;
+  provider.completion = createCompletionModel;
+  provider.responses = createResponsesModel;
+  provider.embedding = createEmbeddingModel;
+  provider.embeddingModel = createEmbeddingModel;
+  provider.textEmbedding = createEmbeddingModel;
+  provider.textEmbeddingModel = createEmbeddingModel;
+  provider.image = createImageModel;
+  provider.imageModel = createImageModel;
+  provider.transcription = createTranscriptionModel;
+  provider.transcriptionModel = createTranscriptionModel;
+  provider.speech = createSpeechModel;
+  provider.speechModel = createSpeechModel;
+  provider.tools = openaiTools;
+  return provider;
+}
+var openai = createOpenAI();
+
+// node_modules/@ai-sdk/gateway/dist/index.mjs
+var import_oidc = __toESM(require_dist(), 1);
+var import_oidc2 = __toESM(require_dist(), 1);
+var marker17 = "vercel.ai.gateway.error";
+var symbol17 = Symbol.for(marker17);
+var _a17;
+var _b17;
+var GatewayError = class _GatewayError extends (_b17 = Error, _a17 = symbol17, _b17) {
+  constructor({
+    message,
+    statusCode = 500,
+    cause,
+    generationId,
+    isRetryable = statusCode != null && (statusCode === 408 || statusCode === 409 || statusCode === 429 || statusCode >= 500)
+  }) {
+    super(generationId ? `${message} [${generationId}]` : message);
+    this[_a17] = true;
+    this.statusCode = statusCode;
+    this.cause = cause;
+    this.generationId = generationId;
+    this.isRetryable = isRetryable;
+  }
+  static isInstance(error48) {
+    return _GatewayError.hasMarker(error48);
+  }
+  static hasMarker(error48) {
+    return typeof error48 === "object" && error48 !== null && symbol17 in error48 && error48[symbol17] === true;
+  }
+};
+var name16 = "GatewayAuthenticationError";
+var marker22 = `vercel.ai.gateway.error.${name16}`;
+var symbol23 = Symbol.for(marker22);
+var _a23;
+var _b22;
+var GatewayAuthenticationError = class _GatewayAuthenticationError extends (_b22 = GatewayError, _a23 = symbol23, _b22) {
+  constructor({
+    message = "Authentication failed",
+    statusCode = 401,
+    cause,
+    generationId
+  } = {}) {
+    super({ message, statusCode, cause, generationId });
+    this[_a23] = true;
+    this.name = name16;
+    this.type = "authentication_error";
+  }
+  static isInstance(error48) {
+    return GatewayError.hasMarker(error48) && symbol23 in error48;
+  }
+  static createContextualError({
+    apiKeyProvided,
+    oidcTokenProvided,
+    message = "Authentication failed",
+    statusCode = 401,
+    cause,
+    generationId
+  }) {
+    let contextualMessage;
+    if (apiKeyProvided) {
+      contextualMessage = `AI Gateway authentication failed: Invalid API key.
+
+Create a new API key: https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys
+
+Provide via 'apiKey' option or 'AI_GATEWAY_API_KEY' environment variable.`;
+    } else if (oidcTokenProvided) {
+      contextualMessage = `AI Gateway authentication failed: Invalid OIDC token.
+
+Run 'npx vercel link' to link your project, then 'vc env pull' to fetch the token.
+
+Alternatively, use an API key: https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys`;
+    } else {
+      contextualMessage = `AI Gateway authentication failed: No authentication provided.
+
+Option 1 - API key:
+Create an API key: https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%2Fapi-keys
+Provide via 'apiKey' option or 'AI_GATEWAY_API_KEY' environment variable.
+
+Option 2 - OIDC token:
+Run 'npx vercel link' to link your project, then 'vc env pull' to fetch the token.`;
+    }
+    return new _GatewayAuthenticationError({
+      message: contextualMessage,
+      statusCode,
+      cause,
+      generationId
+    });
+  }
+};
+var name22 = "GatewayInvalidRequestError";
+var marker32 = `vercel.ai.gateway.error.${name22}`;
+var symbol32 = Symbol.for(marker32);
+var _a33;
+var _b32;
+var GatewayInvalidRequestError = class extends (_b32 = GatewayError, _a33 = symbol32, _b32) {
+  constructor({
+    message = "Invalid request",
+    statusCode = 400,
+    cause,
+    generationId
+  } = {}) {
+    super({ message, statusCode, cause, generationId });
+    this[_a33] = true;
+    this.name = name22;
+    this.type = "invalid_request_error";
+  }
+  static isInstance(error48) {
+    return GatewayError.hasMarker(error48) && symbol32 in error48;
+  }
+};
+var name32 = "GatewayRateLimitError";
+var marker42 = `vercel.ai.gateway.error.${name32}`;
+var symbol42 = Symbol.for(marker42);
+var _a43;
+var _b42;
+var GatewayRateLimitError = class extends (_b42 = GatewayError, _a43 = symbol42, _b42) {
+  constructor({
+    message = "Rate limit exceeded",
+    statusCode = 429,
+    cause,
+    generationId
+  } = {}) {
+    super({ message, statusCode, cause, generationId });
+    this[_a43] = true;
+    this.name = name32;
+    this.type = "rate_limit_exceeded";
+  }
+  static isInstance(error48) {
+    return GatewayError.hasMarker(error48) && symbol42 in error48;
+  }
+};
+var name42 = "GatewayModelNotFoundError";
+var marker52 = `vercel.ai.gateway.error.${name42}`;
+var symbol52 = Symbol.for(marker52);
+var modelNotFoundParamSchema = lazySchema(() => zodSchema(exports_external.object({
+  modelId: exports_external.string()
+})));
+var _a53;
+var _b52;
+var GatewayModelNotFoundError = class extends (_b52 = GatewayError, _a53 = symbol52, _b52) {
+  constructor({
+    message = "Model not found",
+    statusCode = 404,
+    modelId,
+    cause,
+    generationId
+  } = {}) {
+    super({ message, statusCode, cause, generationId });
+    this[_a53] = true;
+    this.name = name42;
+    this.type = "model_not_found";
+    this.modelId = modelId;
+  }
+  static isInstance(error48) {
+    return GatewayError.hasMarker(error48) && symbol52 in error48;
+  }
+};
+var name52 = "GatewayInternalServerError";
+var marker62 = `vercel.ai.gateway.error.${name52}`;
+var symbol62 = Symbol.for(marker62);
+var _a62;
+var _b62;
+var GatewayInternalServerError = class extends (_b62 = GatewayError, _a62 = symbol62, _b62) {
+  constructor({
+    message = "Internal server error",
+    statusCode = 500,
+    cause,
+    generationId
+  } = {}) {
+    super({ message, statusCode, cause, generationId });
+    this[_a62] = true;
+    this.name = name52;
+    this.type = "internal_server_error";
+  }
+  static isInstance(error48) {
+    return GatewayError.hasMarker(error48) && symbol62 in error48;
+  }
+};
+var name62 = "GatewayResponseError";
+var marker72 = `vercel.ai.gateway.error.${name62}`;
+var symbol72 = Symbol.for(marker72);
+var _a72;
+var _b72;
+var GatewayResponseError = class extends (_b72 = GatewayError, _a72 = symbol72, _b72) {
+  constructor({
+    message = "Invalid response from Gateway",
+    statusCode = 502,
+    response,
+    validationError,
+    cause,
+    generationId
+  } = {}) {
+    super({ message, statusCode, cause, generationId });
+    this[_a72] = true;
+    this.name = name62;
+    this.type = "response_error";
+    this.response = response;
+    this.validationError = validationError;
+  }
+  static isInstance(error48) {
+    return GatewayError.hasMarker(error48) && symbol72 in error48;
+  }
+};
+async function createGatewayErrorFromResponse({
+  response,
+  statusCode,
+  defaultMessage = "Gateway request failed",
+  cause,
+  authMethod
+}) {
+  var _a92;
+  const parseResult = await safeValidateTypes({
+    value: response,
+    schema: gatewayErrorResponseSchema
+  });
+  if (!parseResult.success) {
+    const rawGenerationId = typeof response === "object" && response !== null && "generationId" in response ? response.generationId : undefined;
+    return new GatewayResponseError({
+      message: `Invalid error response format: ${defaultMessage}`,
+      statusCode,
+      response,
+      validationError: parseResult.error,
+      cause,
+      generationId: rawGenerationId
+    });
+  }
+  const validatedResponse = parseResult.value;
+  const errorType = validatedResponse.error.type;
+  const message = validatedResponse.error.message;
+  const generationId = (_a92 = validatedResponse.generationId) != null ? _a92 : undefined;
+  switch (errorType) {
+    case "authentication_error":
+      return GatewayAuthenticationError.createContextualError({
+        apiKeyProvided: authMethod === "api-key",
+        oidcTokenProvided: authMethod === "oidc",
+        statusCode,
+        cause,
+        generationId
+      });
+    case "invalid_request_error":
+      return new GatewayInvalidRequestError({
+        message,
+        statusCode,
+        cause,
+        generationId
+      });
+    case "rate_limit_exceeded":
+      return new GatewayRateLimitError({
+        message,
+        statusCode,
+        cause,
+        generationId
+      });
+    case "model_not_found": {
+      const modelResult = await safeValidateTypes({
+        value: validatedResponse.error.param,
+        schema: modelNotFoundParamSchema
+      });
+      return new GatewayModelNotFoundError({
+        message,
+        statusCode,
+        modelId: modelResult.success ? modelResult.value.modelId : undefined,
+        cause,
+        generationId
+      });
+    }
+    case "internal_server_error":
+      return new GatewayInternalServerError({
+        message,
+        statusCode,
+        cause,
+        generationId
+      });
+    default:
+      return new GatewayInternalServerError({
+        message,
+        statusCode,
+        cause,
+        generationId
+      });
+  }
+}
+var gatewayErrorResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  error: exports_external.object({
+    message: exports_external.string(),
+    type: exports_external.string().nullish(),
+    param: exports_external.unknown().nullish(),
+    code: exports_external.union([exports_external.string(), exports_external.number()]).nullish()
+  }),
+  generationId: exports_external.string().nullish()
+})));
+function extractApiCallResponse(error48) {
+  if (error48.data !== undefined) {
+    return error48.data;
+  }
+  if (error48.responseBody != null) {
+    try {
+      return JSON.parse(error48.responseBody);
+    } catch (e) {
+      return error48.responseBody;
+    }
+  }
+  return {};
+}
+var name72 = "GatewayTimeoutError";
+var marker82 = `vercel.ai.gateway.error.${name72}`;
+var symbol82 = Symbol.for(marker82);
+var _a82;
+var _b82;
+var GatewayTimeoutError = class _GatewayTimeoutError extends (_b82 = GatewayError, _a82 = symbol82, _b82) {
+  constructor({
+    message = "Request timed out",
+    statusCode = 408,
+    cause,
+    generationId
+  } = {}) {
+    super({ message, statusCode, cause, generationId });
+    this[_a82] = true;
+    this.name = name72;
+    this.type = "timeout_error";
+  }
+  static isInstance(error48) {
+    return GatewayError.hasMarker(error48) && symbol82 in error48;
+  }
+  static createTimeoutError({
+    originalMessage,
+    statusCode = 408,
+    cause,
+    generationId
+  }) {
+    const message = `Gateway request timed out: ${originalMessage}
+
+    This is a client-side timeout. To resolve this, increase your timeout configuration: https://vercel.com/docs/ai-gateway/capabilities/video-generation#extending-timeouts-for-node.js`;
+    return new _GatewayTimeoutError({
+      message,
+      statusCode,
+      cause,
+      generationId
+    });
+  }
+};
+function isTimeoutError(error48) {
+  if (!(error48 instanceof Error)) {
+    return false;
+  }
+  const errorCode = error48.code;
+  if (typeof errorCode === "string") {
+    const undiciTimeoutCodes = [
+      "UND_ERR_HEADERS_TIMEOUT",
+      "UND_ERR_BODY_TIMEOUT",
+      "UND_ERR_CONNECT_TIMEOUT"
+    ];
+    return undiciTimeoutCodes.includes(errorCode);
+  }
+  return false;
+}
+async function asGatewayError(error48, authMethod) {
+  var _a92;
+  if (GatewayError.isInstance(error48)) {
+    return error48;
+  }
+  if (isTimeoutError(error48)) {
+    return GatewayTimeoutError.createTimeoutError({
+      originalMessage: error48 instanceof Error ? error48.message : "Unknown error",
+      cause: error48
+    });
+  }
+  if (APICallError.isInstance(error48)) {
+    if (error48.cause && isTimeoutError(error48.cause)) {
+      return GatewayTimeoutError.createTimeoutError({
+        originalMessage: error48.message,
+        cause: error48
+      });
+    }
+    return await createGatewayErrorFromResponse({
+      response: extractApiCallResponse(error48),
+      statusCode: (_a92 = error48.statusCode) != null ? _a92 : 500,
+      defaultMessage: "Gateway request failed",
+      cause: error48,
+      authMethod
+    });
+  }
+  return await createGatewayErrorFromResponse({
+    response: {},
+    statusCode: 500,
+    defaultMessage: error48 instanceof Error ? `Gateway request failed: ${error48.message}` : "Unknown Gateway error",
+    cause: error48,
+    authMethod
+  });
+}
+var GATEWAY_AUTH_METHOD_HEADER = "ai-gateway-auth-method";
+async function parseAuthMethod(headers) {
+  const result = await safeValidateTypes({
+    value: headers[GATEWAY_AUTH_METHOD_HEADER],
+    schema: gatewayAuthMethodSchema
+  });
+  return result.success ? result.value : undefined;
+}
+var gatewayAuthMethodSchema = lazySchema(() => zodSchema(exports_external.union([exports_external.literal("api-key"), exports_external.literal("oidc")])));
+var KNOWN_MODEL_TYPES = [
+  "embedding",
+  "image",
+  "language",
+  "reranking",
+  "video"
+];
+var GatewayFetchMetadata = class {
+  constructor(config2) {
+    this.config = config2;
+  }
+  async getAvailableModels() {
+    try {
+      const { value } = await getFromApi({
+        url: `${this.config.baseURL}/config`,
+        headers: await resolve(this.config.headers()),
+        successfulResponseHandler: createJsonResponseHandler(gatewayAvailableModelsResponseSchema),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        fetch: this.config.fetch
+      });
+      return value;
+    } catch (error48) {
+      throw await asGatewayError(error48);
+    }
+  }
+  async getCredits() {
+    try {
+      const baseUrl = new URL(this.config.baseURL);
+      const { value } = await getFromApi({
+        url: `${baseUrl.origin}/v1/credits`,
+        headers: await resolve(this.config.headers()),
+        successfulResponseHandler: createJsonResponseHandler(gatewayCreditsResponseSchema),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        fetch: this.config.fetch
+      });
+      return value;
+    } catch (error48) {
+      throw await asGatewayError(error48);
+    }
+  }
+};
+var gatewayAvailableModelsResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  models: exports_external.array(exports_external.object({
+    id: exports_external.string(),
+    name: exports_external.string(),
+    description: exports_external.string().nullish(),
+    pricing: exports_external.object({
+      input: exports_external.string(),
+      output: exports_external.string(),
+      input_cache_read: exports_external.string().nullish(),
+      input_cache_write: exports_external.string().nullish()
+    }).transform(({ input, output, input_cache_read, input_cache_write }) => ({
+      input,
+      output,
+      ...input_cache_read ? { cachedInputTokens: input_cache_read } : {},
+      ...input_cache_write ? { cacheCreationInputTokens: input_cache_write } : {}
+    })).nullish(),
+    specification: exports_external.object({
+      specificationVersion: exports_external.literal("v3"),
+      provider: exports_external.string(),
+      modelId: exports_external.string()
+    }),
+    modelType: exports_external.string().nullish()
+  })).transform((models) => models.filter((m) => m.modelType == null || KNOWN_MODEL_TYPES.includes(m.modelType)))
+})));
+var gatewayCreditsResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  balance: exports_external.string(),
+  total_used: exports_external.string()
+}).transform(({ balance, total_used }) => ({
+  balance,
+  totalUsed: total_used
+}))));
+var GatewaySpendReport = class {
+  constructor(config2) {
+    this.config = config2;
+  }
+  async getSpendReport(params) {
+    try {
+      const baseUrl = new URL(this.config.baseURL);
+      const searchParams = new URLSearchParams;
+      searchParams.set("start_date", params.startDate);
+      searchParams.set("end_date", params.endDate);
+      if (params.groupBy) {
+        searchParams.set("group_by", params.groupBy);
+      }
+      if (params.datePart) {
+        searchParams.set("date_part", params.datePart);
+      }
+      if (params.userId) {
+        searchParams.set("user_id", params.userId);
+      }
+      if (params.model) {
+        searchParams.set("model", params.model);
+      }
+      if (params.provider) {
+        searchParams.set("provider", params.provider);
+      }
+      if (params.credentialType) {
+        searchParams.set("credential_type", params.credentialType);
+      }
+      if (params.tags && params.tags.length > 0) {
+        searchParams.set("tags", params.tags.join(","));
+      }
+      const { value } = await getFromApi({
+        url: `${baseUrl.origin}/v1/report?${searchParams.toString()}`,
+        headers: await resolve(this.config.headers()),
+        successfulResponseHandler: createJsonResponseHandler(gatewaySpendReportResponseSchema),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        fetch: this.config.fetch
+      });
+      return value;
+    } catch (error48) {
+      throw await asGatewayError(error48);
+    }
+  }
+};
+var gatewaySpendReportResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  results: exports_external.array(exports_external.object({
+    day: exports_external.string().optional(),
+    hour: exports_external.string().optional(),
+    user: exports_external.string().optional(),
+    model: exports_external.string().optional(),
+    tag: exports_external.string().optional(),
+    provider: exports_external.string().optional(),
+    credential_type: exports_external.enum(["byok", "system"]).optional(),
+    total_cost: exports_external.number(),
+    market_cost: exports_external.number().optional(),
+    input_tokens: exports_external.number().optional(),
+    output_tokens: exports_external.number().optional(),
+    cached_input_tokens: exports_external.number().optional(),
+    cache_creation_input_tokens: exports_external.number().optional(),
+    reasoning_tokens: exports_external.number().optional(),
+    request_count: exports_external.number().optional()
+  }).transform(({
+    credential_type,
+    total_cost,
+    market_cost,
+    input_tokens,
+    output_tokens,
+    cached_input_tokens,
+    cache_creation_input_tokens,
+    reasoning_tokens,
+    request_count,
+    ...rest
+  }) => ({
+    ...rest,
+    ...credential_type !== undefined ? { credentialType: credential_type } : {},
+    totalCost: total_cost,
+    ...market_cost !== undefined ? { marketCost: market_cost } : {},
+    ...input_tokens !== undefined ? { inputTokens: input_tokens } : {},
+    ...output_tokens !== undefined ? { outputTokens: output_tokens } : {},
+    ...cached_input_tokens !== undefined ? { cachedInputTokens: cached_input_tokens } : {},
+    ...cache_creation_input_tokens !== undefined ? { cacheCreationInputTokens: cache_creation_input_tokens } : {},
+    ...reasoning_tokens !== undefined ? { reasoningTokens: reasoning_tokens } : {},
+    ...request_count !== undefined ? { requestCount: request_count } : {}
+  })))
+})));
+var GatewayGenerationInfoFetcher = class {
+  constructor(config2) {
+    this.config = config2;
+  }
+  async getGenerationInfo(params) {
+    try {
+      const baseUrl = new URL(this.config.baseURL);
+      const { value } = await getFromApi({
+        url: `${baseUrl.origin}/v1/generation?id=${encodeURIComponent(params.id)}`,
+        headers: await resolve(this.config.headers()),
+        successfulResponseHandler: createJsonResponseHandler(gatewayGenerationInfoResponseSchema),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        fetch: this.config.fetch
+      });
+      return value;
+    } catch (error48) {
+      throw await asGatewayError(error48);
+    }
+  }
+};
+var gatewayGenerationInfoResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  data: exports_external.object({
+    id: exports_external.string(),
+    total_cost: exports_external.number(),
+    upstream_inference_cost: exports_external.number(),
+    usage: exports_external.number(),
+    created_at: exports_external.string(),
+    model: exports_external.string(),
+    is_byok: exports_external.boolean(),
+    provider_name: exports_external.string(),
+    streamed: exports_external.boolean(),
+    finish_reason: exports_external.string(),
+    latency: exports_external.number(),
+    generation_time: exports_external.number(),
+    native_tokens_prompt: exports_external.number(),
+    native_tokens_completion: exports_external.number(),
+    native_tokens_reasoning: exports_external.number(),
+    native_tokens_cached: exports_external.number(),
+    native_tokens_cache_creation: exports_external.number(),
+    billable_web_search_calls: exports_external.number()
+  }).transform(({
+    total_cost,
+    upstream_inference_cost,
+    created_at,
+    is_byok,
+    provider_name,
+    finish_reason,
+    generation_time,
+    native_tokens_prompt,
+    native_tokens_completion,
+    native_tokens_reasoning,
+    native_tokens_cached,
+    native_tokens_cache_creation,
+    billable_web_search_calls,
+    ...rest
+  }) => ({
+    ...rest,
+    totalCost: total_cost,
+    upstreamInferenceCost: upstream_inference_cost,
+    createdAt: created_at,
+    isByok: is_byok,
+    providerName: provider_name,
+    finishReason: finish_reason,
+    generationTime: generation_time,
+    promptTokens: native_tokens_prompt,
+    completionTokens: native_tokens_completion,
+    reasoningTokens: native_tokens_reasoning,
+    cachedTokens: native_tokens_cached,
+    cacheCreationTokens: native_tokens_cache_creation,
+    billableWebSearchCalls: billable_web_search_calls
+  }))
+}).transform(({ data: data2 }) => data2)));
+var GatewayLanguageModel = class {
+  constructor(modelId, config2) {
+    this.modelId = modelId;
+    this.config = config2;
+    this.specificationVersion = "v3";
+    this.supportedUrls = { "*/*": [/.*/] };
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async getArgs(options2) {
+    const { abortSignal: _abortSignal, ...optionsWithoutSignal } = options2;
+    return {
+      args: this.maybeEncodeFileParts(optionsWithoutSignal),
+      warnings: []
+    };
+  }
+  async doGenerate(options2) {
+    const { args, warnings } = await this.getArgs(options2);
+    const { abortSignal } = options2;
+    const resolvedHeaders = await resolve(this.config.headers());
+    try {
+      const {
+        responseHeaders,
+        value: responseBody,
+        rawValue: rawResponse
+      } = await postJsonToApi({
+        url: this.getUrl(),
+        headers: combineHeaders(resolvedHeaders, options2.headers, this.getModelConfigHeaders(this.modelId, false), await resolve(this.config.o11yHeaders)),
+        body: args,
+        successfulResponseHandler: createJsonResponseHandler(exports_external.any()),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        ...abortSignal && { abortSignal },
+        fetch: this.config.fetch
+      });
+      return {
+        ...responseBody,
+        request: { body: args },
+        response: { headers: responseHeaders, body: rawResponse },
+        warnings
+      };
+    } catch (error48) {
+      throw await asGatewayError(error48, await parseAuthMethod(resolvedHeaders));
+    }
+  }
+  async doStream(options2) {
+    const { args, warnings } = await this.getArgs(options2);
+    const { abortSignal } = options2;
+    const resolvedHeaders = await resolve(this.config.headers());
+    try {
+      const { value: response, responseHeaders } = await postJsonToApi({
+        url: this.getUrl(),
+        headers: combineHeaders(resolvedHeaders, options2.headers, this.getModelConfigHeaders(this.modelId, true), await resolve(this.config.o11yHeaders)),
+        body: args,
+        successfulResponseHandler: createEventSourceResponseHandler(exports_external.any()),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        ...abortSignal && { abortSignal },
+        fetch: this.config.fetch
+      });
+      return {
+        stream: response.pipeThrough(new TransformStream({
+          start(controller) {
+            if (warnings.length > 0) {
+              controller.enqueue({ type: "stream-start", warnings });
+            }
+          },
+          transform(chunk, controller) {
+            if (chunk.success) {
+              const streamPart = chunk.value;
+              if (streamPart.type === "raw" && !options2.includeRawChunks) {
+                return;
+              }
+              if (streamPart.type === "response-metadata" && streamPart.timestamp && typeof streamPart.timestamp === "string") {
+                streamPart.timestamp = new Date(streamPart.timestamp);
+              }
+              controller.enqueue(streamPart);
+            } else {
+              controller.error(chunk.error);
+            }
+          }
+        })),
+        request: { body: args },
+        response: { headers: responseHeaders }
+      };
+    } catch (error48) {
+      throw await asGatewayError(error48, await parseAuthMethod(resolvedHeaders));
+    }
+  }
+  isFilePart(part) {
+    return part && typeof part === "object" && "type" in part && part.type === "file";
+  }
+  maybeEncodeFileParts(options2) {
+    for (const message of options2.prompt) {
+      for (const part of message.content) {
+        if (this.isFilePart(part)) {
+          const filePart = part;
+          if (filePart.data instanceof Uint8Array) {
+            const buffer = Uint8Array.from(filePart.data);
+            const base64Data = Buffer.from(buffer).toString("base64");
+            filePart.data = new URL(`data:${filePart.mediaType || "application/octet-stream"};base64,${base64Data}`);
+          }
+        }
+      }
+    }
+    return options2;
+  }
+  getUrl() {
+    return `${this.config.baseURL}/language-model`;
+  }
+  getModelConfigHeaders(modelId, streaming) {
+    return {
+      "ai-language-model-specification-version": "3",
+      "ai-language-model-id": modelId,
+      "ai-language-model-streaming": String(streaming)
+    };
+  }
+};
+var GatewayEmbeddingModel = class {
+  constructor(modelId, config2) {
+    this.modelId = modelId;
+    this.config = config2;
+    this.specificationVersion = "v3";
+    this.maxEmbeddingsPerCall = 2048;
+    this.supportsParallelCalls = true;
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async doEmbed({
+    values,
+    headers,
+    abortSignal,
+    providerOptions
+  }) {
+    var _a92;
+    const resolvedHeaders = await resolve(this.config.headers());
+    try {
+      const {
+        responseHeaders,
+        value: responseBody,
+        rawValue
+      } = await postJsonToApi({
+        url: this.getUrl(),
+        headers: combineHeaders(resolvedHeaders, headers != null ? headers : {}, this.getModelConfigHeaders(), await resolve(this.config.o11yHeaders)),
+        body: {
+          values,
+          ...providerOptions ? { providerOptions } : {}
+        },
+        successfulResponseHandler: createJsonResponseHandler(gatewayEmbeddingResponseSchema),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        ...abortSignal && { abortSignal },
+        fetch: this.config.fetch
+      });
+      return {
+        embeddings: responseBody.embeddings,
+        usage: (_a92 = responseBody.usage) != null ? _a92 : undefined,
+        providerMetadata: responseBody.providerMetadata,
+        response: { headers: responseHeaders, body: rawValue },
+        warnings: []
+      };
+    } catch (error48) {
+      throw await asGatewayError(error48, await parseAuthMethod(resolvedHeaders));
+    }
+  }
+  getUrl() {
+    return `${this.config.baseURL}/embedding-model`;
+  }
+  getModelConfigHeaders() {
+    return {
+      "ai-embedding-model-specification-version": "3",
+      "ai-model-id": this.modelId
+    };
+  }
+};
+var gatewayEmbeddingResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  embeddings: exports_external.array(exports_external.array(exports_external.number())),
+  usage: exports_external.object({ tokens: exports_external.number() }).nullish(),
+  providerMetadata: exports_external.record(exports_external.string(), exports_external.record(exports_external.string(), exports_external.unknown())).optional()
+})));
+var GatewayImageModel = class {
+  constructor(modelId, config2) {
+    this.modelId = modelId;
+    this.config = config2;
+    this.specificationVersion = "v3";
+    this.maxImagesPerCall = Number.MAX_SAFE_INTEGER;
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async doGenerate({
+    prompt,
+    n,
+    size,
+    aspectRatio,
+    seed,
+    files,
+    mask,
+    providerOptions,
+    headers,
+    abortSignal
+  }) {
+    var _a92, _b92, _c, _d;
+    const resolvedHeaders = await resolve(this.config.headers());
+    try {
+      const {
+        responseHeaders,
+        value: responseBody,
+        rawValue
+      } = await postJsonToApi({
+        url: this.getUrl(),
+        headers: combineHeaders(resolvedHeaders, headers != null ? headers : {}, this.getModelConfigHeaders(), await resolve(this.config.o11yHeaders)),
+        body: {
+          prompt,
+          n,
+          ...size && { size },
+          ...aspectRatio && { aspectRatio },
+          ...seed && { seed },
+          ...providerOptions && { providerOptions },
+          ...files && {
+            files: files.map((file2) => maybeEncodeImageFile(file2))
+          },
+          ...mask && { mask: maybeEncodeImageFile(mask) }
+        },
+        successfulResponseHandler: createJsonResponseHandler(gatewayImageResponseSchema),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        ...abortSignal && { abortSignal },
+        fetch: this.config.fetch
+      });
+      return {
+        images: responseBody.images,
+        warnings: (_a92 = responseBody.warnings) != null ? _a92 : [],
+        providerMetadata: responseBody.providerMetadata,
+        response: {
+          timestamp: /* @__PURE__ */ new Date,
+          modelId: this.modelId,
+          headers: responseHeaders
+        },
+        ...responseBody.usage != null && {
+          usage: {
+            inputTokens: (_b92 = responseBody.usage.inputTokens) != null ? _b92 : undefined,
+            outputTokens: (_c = responseBody.usage.outputTokens) != null ? _c : undefined,
+            totalTokens: (_d = responseBody.usage.totalTokens) != null ? _d : undefined
+          }
+        }
+      };
+    } catch (error48) {
+      throw await asGatewayError(error48, await parseAuthMethod(resolvedHeaders));
+    }
+  }
+  getUrl() {
+    return `${this.config.baseURL}/image-model`;
+  }
+  getModelConfigHeaders() {
+    return {
+      "ai-image-model-specification-version": "3",
+      "ai-model-id": this.modelId
+    };
+  }
+};
+function maybeEncodeImageFile(file2) {
+  if (file2.type === "file" && file2.data instanceof Uint8Array) {
+    return {
+      ...file2,
+      data: convertUint8ArrayToBase64(file2.data)
+    };
+  }
+  return file2;
+}
+var providerMetadataEntrySchema = exports_external.object({
+  images: exports_external.array(exports_external.unknown()).optional()
+}).catchall(exports_external.unknown());
+var gatewayImageWarningSchema = exports_external.discriminatedUnion("type", [
+  exports_external.object({
+    type: exports_external.literal("unsupported"),
+    feature: exports_external.string(),
+    details: exports_external.string().optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("compatibility"),
+    feature: exports_external.string(),
+    details: exports_external.string().optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("other"),
+    message: exports_external.string()
+  })
+]);
+var gatewayImageUsageSchema = exports_external.object({
+  inputTokens: exports_external.number().nullish(),
+  outputTokens: exports_external.number().nullish(),
+  totalTokens: exports_external.number().nullish()
+});
+var gatewayImageResponseSchema = exports_external.object({
+  images: exports_external.array(exports_external.string()),
+  warnings: exports_external.array(gatewayImageWarningSchema).optional(),
+  providerMetadata: exports_external.record(exports_external.string(), providerMetadataEntrySchema).optional(),
+  usage: gatewayImageUsageSchema.optional()
+});
+var GatewayVideoModel = class {
+  constructor(modelId, config2) {
+    this.modelId = modelId;
+    this.config = config2;
+    this.specificationVersion = "v3";
+    this.maxVideosPerCall = Number.MAX_SAFE_INTEGER;
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async doGenerate({
+    prompt,
+    n,
+    aspectRatio,
+    resolution,
+    duration: duration3,
+    fps,
+    seed,
+    image,
+    providerOptions,
+    headers,
+    abortSignal
+  }) {
+    var _a92;
+    const resolvedHeaders = await resolve(this.config.headers());
+    try {
+      const { responseHeaders, value: responseBody } = await postJsonToApi({
+        url: this.getUrl(),
+        headers: combineHeaders(resolvedHeaders, headers != null ? headers : {}, this.getModelConfigHeaders(), await resolve(this.config.o11yHeaders), { accept: "text/event-stream" }),
+        body: {
+          prompt,
+          n,
+          ...aspectRatio && { aspectRatio },
+          ...resolution && { resolution },
+          ...duration3 && { duration: duration3 },
+          ...fps && { fps },
+          ...seed && { seed },
+          ...providerOptions && { providerOptions },
+          ...image && { image: maybeEncodeVideoFile(image) }
+        },
+        successfulResponseHandler: async ({
+          response,
+          url: url2,
+          requestBodyValues
+        }) => {
+          if (response.body == null) {
+            throw new APICallError({
+              message: "SSE response body is empty",
+              url: url2,
+              requestBodyValues,
+              statusCode: response.status
+            });
+          }
+          const eventStream = parseJsonEventStream({
+            stream: response.body,
+            schema: gatewayVideoEventSchema
+          });
+          const reader = eventStream.getReader();
+          const { done, value: parseResult } = await reader.read();
+          reader.releaseLock();
+          if (done || !parseResult) {
+            throw new APICallError({
+              message: "SSE stream ended without a data event",
+              url: url2,
+              requestBodyValues,
+              statusCode: response.status
+            });
+          }
+          if (!parseResult.success) {
+            throw new APICallError({
+              message: "Failed to parse video SSE event",
+              cause: parseResult.error,
+              url: url2,
+              requestBodyValues,
+              statusCode: response.status
+            });
+          }
+          const event = parseResult.value;
+          if (event.type === "error") {
+            throw new APICallError({
+              message: event.message,
+              statusCode: event.statusCode,
+              url: url2,
+              requestBodyValues,
+              responseHeaders: Object.fromEntries([...response.headers]),
+              responseBody: JSON.stringify(event),
+              data: {
+                error: {
+                  message: event.message,
+                  type: event.errorType,
+                  param: event.param
+                }
+              }
+            });
+          }
+          return {
+            value: {
+              videos: event.videos,
+              warnings: event.warnings,
+              providerMetadata: event.providerMetadata
+            },
+            responseHeaders: Object.fromEntries([...response.headers])
+          };
+        },
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        ...abortSignal && { abortSignal },
+        fetch: this.config.fetch
+      });
+      return {
+        videos: responseBody.videos,
+        warnings: (_a92 = responseBody.warnings) != null ? _a92 : [],
+        providerMetadata: responseBody.providerMetadata,
+        response: {
+          timestamp: /* @__PURE__ */ new Date,
+          modelId: this.modelId,
+          headers: responseHeaders
+        }
+      };
+    } catch (error48) {
+      throw await asGatewayError(error48, await parseAuthMethod(resolvedHeaders));
+    }
+  }
+  getUrl() {
+    return `${this.config.baseURL}/video-model`;
+  }
+  getModelConfigHeaders() {
+    return {
+      "ai-video-model-specification-version": "3",
+      "ai-model-id": this.modelId
+    };
+  }
+};
+function maybeEncodeVideoFile(file2) {
+  if (file2.type === "file" && file2.data instanceof Uint8Array) {
+    return {
+      ...file2,
+      data: convertUint8ArrayToBase64(file2.data)
+    };
+  }
+  return file2;
+}
+var providerMetadataEntrySchema2 = exports_external.object({
+  videos: exports_external.array(exports_external.unknown()).optional()
+}).catchall(exports_external.unknown());
+var gatewayVideoDataSchema = exports_external.union([
+  exports_external.object({
+    type: exports_external.literal("url"),
+    url: exports_external.string(),
+    mediaType: exports_external.string()
+  }),
+  exports_external.object({
+    type: exports_external.literal("base64"),
+    data: exports_external.string(),
+    mediaType: exports_external.string()
+  })
+]);
+var gatewayVideoWarningSchema = exports_external.discriminatedUnion("type", [
+  exports_external.object({
+    type: exports_external.literal("unsupported"),
+    feature: exports_external.string(),
+    details: exports_external.string().optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("compatibility"),
+    feature: exports_external.string(),
+    details: exports_external.string().optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("other"),
+    message: exports_external.string()
+  })
+]);
+var gatewayVideoEventSchema = exports_external.discriminatedUnion("type", [
+  exports_external.object({
+    type: exports_external.literal("result"),
+    videos: exports_external.array(gatewayVideoDataSchema),
+    warnings: exports_external.array(gatewayVideoWarningSchema).optional(),
+    providerMetadata: exports_external.record(exports_external.string(), providerMetadataEntrySchema2).optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("error"),
+    message: exports_external.string(),
+    errorType: exports_external.string(),
+    statusCode: exports_external.number(),
+    param: exports_external.unknown().nullable()
+  })
+]);
+var GatewayRerankingModel = class {
+  constructor(modelId, config2) {
+    this.modelId = modelId;
+    this.config = config2;
+    this.specificationVersion = "v3";
+  }
+  get provider() {
+    return this.config.provider;
+  }
+  async doRerank({
+    documents,
+    query,
+    topN,
+    headers,
+    abortSignal,
+    providerOptions
+  }) {
+    const resolvedHeaders = await resolve(this.config.headers());
+    try {
+      const {
+        responseHeaders,
+        value: responseBody,
+        rawValue
+      } = await postJsonToApi({
+        url: this.getUrl(),
+        headers: combineHeaders(resolvedHeaders, headers != null ? headers : {}, this.getModelConfigHeaders(), await resolve(this.config.o11yHeaders)),
+        body: {
+          documents,
+          query,
+          ...topN != null ? { topN } : {},
+          ...providerOptions ? { providerOptions } : {}
+        },
+        successfulResponseHandler: createJsonResponseHandler(gatewayRerankingResponseSchema),
+        failedResponseHandler: createJsonErrorResponseHandler({
+          errorSchema: exports_external.any(),
+          errorToMessage: (data2) => data2
+        }),
+        ...abortSignal && { abortSignal },
+        fetch: this.config.fetch
+      });
+      return {
+        ranking: responseBody.ranking,
+        providerMetadata: responseBody.providerMetadata,
+        response: { headers: responseHeaders, body: rawValue },
+        warnings: []
+      };
+    } catch (error48) {
+      throw await asGatewayError(error48, await parseAuthMethod(resolvedHeaders));
+    }
+  }
+  getUrl() {
+    return `${this.config.baseURL}/reranking-model`;
+  }
+  getModelConfigHeaders() {
+    return {
+      "ai-reranking-model-specification-version": "3",
+      "ai-model-id": this.modelId
+    };
+  }
+};
+var gatewayRerankingResponseSchema = lazySchema(() => zodSchema(exports_external.object({
+  ranking: exports_external.array(exports_external.object({
+    index: exports_external.number(),
+    relevanceScore: exports_external.number()
+  })),
+  providerMetadata: exports_external.record(exports_external.string(), exports_external.record(exports_external.string(), exports_external.unknown())).optional()
+})));
+var parallelSearchInputSchema = lazySchema(() => zodSchema(exports_external.object({
+  objective: exports_external.string().describe("Natural-language description of the web research goal, including source or freshness guidance and broader context from the task. Maximum 5000 characters."),
+  search_queries: exports_external.array(exports_external.string()).optional().describe("Optional search queries to supplement the objective. Maximum 200 characters per query."),
+  mode: exports_external.enum(["one-shot", "agentic"]).optional().describe('Mode preset: "one-shot" for comprehensive results with longer excerpts (default), "agentic" for concise, token-efficient results for multi-step workflows.'),
+  max_results: exports_external.number().optional().describe("Maximum number of results to return (1-20). Defaults to 10 if not specified."),
+  source_policy: exports_external.object({
+    include_domains: exports_external.array(exports_external.string()).optional().describe("List of domains to include in search results."),
+    exclude_domains: exports_external.array(exports_external.string()).optional().describe("List of domains to exclude from search results."),
+    after_date: exports_external.string().optional().describe("Only include results published after this date (ISO 8601 format).")
+  }).optional().describe("Source policy for controlling which domains to include/exclude and freshness."),
+  excerpts: exports_external.object({
+    max_chars_per_result: exports_external.number().optional().describe("Maximum characters per result."),
+    max_chars_total: exports_external.number().optional().describe("Maximum total characters across all results.")
+  }).optional().describe("Excerpt configuration for controlling result length."),
+  fetch_policy: exports_external.object({
+    max_age_seconds: exports_external.number().optional().describe("Maximum age in seconds for cached content. Set to 0 to always fetch fresh content.")
+  }).optional().describe("Fetch policy for controlling content freshness.")
+})));
+var parallelSearchOutputSchema = lazySchema(() => zodSchema(exports_external.union([
+  exports_external.object({
+    searchId: exports_external.string(),
+    results: exports_external.array(exports_external.object({
+      url: exports_external.string(),
+      title: exports_external.string(),
+      excerpt: exports_external.string(),
+      publishDate: exports_external.string().nullable().optional(),
+      relevanceScore: exports_external.number().optional()
+    }))
+  }),
+  exports_external.object({
+    error: exports_external.enum([
+      "api_error",
+      "rate_limit",
+      "timeout",
+      "invalid_input",
+      "configuration_error",
+      "unknown"
+    ]),
+    statusCode: exports_external.number().optional(),
+    message: exports_external.string()
+  })
+])));
+var parallelSearchToolFactory = createProviderToolFactoryWithOutputSchema({
+  id: "gateway.parallel_search",
+  inputSchema: parallelSearchInputSchema,
+  outputSchema: parallelSearchOutputSchema
+});
+var parallelSearch = (config2 = {}) => parallelSearchToolFactory(config2);
+var perplexitySearchInputSchema = lazySchema(() => zodSchema(exports_external.object({
+  query: exports_external.union([exports_external.string(), exports_external.array(exports_external.string())]).describe("Search query (string) or multiple queries (array of up to 5 strings). Multi-query searches return combined results from all queries."),
+  max_results: exports_external.number().optional().describe("Maximum number of search results to return (1-20, default: 10)"),
+  max_tokens_per_page: exports_external.number().optional().describe("Maximum number of tokens to extract per search result page (256-2048, default: 2048)"),
+  max_tokens: exports_external.number().optional().describe("Maximum total tokens across all search results (default: 25000, max: 1000000)"),
+  country: exports_external.string().optional().describe("Two-letter ISO 3166-1 alpha-2 country code for regional search results (e.g., 'US', 'GB', 'FR')"),
+  search_domain_filter: exports_external.array(exports_external.string()).optional().describe("List of domains to include or exclude from search results (max 20). To include: ['nature.com', 'science.org']. To exclude: ['-example.com', '-spam.net']"),
+  search_language_filter: exports_external.array(exports_external.string()).optional().describe("List of ISO 639-1 language codes to filter results (max 10, lowercase). Examples: ['en', 'fr', 'de']"),
+  search_after_date: exports_external.string().optional().describe("Include only results published after this date. Format: 'MM/DD/YYYY' (e.g., '3/1/2025'). Cannot be used with search_recency_filter."),
+  search_before_date: exports_external.string().optional().describe("Include only results published before this date. Format: 'MM/DD/YYYY' (e.g., '3/15/2025'). Cannot be used with search_recency_filter."),
+  last_updated_after_filter: exports_external.string().optional().describe("Include only results last updated after this date. Format: 'MM/DD/YYYY' (e.g., '3/1/2025'). Cannot be used with search_recency_filter."),
+  last_updated_before_filter: exports_external.string().optional().describe("Include only results last updated before this date. Format: 'MM/DD/YYYY' (e.g., '3/15/2025'). Cannot be used with search_recency_filter."),
+  search_recency_filter: exports_external.enum(["day", "week", "month", "year"]).optional().describe("Filter results by relative time period. Cannot be used with search_after_date or search_before_date.")
+})));
+var perplexitySearchOutputSchema = lazySchema(() => zodSchema(exports_external.union([
+  exports_external.object({
+    results: exports_external.array(exports_external.object({
+      title: exports_external.string(),
+      url: exports_external.string(),
+      snippet: exports_external.string(),
+      date: exports_external.string().optional(),
+      lastUpdated: exports_external.string().optional()
+    })),
+    id: exports_external.string()
+  }),
+  exports_external.object({
+    error: exports_external.enum([
+      "api_error",
+      "rate_limit",
+      "timeout",
+      "invalid_input",
+      "unknown"
+    ]),
+    statusCode: exports_external.number().optional(),
+    message: exports_external.string()
+  })
+])));
+var perplexitySearchToolFactory = createProviderToolFactoryWithOutputSchema({
+  id: "gateway.perplexity_search",
+  inputSchema: perplexitySearchInputSchema,
+  outputSchema: perplexitySearchOutputSchema
+});
+var perplexitySearch = (config2 = {}) => perplexitySearchToolFactory(config2);
+var gatewayTools = {
+  parallelSearch,
+  perplexitySearch
+};
+async function getVercelRequestId() {
+  var _a92;
+  return (_a92 = import_oidc.getContext().headers) == null ? undefined : _a92["x-vercel-id"];
+}
+var VERSION3 = "3.0.125";
+var AI_GATEWAY_PROTOCOL_VERSION = "0.0.1";
+function createGatewayProvider(options2 = {}) {
+  var _a92, _b92;
+  let pendingMetadata = null;
+  let metadataCache = null;
+  const cacheRefreshMillis = (_a92 = options2.metadataCacheRefreshMillis) != null ? _a92 : 1000 * 60 * 5;
+  let lastFetchTime = 0;
+  const baseURL = (_b92 = withoutTrailingSlash(options2.baseURL)) != null ? _b92 : "https://ai-gateway.vercel.sh/v3/ai";
+  const getHeaders = async () => {
+    try {
+      const auth = await getGatewayAuthToken(options2);
+      return withUserAgentSuffix({
+        Authorization: `Bearer ${auth.token}`,
+        "ai-gateway-protocol-version": AI_GATEWAY_PROTOCOL_VERSION,
+        [GATEWAY_AUTH_METHOD_HEADER]: auth.authMethod,
+        ...options2.headers
+      }, `ai-sdk/gateway/${VERSION3}`);
+    } catch (error48) {
+      throw GatewayAuthenticationError.createContextualError({
+        apiKeyProvided: false,
+        oidcTokenProvided: false,
+        statusCode: 401,
+        cause: error48
+      });
+    }
+  };
+  const createO11yHeaders = () => {
+    const deploymentId = loadOptionalSetting({
+      settingValue: undefined,
+      environmentVariableName: "VERCEL_DEPLOYMENT_ID"
+    });
+    const environment = loadOptionalSetting({
+      settingValue: undefined,
+      environmentVariableName: "VERCEL_ENV"
+    });
+    const region = loadOptionalSetting({
+      settingValue: undefined,
+      environmentVariableName: "VERCEL_REGION"
+    });
+    const projectId = loadOptionalSetting({
+      settingValue: undefined,
+      environmentVariableName: "VERCEL_PROJECT_ID"
+    });
+    return async () => {
+      const requestId = await getVercelRequestId();
+      return {
+        ...deploymentId && { "ai-o11y-deployment-id": deploymentId },
+        ...environment && { "ai-o11y-environment": environment },
+        ...region && { "ai-o11y-region": region },
+        ...requestId && { "ai-o11y-request-id": requestId },
+        ...projectId && { "ai-o11y-project-id": projectId }
+      };
+    };
+  };
+  const createLanguageModel = (modelId) => {
+    return new GatewayLanguageModel(modelId, {
+      provider: "gateway",
+      baseURL,
+      headers: getHeaders,
+      fetch: options2.fetch,
+      o11yHeaders: createO11yHeaders()
+    });
+  };
+  const getAvailableModels = async () => {
+    var _a102, _b102, _c;
+    const now = (_c = (_b102 = (_a102 = options2._internal) == null ? undefined : _a102.currentDate) == null ? undefined : _b102.call(_a102).getTime()) != null ? _c : Date.now();
+    if (!pendingMetadata || now - lastFetchTime > cacheRefreshMillis) {
+      lastFetchTime = now;
+      pendingMetadata = new GatewayFetchMetadata({
+        baseURL,
+        headers: getHeaders,
+        fetch: options2.fetch
+      }).getAvailableModels().then((metadata) => {
+        metadataCache = metadata;
+        return metadata;
+      }).catch(async (error48) => {
+        throw await asGatewayError(error48, await parseAuthMethod(await getHeaders()));
+      });
+    }
+    return metadataCache ? Promise.resolve(metadataCache) : pendingMetadata;
+  };
+  const getCredits = async () => {
+    return new GatewayFetchMetadata({
+      baseURL,
+      headers: getHeaders,
+      fetch: options2.fetch
+    }).getCredits().catch(async (error48) => {
+      throw await asGatewayError(error48, await parseAuthMethod(await getHeaders()));
+    });
+  };
+  const getSpendReport = async (params) => {
+    return new GatewaySpendReport({
+      baseURL,
+      headers: getHeaders,
+      fetch: options2.fetch
+    }).getSpendReport(params).catch(async (error48) => {
+      throw await asGatewayError(error48, await parseAuthMethod(await getHeaders()));
+    });
+  };
+  const getGenerationInfo = async (params) => {
+    return new GatewayGenerationInfoFetcher({
+      baseURL,
+      headers: getHeaders,
+      fetch: options2.fetch
+    }).getGenerationInfo(params).catch(async (error48) => {
+      throw await asGatewayError(error48, await parseAuthMethod(await getHeaders()));
+    });
+  };
+  const provider = function(modelId) {
+    if (new.target) {
+      throw new Error("The Gateway Provider model function cannot be called with the new keyword.");
+    }
+    return createLanguageModel(modelId);
+  };
+  provider.specificationVersion = "v3";
+  provider.getAvailableModels = getAvailableModels;
+  provider.getCredits = getCredits;
+  provider.getSpendReport = getSpendReport;
+  provider.getGenerationInfo = getGenerationInfo;
+  provider.imageModel = (modelId) => {
+    return new GatewayImageModel(modelId, {
+      provider: "gateway",
+      baseURL,
+      headers: getHeaders,
+      fetch: options2.fetch,
+      o11yHeaders: createO11yHeaders()
+    });
+  };
+  provider.languageModel = createLanguageModel;
+  const createEmbeddingModel = (modelId) => {
+    return new GatewayEmbeddingModel(modelId, {
+      provider: "gateway",
+      baseURL,
+      headers: getHeaders,
+      fetch: options2.fetch,
+      o11yHeaders: createO11yHeaders()
+    });
+  };
+  provider.embeddingModel = createEmbeddingModel;
+  provider.textEmbeddingModel = createEmbeddingModel;
+  provider.videoModel = (modelId) => {
+    return new GatewayVideoModel(modelId, {
+      provider: "gateway",
+      baseURL,
+      headers: getHeaders,
+      fetch: options2.fetch,
+      o11yHeaders: createO11yHeaders()
+    });
+  };
+  const createRerankingModel = (modelId) => {
+    return new GatewayRerankingModel(modelId, {
+      provider: "gateway",
+      baseURL,
+      headers: getHeaders,
+      fetch: options2.fetch,
+      o11yHeaders: createO11yHeaders()
+    });
+  };
+  provider.rerankingModel = createRerankingModel;
+  provider.reranking = createRerankingModel;
+  provider.chat = provider.languageModel;
+  provider.embedding = provider.embeddingModel;
+  provider.image = provider.imageModel;
+  provider.video = provider.videoModel;
+  provider.tools = gatewayTools;
+  return provider;
+}
+var gateway = createGatewayProvider();
+async function getGatewayAuthToken(options2) {
+  const apiKey = loadOptionalSetting({
+    settingValue: options2.apiKey,
+    environmentVariableName: "AI_GATEWAY_API_KEY"
+  });
+  if (apiKey) {
+    return {
+      token: apiKey,
+      authMethod: "api-key"
+    };
+  }
+  const oidcToken = await import_oidc2.getVercelOidcToken();
+  return {
+    token: oidcToken,
+    authMethod: "oidc"
+  };
+}
+
+// node_modules/ai/dist/index.mjs
+var import_api = __toESM(require_src(), 1);
+var import_api2 = __toESM(require_src(), 1);
+var __defProp2 = Object.defineProperty;
+var __export2 = (target, all) => {
+  for (var name21 in all)
+    __defProp2(target, name21, { get: all[name21], enumerable: true });
+};
+var name17 = "AI_InvalidArgumentError";
+var marker18 = `vercel.ai.error.${name17}`;
+var symbol18 = Symbol.for(marker18);
+var _a18;
+var InvalidArgumentError2 = class extends AISDKError {
+  constructor({
+    parameter,
+    value,
+    message
+  }) {
+    super({
+      name: name17,
+      message: `Invalid argument for parameter ${parameter}: ${message}`
+    });
+    this[_a18] = true;
+    this.parameter = parameter;
+    this.value = value;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker18);
+  }
+};
+_a18 = symbol18;
+var name23 = "AI_InvalidStreamPartError";
+var marker23 = `vercel.ai.error.${name23}`;
+var symbol24 = Symbol.for(marker23);
+var _a24;
+_a24 = symbol24;
+var name33 = "AI_InvalidToolApprovalError";
+var marker33 = `vercel.ai.error.${name33}`;
+var symbol33 = Symbol.for(marker33);
+var _a34;
+var InvalidToolApprovalError = class extends AISDKError {
+  constructor({ approvalId }) {
+    super({
+      name: name33,
+      message: `Tool approval response references unknown approvalId: "${approvalId}". No matching tool-approval-request found in message history.`
+    });
+    this[_a34] = true;
+    this.approvalId = approvalId;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker33);
+  }
+};
+_a34 = symbol33;
+var name43 = "AI_InvalidToolInputError";
+var marker43 = `vercel.ai.error.${name43}`;
+var symbol43 = Symbol.for(marker43);
+var _a44;
+var InvalidToolInputError = class extends AISDKError {
+  constructor({
+    toolInput,
+    toolName,
+    cause,
+    message = `Invalid input for tool ${toolName}: ${getErrorMessage(cause)}`
+  }) {
+    super({ name: name43, message, cause });
+    this[_a44] = true;
+    this.toolInput = toolInput;
+    this.toolName = toolName;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker43);
+  }
+};
+_a44 = symbol43;
+var name53 = "AI_ToolCallNotFoundForApprovalError";
+var marker53 = `vercel.ai.error.${name53}`;
+var symbol53 = Symbol.for(marker53);
+var _a54;
+var ToolCallNotFoundForApprovalError = class extends AISDKError {
+  constructor({
+    toolCallId,
+    approvalId
+  }) {
+    super({
+      name: name53,
+      message: `Tool call "${toolCallId}" not found for approval request "${approvalId}".`
+    });
+    this[_a54] = true;
+    this.toolCallId = toolCallId;
+    this.approvalId = approvalId;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker53);
+  }
+};
+_a54 = symbol53;
+var name63 = "AI_MissingToolResultsError";
+var marker63 = `vercel.ai.error.${name63}`;
+var symbol63 = Symbol.for(marker63);
+var _a63;
+var MissingToolResultsError = class extends AISDKError {
+  constructor({ toolCallIds }) {
+    super({
+      name: name63,
+      message: `Tool result${toolCallIds.length > 1 ? "s are" : " is"} missing for tool call${toolCallIds.length > 1 ? "s" : ""} ${toolCallIds.join(", ")}.`
+    });
+    this[_a63] = true;
+    this.toolCallIds = toolCallIds;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker63);
+  }
+};
+_a63 = symbol63;
+var name73 = "AI_NoImageGeneratedError";
+var marker73 = `vercel.ai.error.${name73}`;
+var symbol73 = Symbol.for(marker73);
+var _a73;
+_a73 = symbol73;
+var name82 = "AI_NoObjectGeneratedError";
+var marker83 = `vercel.ai.error.${name82}`;
+var symbol83 = Symbol.for(marker83);
+var _a83;
+var NoObjectGeneratedError = class extends AISDKError {
+  constructor({
+    message = "No object generated.",
+    cause,
+    text: text22,
+    response,
+    usage,
+    finishReason
+  }) {
+    super({ name: name82, message, cause });
+    this[_a83] = true;
+    this.text = text22;
+    this.response = response;
+    this.usage = usage;
+    this.finishReason = finishReason;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker83);
+  }
+};
+_a83 = symbol83;
+var name92 = "AI_NoOutputGeneratedError";
+var marker92 = `vercel.ai.error.${name92}`;
+var symbol92 = Symbol.for(marker92);
+var _a92;
+var NoOutputGeneratedError = class extends AISDKError {
+  constructor({
+    message = "No output generated.",
+    cause
+  } = {}) {
+    super({ name: name92, message, cause });
+    this[_a92] = true;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker92);
+  }
+};
+_a92 = symbol92;
+var name102 = "AI_NoSpeechGeneratedError";
+var marker102 = `vercel.ai.error.${name102}`;
+var symbol102 = Symbol.for(marker102);
+var _a102;
+_a102 = symbol102;
+var name112 = "AI_NoTranscriptGeneratedError";
+var marker112 = `vercel.ai.error.${name112}`;
+var symbol112 = Symbol.for(marker112);
+var _a112;
+_a112 = symbol112;
+var name122 = "AI_NoVideoGeneratedError";
+var marker122 = `vercel.ai.error.${name122}`;
+var symbol122 = Symbol.for(marker122);
+var _a122;
+_a122 = symbol122;
+var name132 = "AI_NoSuchToolError";
+var marker132 = `vercel.ai.error.${name132}`;
+var symbol132 = Symbol.for(marker132);
+var _a132;
+var NoSuchToolError = class extends AISDKError {
+  constructor({
+    toolName,
+    availableTools = undefined,
+    message = `Model tried to call unavailable tool '${toolName}'. ${availableTools === undefined ? "No tools are available." : `Available tools: ${availableTools.join(", ")}.`}`
+  }) {
+    super({ name: name132, message });
+    this[_a132] = true;
+    this.toolName = toolName;
+    this.availableTools = availableTools;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker132);
+  }
+};
+_a132 = symbol132;
+var name142 = "AI_ToolCallRepairError";
+var marker142 = `vercel.ai.error.${name142}`;
+var symbol142 = Symbol.for(marker142);
+var _a142;
+var ToolCallRepairError = class extends AISDKError {
+  constructor({
+    cause,
+    originalError,
+    message = `Error repairing tool call: ${getErrorMessage(cause)}`
+  }) {
+    super({ name: name142, message, cause });
+    this[_a142] = true;
+    this.originalError = originalError;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker142);
+  }
+};
+_a142 = symbol142;
+var UnsupportedModelVersionError = class extends AISDKError {
+  constructor(options2) {
+    super({
+      name: "AI_UnsupportedModelVersionError",
+      message: `Unsupported model version ${options2.version} for provider "${options2.provider}" and model "${options2.modelId}". AI SDK 5 only supports models that implement specification version "v2".`
+    });
+    this.version = options2.version;
+    this.provider = options2.provider;
+    this.modelId = options2.modelId;
+  }
+};
+var name15 = "AI_UIMessageStreamError";
+var marker152 = `vercel.ai.error.${name15}`;
+var symbol152 = Symbol.for(marker152);
+var _a152;
+var UIMessageStreamError = class extends AISDKError {
+  constructor({
+    chunkType,
+    chunkId,
+    message
+  }) {
+    super({ name: name15, message });
+    this[_a152] = true;
+    this.chunkType = chunkType;
+    this.chunkId = chunkId;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker152);
+  }
+};
+_a152 = symbol152;
+var name162 = "AI_InvalidDataContentError";
+var marker16 = `vercel.ai.error.${name162}`;
+var symbol16 = Symbol.for(marker16);
+var _a16;
+_a16 = symbol16;
+var name172 = "AI_InvalidMessageRoleError";
+var marker172 = `vercel.ai.error.${name172}`;
+var symbol172 = Symbol.for(marker172);
+var _a172;
+var InvalidMessageRoleError = class extends AISDKError {
+  constructor({
+    role,
+    message = `Invalid message role: '${role}'. Must be one of: "system", "user", "assistant", "tool".`
+  }) {
+    super({ name: name172, message });
+    this[_a172] = true;
+    this.role = role;
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker172);
+  }
+};
+_a172 = symbol172;
+var name18 = "AI_MessageConversionError";
+var marker182 = `vercel.ai.error.${name18}`;
+var symbol182 = Symbol.for(marker182);
+var _a182;
+_a182 = symbol182;
+var name19 = "AI_RetryError";
+var marker19 = `vercel.ai.error.${name19}`;
+var symbol19 = Symbol.for(marker19);
+var _a19;
+var RetryError = class extends AISDKError {
+  constructor({
+    message,
+    reason,
+    errors: errors3
+  }) {
+    super({ name: name19, message });
+    this[_a19] = true;
+    this.reason = reason;
+    this.errors = errors3;
+    this.lastError = errors3[errors3.length - 1];
+  }
+  static isInstance(error48) {
+    return AISDKError.hasMarker(error48, marker19);
+  }
+};
+_a19 = symbol19;
+function asArray(value) {
+  return value === undefined ? [] : Array.isArray(value) ? value : [value];
+}
+async function notify(options2) {
+  for (const callback of asArray(options2.callbacks)) {
+    if (callback == null)
+      continue;
+    try {
+      await callback(options2.event);
+    } catch (_ignored) {}
+  }
+}
+function formatWarning({
+  warning,
+  provider,
+  model
+}) {
+  const prefix = `AI SDK Warning (${provider} / ${model}):`;
+  switch (warning.type) {
+    case "unsupported": {
+      let message = `${prefix} The feature "${warning.feature}" is not supported.`;
+      if (warning.details) {
+        message += ` ${warning.details}`;
+      }
+      return message;
+    }
+    case "compatibility": {
+      let message = `${prefix} The feature "${warning.feature}" is used in a compatibility mode.`;
+      if (warning.details) {
+        message += ` ${warning.details}`;
+      }
+      return message;
+    }
+    case "other": {
+      return `${prefix} ${warning.message}`;
+    }
+    default: {
+      return `${prefix} ${JSON.stringify(warning, null, 2)}`;
+    }
+  }
+}
+var FIRST_WARNING_INFO_MESSAGE = "AI SDK Warning System: To turn off warning logging, set the AI_SDK_LOG_WARNINGS global to false.";
+var hasLoggedBefore = false;
+var logWarnings = (options2) => {
+  if (options2.warnings.length === 0) {
+    return;
+  }
+  const logger = globalThis.AI_SDK_LOG_WARNINGS;
+  if (logger === false) {
+    return;
+  }
+  if (typeof logger === "function") {
+    logger(options2);
+    return;
+  }
+  if (!hasLoggedBefore) {
+    hasLoggedBefore = true;
+    console.info(FIRST_WARNING_INFO_MESSAGE);
+  }
+  for (const warning of options2.warnings) {
+    console.warn(formatWarning({
+      warning,
+      provider: options2.provider,
+      model: options2.model
+    }));
+  }
+};
+function logV2CompatibilityWarning({
+  provider,
+  modelId
+}) {
+  logWarnings({
+    warnings: [
+      {
+        type: "compatibility",
+        feature: "specificationVersion",
+        details: `Using v2 specification compatibility mode. Some features may not be available.`
+      }
+    ],
+    provider,
+    model: modelId
+  });
+}
+function asEmbeddingModelV3(model) {
+  if (model.specificationVersion === "v3") {
+    return model;
+  }
+  logV2CompatibilityWarning({
+    provider: model.provider,
+    modelId: model.modelId
+  });
+  return new Proxy(model, {
+    get(target, prop2) {
+      if (prop2 === "specificationVersion")
+        return "v3";
+      return target[prop2];
+    }
+  });
+}
+function asLanguageModelV3(model) {
+  if (model.specificationVersion === "v3") {
+    return model;
+  }
+  logV2CompatibilityWarning({
+    provider: model.provider,
+    modelId: model.modelId
+  });
+  return new Proxy(model, {
+    get(target, prop2) {
+      switch (prop2) {
+        case "specificationVersion":
+          return "v3";
+        case "doGenerate":
+          return async (...args) => {
+            const result = await target.doGenerate(...args);
+            return {
+              ...result,
+              finishReason: convertV2FinishReasonToV3(result.finishReason),
+              usage: convertV2UsageToV3(result.usage)
+            };
+          };
+        case "doStream":
+          return async (...args) => {
+            const result = await target.doStream(...args);
+            return {
+              ...result,
+              stream: convertV2StreamToV3(result.stream)
+            };
+          };
+        default:
+          return target[prop2];
+      }
+    }
+  });
+}
+function convertV2StreamToV3(stream) {
+  return stream.pipeThrough(new TransformStream({
+    transform(chunk, controller) {
+      switch (chunk.type) {
+        case "finish":
+          controller.enqueue({
+            ...chunk,
+            finishReason: convertV2FinishReasonToV3(chunk.finishReason),
+            usage: convertV2UsageToV3(chunk.usage)
+          });
+          break;
+        default:
+          controller.enqueue(chunk);
+          break;
+      }
+    }
+  }));
+}
+function convertV2FinishReasonToV3(finishReason) {
+  return {
+    unified: finishReason === "unknown" ? "other" : finishReason,
+    raw: undefined
+  };
+}
+function convertV2UsageToV3(usage) {
+  return {
+    inputTokens: {
+      total: usage.inputTokens,
+      noCache: undefined,
+      cacheRead: usage.cachedInputTokens,
+      cacheWrite: undefined
+    },
+    outputTokens: {
+      total: usage.outputTokens,
+      text: undefined,
+      reasoning: usage.reasoningTokens
+    }
+  };
+}
+function resolveLanguageModel(model) {
+  if (typeof model !== "string") {
+    if (model.specificationVersion !== "v3" && model.specificationVersion !== "v2") {
+      const unsupportedModel = model;
+      throw new UnsupportedModelVersionError({
+        version: unsupportedModel.specificationVersion,
+        provider: unsupportedModel.provider,
+        modelId: unsupportedModel.modelId
+      });
+    }
+    return asLanguageModelV3(model);
+  }
+  return getGlobalProvider().languageModel(model);
+}
+function resolveEmbeddingModel(model) {
+  if (typeof model !== "string") {
+    if (model.specificationVersion !== "v3" && model.specificationVersion !== "v2") {
+      const unsupportedModel = model;
+      throw new UnsupportedModelVersionError({
+        version: unsupportedModel.specificationVersion,
+        provider: unsupportedModel.provider,
+        modelId: unsupportedModel.modelId
+      });
+    }
+    return asEmbeddingModelV3(model);
+  }
+  return getGlobalProvider().embeddingModel(model);
+}
+function getGlobalProvider() {
+  var _a21;
+  return (_a21 = globalThis.AI_SDK_DEFAULT_PROVIDER) != null ? _a21 : gateway;
+}
+function getTotalTimeoutMs(timeout) {
+  if (timeout == null) {
+    return;
+  }
+  if (typeof timeout === "number") {
+    return timeout;
+  }
+  return timeout.totalMs;
+}
+function getStepTimeoutMs(timeout) {
+  if (timeout == null || typeof timeout === "number") {
+    return;
+  }
+  return timeout.stepMs;
+}
+function getChunkTimeoutMs(timeout) {
+  if (timeout == null || typeof timeout === "number") {
+    return;
+  }
+  return timeout.chunkMs;
+}
+var imageMediaTypeSignatures = [
+  {
+    mediaType: "image/gif",
+    bytesPrefix: [71, 73, 70]
+  },
+  {
+    mediaType: "image/png",
+    bytesPrefix: [137, 80, 78, 71]
+  },
+  {
+    mediaType: "image/jpeg",
+    bytesPrefix: [255, 216]
+  },
+  {
+    mediaType: "image/webp",
+    bytesPrefix: [
+      82,
+      73,
+      70,
+      70,
+      null,
+      null,
+      null,
+      null,
+      87,
+      69,
+      66,
+      80
+    ]
+  },
+  {
+    mediaType: "image/bmp",
+    bytesPrefix: [66, 77]
+  },
+  {
+    mediaType: "image/tiff",
+    bytesPrefix: [73, 73, 42, 0]
+  },
+  {
+    mediaType: "image/tiff",
+    bytesPrefix: [77, 77, 0, 42]
+  },
+  {
+    mediaType: "image/avif",
+    bytesPrefix: [
+      0,
+      0,
+      0,
+      32,
+      102,
+      116,
+      121,
+      112,
+      97,
+      118,
+      105,
+      102
+    ]
+  },
+  {
+    mediaType: "image/heic",
+    bytesPrefix: [
+      0,
+      0,
+      0,
+      32,
+      102,
+      116,
+      121,
+      112,
+      104,
+      101,
+      105,
+      99
+    ]
+  }
+];
+var stripID3 = (data2) => {
+  const bytes = typeof data2 === "string" ? convertBase64ToUint8Array(data2) : data2;
+  const id3Size = (bytes[6] & 127) << 21 | (bytes[7] & 127) << 14 | (bytes[8] & 127) << 7 | bytes[9] & 127;
+  return bytes.slice(id3Size + 10);
+};
+function stripID3TagsIfPresent(data2) {
+  const hasId3 = typeof data2 === "string" && data2.startsWith("SUQz") || typeof data2 !== "string" && data2.length > 10 && data2[0] === 73 && data2[1] === 68 && data2[2] === 51;
+  return hasId3 ? stripID3(data2) : data2;
+}
+function detectMediaType({
+  data: data2,
+  signatures
+}) {
+  const processedData = stripID3TagsIfPresent(data2);
+  const bytes = typeof processedData === "string" ? convertBase64ToUint8Array(processedData.substring(0, Math.min(processedData.length, 24))) : processedData;
+  for (const signature of signatures) {
+    if (bytes.length >= signature.bytesPrefix.length && signature.bytesPrefix.every((byte, index4) => byte === null || bytes[index4] === byte)) {
+      return signature.mediaType;
+    }
+  }
+  return;
+}
+var VERSION4 = "6.0.197";
+var download = async ({
+  url: url2,
+  maxBytes,
+  abortSignal
+}) => {
+  var _a21;
+  const urlText = url2.toString();
+  validateDownloadUrl(urlText);
+  try {
+    const response = await fetch(urlText, {
+      headers: withUserAgentSuffix({}, `ai-sdk/${VERSION4}`, getRuntimeEnvironmentUserAgent()),
+      signal: abortSignal
+    });
+    if (response.redirected) {
+      validateDownloadUrl(response.url);
+    }
+    if (!response.ok) {
+      throw new DownloadError({
+        url: urlText,
+        statusCode: response.status,
+        statusText: response.statusText
+      });
+    }
+    const data2 = await readResponseWithSizeLimit({
+      response,
+      url: urlText,
+      maxBytes: maxBytes != null ? maxBytes : DEFAULT_MAX_DOWNLOAD_SIZE
+    });
+    return {
+      data: data2,
+      mediaType: (_a21 = response.headers.get("content-type")) != null ? _a21 : undefined
+    };
+  } catch (error48) {
+    if (DownloadError.isInstance(error48)) {
+      throw error48;
+    }
+    throw new DownloadError({ url: urlText, cause: error48 });
+  }
+};
+var createDefaultDownloadFunction = (download2 = download) => (requestedDownloads) => Promise.all(requestedDownloads.map(async (requestedDownload) => requestedDownload.isUrlSupportedByModel ? null : download2(requestedDownload)));
+function splitDataUrl(dataUrl) {
+  try {
+    const [header, base64Content] = dataUrl.split(",");
+    return {
+      mediaType: header.split(";")[0].split(":")[1],
+      base64Content
+    };
+  } catch (error48) {
+    return {
+      mediaType: undefined,
+      base64Content: undefined
+    };
+  }
+}
+var dataContentSchema = exports_external.union([
+  exports_external.string(),
+  exports_external.instanceof(Uint8Array),
+  exports_external.instanceof(ArrayBuffer),
+  exports_external.custom((value) => {
+    var _a21, _b16;
+    return (_b16 = (_a21 = globalThis.Buffer) == null ? undefined : _a21.isBuffer(value)) != null ? _b16 : false;
+  }, { message: "Must be a Buffer" })
+]);
+function convertToLanguageModelV3DataContent(content) {
+  if (content instanceof Uint8Array) {
+    return { data: content, mediaType: undefined };
+  }
+  if (content instanceof ArrayBuffer) {
+    return { data: new Uint8Array(content), mediaType: undefined };
+  }
+  if (typeof content === "string") {
+    try {
+      content = new URL(content);
+    } catch (error48) {}
+  }
+  if (content instanceof URL && content.protocol === "data:") {
+    const { mediaType: dataUrlMediaType, base64Content } = splitDataUrl(content.toString());
+    if (dataUrlMediaType == null || base64Content == null) {
+      throw new AISDKError({
+        name: "InvalidDataContentError",
+        message: `Invalid data URL format in content ${content.toString()}`
+      });
+    }
+    return { data: base64Content, mediaType: dataUrlMediaType };
+  }
+  return { data: content, mediaType: undefined };
+}
+function convertDataContentToBase64String(content) {
+  if (typeof content === "string") {
+    return content;
+  }
+  if (content instanceof ArrayBuffer) {
+    return convertUint8ArrayToBase64(new Uint8Array(content));
+  }
+  return convertUint8ArrayToBase64(content);
+}
+async function convertToLanguageModelPrompt({
+  prompt,
+  supportedUrls,
+  download: download2 = createDefaultDownloadFunction()
+}) {
+  const downloadedAssets = await downloadAssets(prompt.messages, download2, supportedUrls);
+  const approvalIdToToolCallId = /* @__PURE__ */ new Map;
+  for (const message of prompt.messages) {
+    if (message.role === "assistant" && Array.isArray(message.content)) {
+      for (const part of message.content) {
+        if (part.type === "tool-approval-request" && "approvalId" in part && "toolCallId" in part) {
+          approvalIdToToolCallId.set(part.approvalId, part.toolCallId);
+        }
+      }
+    }
+  }
+  const approvedToolCallIds = /* @__PURE__ */ new Set;
+  for (const message of prompt.messages) {
+    if (message.role === "tool") {
+      for (const part of message.content) {
+        if (part.type === "tool-approval-response") {
+          const toolCallId = approvalIdToToolCallId.get(part.approvalId);
+          if (toolCallId) {
+            approvedToolCallIds.add(toolCallId);
+          }
+        }
+      }
+    }
+  }
+  const messages = [
+    ...prompt.system != null ? typeof prompt.system === "string" ? [{ role: "system", content: prompt.system }] : asArray(prompt.system).map((message) => ({
+      role: "system",
+      content: message.content,
+      providerOptions: message.providerOptions
+    })) : [],
+    ...prompt.messages.map((message) => convertToLanguageModelMessage({ message, downloadedAssets }))
+  ];
+  const combinedMessages = [];
+  for (const message of messages) {
+    if (message.role !== "tool") {
+      combinedMessages.push(message);
+      continue;
+    }
+    const lastCombinedMessage = combinedMessages.at(-1);
+    if ((lastCombinedMessage == null ? undefined : lastCombinedMessage.role) === "tool") {
+      lastCombinedMessage.content.push(...message.content);
+    } else {
+      combinedMessages.push(message);
+    }
+  }
+  const toolCallIds = /* @__PURE__ */ new Set;
+  for (const message of combinedMessages) {
+    switch (message.role) {
+      case "assistant": {
+        for (const content of message.content) {
+          if (content.type === "tool-call" && !content.providerExecuted) {
+            toolCallIds.add(content.toolCallId);
+          }
+        }
+        break;
+      }
+      case "tool": {
+        for (const content of message.content) {
+          if (content.type === "tool-result") {
+            toolCallIds.delete(content.toolCallId);
+          }
+        }
+        break;
+      }
+      case "user":
+      case "system":
+        for (const id of approvedToolCallIds) {
+          toolCallIds.delete(id);
+        }
+        if (toolCallIds.size > 0) {
+          throw new MissingToolResultsError({
+            toolCallIds: Array.from(toolCallIds)
+          });
+        }
+        break;
+    }
+  }
+  for (const id of approvedToolCallIds) {
+    toolCallIds.delete(id);
+  }
+  if (toolCallIds.size > 0) {
+    throw new MissingToolResultsError({ toolCallIds: Array.from(toolCallIds) });
+  }
+  return combinedMessages.filter((message) => message.role !== "tool" || message.content.length > 0);
+}
+function convertToLanguageModelMessage({
+  message,
+  downloadedAssets
+}) {
+  const role = message.role;
+  switch (role) {
+    case "system": {
+      return {
+        role: "system",
+        content: message.content,
+        providerOptions: message.providerOptions
+      };
+    }
+    case "user": {
+      if (typeof message.content === "string") {
+        return {
+          role: "user",
+          content: [{ type: "text", text: message.content }],
+          providerOptions: message.providerOptions
+        };
+      }
+      return {
+        role: "user",
+        content: message.content.map((part) => convertPartToLanguageModelPart(part, downloadedAssets)).filter((part) => part.type !== "text" || part.text !== ""),
+        providerOptions: message.providerOptions
+      };
+    }
+    case "assistant": {
+      if (typeof message.content === "string") {
+        return {
+          role: "assistant",
+          content: [{ type: "text", text: message.content }],
+          providerOptions: message.providerOptions
+        };
+      }
+      return {
+        role: "assistant",
+        content: message.content.filter((part) => part.type !== "text" || part.text !== "" || part.providerOptions != null).filter((part) => part.type !== "tool-approval-request").map((part) => {
+          const providerOptions = part.providerOptions;
+          switch (part.type) {
+            case "file": {
+              const { data: data2, mediaType } = convertToLanguageModelV3DataContent(part.data);
+              return {
+                type: "file",
+                data: data2,
+                filename: part.filename,
+                mediaType: mediaType != null ? mediaType : part.mediaType,
+                providerOptions
+              };
+            }
+            case "reasoning": {
+              return {
+                type: "reasoning",
+                text: part.text,
+                providerOptions
+              };
+            }
+            case "text": {
+              return {
+                type: "text",
+                text: part.text,
+                providerOptions
+              };
+            }
+            case "tool-call": {
+              return {
+                type: "tool-call",
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+                input: part.input,
+                providerExecuted: part.providerExecuted,
+                providerOptions
+              };
+            }
+            case "tool-result": {
+              return {
+                type: "tool-result",
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+                output: mapToolResultOutput({
+                  output: part.output,
+                  downloadedAssets
+                }),
+                providerOptions
+              };
+            }
+          }
+        }),
+        providerOptions: message.providerOptions
+      };
+    }
+    case "tool": {
+      return {
+        role: "tool",
+        content: message.content.filter((part) => part.type !== "tool-approval-response" || part.providerExecuted).map((part) => {
+          switch (part.type) {
+            case "tool-result": {
+              return {
+                type: "tool-result",
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+                output: mapToolResultOutput({
+                  output: part.output,
+                  downloadedAssets
+                }),
+                providerOptions: part.providerOptions
+              };
+            }
+            case "tool-approval-response": {
+              return {
+                type: "tool-approval-response",
+                approvalId: part.approvalId,
+                approved: part.approved,
+                reason: part.reason
+              };
+            }
+          }
+        }),
+        providerOptions: message.providerOptions
+      };
+    }
+    default: {
+      const _exhaustiveCheck = role;
+      throw new InvalidMessageRoleError({ role: _exhaustiveCheck });
+    }
+  }
+}
+async function downloadAssets(messages, download2, supportedUrls) {
+  var _a21;
+  const downloadableFiles = [];
+  for (const message of messages) {
+    if (message.role === "user" && Array.isArray(message.content)) {
+      for (const part of message.content) {
+        if (part.type === "image" || part.type === "file") {
+          downloadableFiles.push({
+            data: part.type === "image" ? part.image : part.data,
+            mediaType: (_a21 = part.mediaType) != null ? _a21 : part.type === "image" ? "image/*" : undefined
+          });
+        }
+      }
+    }
+    if (message.role === "tool" || message.role === "assistant") {
+      if (!Array.isArray(message.content)) {
+        continue;
+      }
+      for (const part of message.content) {
+        if (part.type !== "tool-result") {
+          continue;
+        }
+        if (part.output.type !== "content") {
+          continue;
+        }
+        for (const contentPart of part.output.value) {
+          if (contentPart.type === "image-url" || contentPart.type === "file-url") {
+            downloadableFiles.push({
+              data: new URL(contentPart.url),
+              mediaType: contentPart.type === "image-url" ? "image/*" : undefined
+            });
+          }
+        }
+      }
+    }
+  }
+  const plannedDownloads = downloadableFiles.map((part) => {
+    const mediaType = part.mediaType;
+    const { data: data2 } = convertToLanguageModelV3DataContent(part.data);
+    return { mediaType, data: data2 };
+  }).filter((part) => part.data instanceof URL).map((part) => ({
+    url: part.data,
+    isUrlSupportedByModel: part.mediaType != null && isUrlSupported({
+      url: part.data.toString(),
+      mediaType: part.mediaType,
+      supportedUrls
+    })
+  }));
+  const downloadedFiles = await download2(plannedDownloads);
+  return Object.fromEntries(downloadedFiles.map((file2, index4) => file2 == null ? null : [
+    plannedDownloads[index4].url.toString(),
+    { data: file2.data, mediaType: file2.mediaType }
+  ]).filter((file2) => file2 != null));
+}
+function convertPartToLanguageModelPart(part, downloadedAssets) {
+  var _a21;
+  if (part.type === "text") {
+    return {
+      type: "text",
+      text: part.text,
+      providerOptions: part.providerOptions
+    };
+  }
+  let originalData;
+  const type = part.type;
+  switch (type) {
+    case "image":
+      originalData = part.image;
+      break;
+    case "file":
+      originalData = part.data;
+      break;
+    default:
+      throw new Error(`Unsupported part type: ${type}`);
+  }
+  const { data: convertedData, mediaType: convertedMediaType } = convertToLanguageModelV3DataContent(originalData);
+  let mediaType = convertedMediaType != null ? convertedMediaType : part.mediaType;
+  let data2 = convertedData;
+  if (data2 instanceof URL) {
+    const downloadedFile = downloadedAssets[data2.toString()];
+    if (downloadedFile) {
+      data2 = downloadedFile.data;
+      mediaType != null || (mediaType = downloadedFile.mediaType);
+    }
+  }
+  switch (type) {
+    case "image": {
+      if (data2 instanceof Uint8Array || typeof data2 === "string") {
+        mediaType = (_a21 = detectMediaType({ data: data2, signatures: imageMediaTypeSignatures })) != null ? _a21 : mediaType;
+      }
+      return {
+        type: "file",
+        mediaType: mediaType != null ? mediaType : "image/*",
+        filename: undefined,
+        data: data2,
+        providerOptions: part.providerOptions
+      };
+    }
+    case "file": {
+      if (mediaType == null) {
+        throw new Error(`Media type is missing for file part`);
+      }
+      return {
+        type: "file",
+        mediaType,
+        filename: part.filename,
+        data: data2,
+        providerOptions: part.providerOptions
+      };
+    }
+  }
+}
+function mapToolResultOutput({
+  output,
+  downloadedAssets
+}) {
+  if (output.type !== "content") {
+    return output;
+  }
+  return {
+    type: "content",
+    value: output.value.map((item) => {
+      var _a21, _b16;
+      if (item.type === "image-url") {
+        const downloadedFile = downloadedAssets[new URL(item.url).toString()];
+        if (downloadedFile) {
+          return {
+            type: "image-data",
+            data: convertDataContentToBase64String(downloadedFile.data),
+            mediaType: (_a21 = downloadedFile.mediaType) != null ? _a21 : "image/*",
+            providerOptions: item.providerOptions
+          };
+        }
+        return item;
+      }
+      if (item.type === "file-url") {
+        const downloadedFile = downloadedAssets[new URL(item.url).toString()];
+        if (downloadedFile) {
+          return {
+            type: "file-data",
+            data: convertDataContentToBase64String(downloadedFile.data),
+            mediaType: (_b16 = downloadedFile.mediaType) != null ? _b16 : "application/octet-stream",
+            providerOptions: item.providerOptions
+          };
+        }
+        return item;
+      }
+      if (item.type !== "media") {
+        return item;
+      }
+      if (item.mediaType.startsWith("image/")) {
+        return {
+          type: "image-data",
+          data: item.data,
+          mediaType: item.mediaType
+        };
+      }
+      return {
+        type: "file-data",
+        data: item.data,
+        mediaType: item.mediaType
+      };
+    })
+  };
+}
+async function createToolModelOutput({
+  toolCallId,
+  input,
+  output,
+  tool: tool2,
+  errorMode
+}) {
+  if (errorMode === "text") {
+    return { type: "error-text", value: getErrorMessage(output) };
+  } else if (errorMode === "json") {
+    return { type: "error-json", value: toJSONValue(output) };
+  }
+  if (tool2 == null ? undefined : tool2.toModelOutput) {
+    return await tool2.toModelOutput({ toolCallId, input, output });
+  }
+  return typeof output === "string" ? { type: "text", value: output } : { type: "json", value: toJSONValue(output) };
+}
+function toJSONValue(value) {
+  return value === undefined ? null : value;
+}
+function prepareCallSettings({
+  maxOutputTokens,
+  temperature,
+  topP,
+  topK,
+  presencePenalty,
+  frequencyPenalty,
+  seed,
+  stopSequences
+}) {
+  if (maxOutputTokens != null) {
+    if (!Number.isInteger(maxOutputTokens)) {
+      throw new InvalidArgumentError2({
+        parameter: "maxOutputTokens",
+        value: maxOutputTokens,
+        message: "maxOutputTokens must be an integer"
+      });
+    }
+    if (maxOutputTokens < 1) {
+      throw new InvalidArgumentError2({
+        parameter: "maxOutputTokens",
+        value: maxOutputTokens,
+        message: "maxOutputTokens must be >= 1"
+      });
+    }
+  }
+  if (temperature != null) {
+    if (typeof temperature !== "number") {
+      throw new InvalidArgumentError2({
+        parameter: "temperature",
+        value: temperature,
+        message: "temperature must be a number"
+      });
+    }
+  }
+  if (topP != null) {
+    if (typeof topP !== "number") {
+      throw new InvalidArgumentError2({
+        parameter: "topP",
+        value: topP,
+        message: "topP must be a number"
+      });
+    }
+  }
+  if (topK != null) {
+    if (typeof topK !== "number") {
+      throw new InvalidArgumentError2({
+        parameter: "topK",
+        value: topK,
+        message: "topK must be a number"
+      });
+    }
+  }
+  if (presencePenalty != null) {
+    if (typeof presencePenalty !== "number") {
+      throw new InvalidArgumentError2({
+        parameter: "presencePenalty",
+        value: presencePenalty,
+        message: "presencePenalty must be a number"
+      });
+    }
+  }
+  if (frequencyPenalty != null) {
+    if (typeof frequencyPenalty !== "number") {
+      throw new InvalidArgumentError2({
+        parameter: "frequencyPenalty",
+        value: frequencyPenalty,
+        message: "frequencyPenalty must be a number"
+      });
+    }
+  }
+  if (seed != null) {
+    if (!Number.isInteger(seed)) {
+      throw new InvalidArgumentError2({
+        parameter: "seed",
+        value: seed,
+        message: "seed must be an integer"
+      });
+    }
+  }
+  return {
+    maxOutputTokens,
+    temperature,
+    topP,
+    topK,
+    presencePenalty,
+    frequencyPenalty,
+    stopSequences,
+    seed
+  };
+}
+function isNonEmptyObject(object2) {
+  return object2 != null && Object.keys(object2).length > 0;
+}
+async function prepareToolsAndToolChoice({
+  tools,
+  toolChoice,
+  activeTools
+}) {
+  if (!isNonEmptyObject(tools)) {
+    return {
+      tools: undefined,
+      toolChoice: undefined
+    };
+  }
+  const filteredTools = activeTools != null ? Object.entries(tools).filter(([name21]) => activeTools.includes(name21)) : Object.entries(tools);
+  const languageModelTools = [];
+  for (const [name21, tool2] of filteredTools) {
+    const toolType = tool2.type;
+    switch (toolType) {
+      case undefined:
+      case "dynamic":
+      case "function":
+        languageModelTools.push({
+          type: "function",
+          name: name21,
+          description: tool2.description,
+          inputSchema: await asSchema(tool2.inputSchema).jsonSchema,
+          ...tool2.inputExamples != null ? { inputExamples: tool2.inputExamples } : {},
+          providerOptions: tool2.providerOptions,
+          ...tool2.strict != null ? { strict: tool2.strict } : {}
+        });
+        break;
+      case "provider":
+        languageModelTools.push({
+          type: "provider",
+          name: name21,
+          id: tool2.id,
+          args: tool2.args
+        });
+        break;
+      default: {
+        const exhaustiveCheck = toolType;
+        throw new Error(`Unsupported tool type: ${exhaustiveCheck}`);
+      }
+    }
+  }
+  return {
+    tools: languageModelTools,
+    toolChoice: toolChoice == null ? { type: "auto" } : typeof toolChoice === "string" ? { type: toolChoice } : { type: "tool", toolName: toolChoice.toolName }
+  };
+}
+var jsonValueSchema3 = exports_external.lazy(() => exports_external.union([
+  exports_external.null(),
+  exports_external.string(),
+  exports_external.number(),
+  exports_external.boolean(),
+  exports_external.record(exports_external.string(), jsonValueSchema3.optional()),
+  exports_external.array(jsonValueSchema3)
+]));
+var providerMetadataSchema = exports_external.record(exports_external.string(), exports_external.record(exports_external.string(), jsonValueSchema3.optional()));
+var textPartSchema = exports_external.object({
+  type: exports_external.literal("text"),
+  text: exports_external.string(),
+  providerOptions: providerMetadataSchema.optional()
+});
+var imagePartSchema = exports_external.object({
+  type: exports_external.literal("image"),
+  image: exports_external.union([dataContentSchema, exports_external.instanceof(URL)]),
+  mediaType: exports_external.string().optional(),
+  providerOptions: providerMetadataSchema.optional()
+});
+var filePartSchema = exports_external.object({
+  type: exports_external.literal("file"),
+  data: exports_external.union([dataContentSchema, exports_external.instanceof(URL)]),
+  filename: exports_external.string().optional(),
+  mediaType: exports_external.string(),
+  providerOptions: providerMetadataSchema.optional()
+});
+var reasoningPartSchema = exports_external.object({
+  type: exports_external.literal("reasoning"),
+  text: exports_external.string(),
+  providerOptions: providerMetadataSchema.optional()
+});
+var toolCallPartSchema = exports_external.object({
+  type: exports_external.literal("tool-call"),
+  toolCallId: exports_external.string(),
+  toolName: exports_external.string(),
+  input: exports_external.unknown(),
+  providerOptions: providerMetadataSchema.optional(),
+  providerExecuted: exports_external.boolean().optional()
+});
+var outputSchema = exports_external.discriminatedUnion("type", [
+  exports_external.object({
+    type: exports_external.literal("text"),
+    value: exports_external.string(),
+    providerOptions: providerMetadataSchema.optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("json"),
+    value: jsonValueSchema3,
+    providerOptions: providerMetadataSchema.optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("execution-denied"),
+    reason: exports_external.string().optional(),
+    providerOptions: providerMetadataSchema.optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("error-text"),
+    value: exports_external.string(),
+    providerOptions: providerMetadataSchema.optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("error-json"),
+    value: jsonValueSchema3,
+    providerOptions: providerMetadataSchema.optional()
+  }),
+  exports_external.object({
+    type: exports_external.literal("content"),
+    value: exports_external.array(exports_external.union([
+      exports_external.object({
+        type: exports_external.literal("text"),
+        text: exports_external.string(),
+        providerOptions: providerMetadataSchema.optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("media"),
+        data: exports_external.string(),
+        mediaType: exports_external.string()
+      }),
+      exports_external.object({
+        type: exports_external.literal("file-data"),
+        data: exports_external.string(),
+        mediaType: exports_external.string(),
+        filename: exports_external.string().optional(),
+        providerOptions: providerMetadataSchema.optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("file-url"),
+        url: exports_external.string(),
+        providerOptions: providerMetadataSchema.optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("file-id"),
+        fileId: exports_external.union([exports_external.string(), exports_external.record(exports_external.string(), exports_external.string())]),
+        providerOptions: providerMetadataSchema.optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("image-data"),
+        data: exports_external.string(),
+        mediaType: exports_external.string(),
+        providerOptions: providerMetadataSchema.optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("image-url"),
+        url: exports_external.string(),
+        providerOptions: providerMetadataSchema.optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("image-file-id"),
+        fileId: exports_external.union([exports_external.string(), exports_external.record(exports_external.string(), exports_external.string())]),
+        providerOptions: providerMetadataSchema.optional()
+      }),
+      exports_external.object({
+        type: exports_external.literal("custom"),
+        providerOptions: providerMetadataSchema.optional()
+      })
+    ]))
+  })
+]);
+var toolResultPartSchema = exports_external.object({
+  type: exports_external.literal("tool-result"),
+  toolCallId: exports_external.string(),
+  toolName: exports_external.string(),
+  output: outputSchema,
+  providerOptions: providerMetadataSchema.optional()
+});
+var toolApprovalRequestSchema = exports_external.object({
+  type: exports_external.literal("tool-approval-request"),
+  approvalId: exports_external.string(),
+  toolCallId: exports_external.string()
+});
+var toolApprovalResponseSchema = exports_external.object({
+  type: exports_external.literal("tool-approval-response"),
+  approvalId: exports_external.string(),
+  approved: exports_external.boolean(),
+  reason: exports_external.string().optional()
+});
+var systemModelMessageSchema = exports_external.object({
+  role: exports_external.literal("system"),
+  content: exports_external.string(),
+  providerOptions: providerMetadataSchema.optional()
+});
+var userModelMessageSchema = exports_external.object({
+  role: exports_external.literal("user"),
+  content: exports_external.union([
+    exports_external.string(),
+    exports_external.array(exports_external.union([textPartSchema, imagePartSchema, filePartSchema]))
+  ]),
+  providerOptions: providerMetadataSchema.optional()
+});
+var assistantModelMessageSchema = exports_external.object({
+  role: exports_external.literal("assistant"),
+  content: exports_external.union([
+    exports_external.string(),
+    exports_external.array(exports_external.union([
+      textPartSchema,
+      filePartSchema,
+      reasoningPartSchema,
+      toolCallPartSchema,
+      toolResultPartSchema,
+      toolApprovalRequestSchema
+    ]))
+  ]),
+  providerOptions: providerMetadataSchema.optional()
+});
+var toolModelMessageSchema = exports_external.object({
+  role: exports_external.literal("tool"),
+  content: exports_external.array(exports_external.union([toolResultPartSchema, toolApprovalResponseSchema])),
+  providerOptions: providerMetadataSchema.optional()
+});
+var modelMessageSchema = exports_external.union([
+  systemModelMessageSchema,
+  userModelMessageSchema,
+  assistantModelMessageSchema,
+  toolModelMessageSchema
+]);
+async function standardizePrompt({
+  allowSystemInMessages,
+  system,
+  prompt,
+  messages
+}) {
+  if (prompt == null && messages == null) {
+    throw new InvalidPromptError({
+      prompt,
+      message: "prompt or messages must be defined"
+    });
+  }
+  if (prompt != null && messages != null) {
+    throw new InvalidPromptError({
+      prompt,
+      message: "prompt and messages cannot be defined at the same time"
+    });
+  }
+  if (typeof system !== "string" && !asArray(system).every((message) => message.role === "system")) {
+    throw new InvalidPromptError({
+      prompt,
+      message: "system must be a string, SystemModelMessage, or array of SystemModelMessage"
+    });
+  }
+  if (prompt != null && typeof prompt === "string") {
+    messages = [{ role: "user", content: prompt }];
+  } else if (prompt != null && Array.isArray(prompt)) {
+    messages = prompt;
+  } else if (messages == null) {
+    throw new InvalidPromptError({
+      prompt,
+      message: "prompt or messages must be defined"
+    });
+  }
+  if (messages.length === 0) {
+    throw new InvalidPromptError({
+      prompt,
+      message: "messages must not be empty"
+    });
+  }
+  if (messages.some((message) => message.role === "system")) {
+    if (allowSystemInMessages === false) {
+      throw new InvalidPromptError({
+        prompt,
+        message: "System messages are not allowed in the prompt or messages fields. Use the system option instead."
+      });
+    }
+    if (allowSystemInMessages === undefined) {
+      console.warn("AI SDK Warning: System messages in the prompt or messages fields can be a security risk because they may enable prompt injection attacks. Use the system option instead when possible. Set allowSystemInMessages to true to suppress this warning, or false to throw an error.");
+    }
+  }
+  const validationResult = await safeValidateTypes({
+    value: messages,
+    schema: exports_external.array(modelMessageSchema)
+  });
+  if (!validationResult.success) {
+    throw new InvalidPromptError({
+      prompt,
+      message: "The messages do not match the ModelMessage[] schema.",
+      cause: validationResult.error
+    });
+  }
+  return { messages, system };
+}
+function wrapGatewayError(error48) {
+  if (!GatewayAuthenticationError.isInstance(error48))
+    return error48;
+  const isProductionEnv = (process == null ? undefined : "development") === "production";
+  const moreInfoURL = "https://ai-sdk.dev/unauthenticated-ai-gateway";
+  if (isProductionEnv) {
+    return new AISDKError({
+      name: "GatewayError",
+      message: `Unauthenticated. Configure AI_GATEWAY_API_KEY or use a provider module. Learn more: ${moreInfoURL}`
+    });
+  }
+  return Object.assign(new Error(`\x1B[1m\x1B[31mUnauthenticated request to AI Gateway.\x1B[0m
+
+To authenticate, set the \x1B[33mAI_GATEWAY_API_KEY\x1B[0m environment variable with your API key.
+
+Alternatively, you can use a provider module instead of the AI Gateway.
+
+Learn more: \x1B[34m${moreInfoURL}\x1B[0m
+
+`), { name: "GatewayAuthenticationError" });
+}
+function assembleOperationName({
+  operationId,
+  telemetry
+}) {
+  return {
+    "operation.name": `${operationId}${(telemetry == null ? undefined : telemetry.functionId) != null ? ` ${telemetry.functionId}` : ""}`,
+    "resource.name": telemetry == null ? undefined : telemetry.functionId,
+    "ai.operationId": operationId,
+    "ai.telemetry.functionId": telemetry == null ? undefined : telemetry.functionId
+  };
+}
+function getBaseTelemetryAttributes({
+  model,
+  settings,
+  telemetry,
+  headers
+}) {
+  var _a21;
+  return {
+    "ai.model.provider": model.provider,
+    "ai.model.id": model.modelId,
+    ...Object.entries(settings).reduce((attributes2, [key, value]) => {
+      if (key === "timeout") {
+        const totalTimeoutMs = getTotalTimeoutMs(value);
+        if (totalTimeoutMs != null) {
+          attributes2[`ai.settings.${key}`] = totalTimeoutMs;
+        }
+      } else {
+        attributes2[`ai.settings.${key}`] = value;
+      }
+      return attributes2;
+    }, {}),
+    ...Object.entries((_a21 = telemetry == null ? undefined : telemetry.metadata) != null ? _a21 : {}).reduce((attributes2, [key, value]) => {
+      attributes2[`ai.telemetry.metadata.${key}`] = value;
+      return attributes2;
+    }, {}),
+    ...Object.entries(headers != null ? headers : {}).reduce((attributes2, [key, value]) => {
+      if (value !== undefined) {
+        attributes2[`ai.request.headers.${key}`] = value;
+      }
+      return attributes2;
+    }, {})
+  };
+}
+var noopTracer = {
+  startSpan() {
+    return noopSpan;
+  },
+  startActiveSpan(name21, arg1, arg2, arg3) {
+    if (typeof arg1 === "function") {
+      return arg1(noopSpan);
+    }
+    if (typeof arg2 === "function") {
+      return arg2(noopSpan);
+    }
+    if (typeof arg3 === "function") {
+      return arg3(noopSpan);
+    }
+  }
+};
+var noopSpan = {
+  spanContext() {
+    return noopSpanContext;
+  },
+  setAttribute() {
+    return this;
+  },
+  setAttributes() {
+    return this;
+  },
+  addEvent() {
+    return this;
+  },
+  addLink() {
+    return this;
+  },
+  addLinks() {
+    return this;
+  },
+  setStatus() {
+    return this;
+  },
+  updateName() {
+    return this;
+  },
+  end() {
+    return this;
+  },
+  isRecording() {
+    return false;
+  },
+  recordException() {
+    return this;
+  }
+};
+var noopSpanContext = {
+  traceId: "",
+  spanId: "",
+  traceFlags: 0
+};
+function getTracer({
+  isEnabled = false,
+  tracer
+} = {}) {
+  if (!isEnabled) {
+    return noopTracer;
+  }
+  if (tracer) {
+    return tracer;
+  }
+  return import_api.trace.getTracer("ai");
+}
+async function recordSpan({
+  name: name21,
+  tracer,
+  attributes: attributes2,
+  fn,
+  endWhenDone = true
+}) {
+  return tracer.startActiveSpan(name21, { attributes: await attributes2 }, async (span) => {
+    const ctx = import_api2.context.active();
+    try {
+      const result = await import_api2.context.with(ctx, () => fn(span));
+      if (endWhenDone) {
+        span.end();
+      }
+      return result;
+    } catch (error48) {
+      try {
+        recordErrorOnSpan(span, error48);
+      } finally {
+        span.end();
+      }
+      throw error48;
+    }
+  });
+}
+function recordErrorOnSpan(span, error48) {
+  if (error48 instanceof Error) {
+    span.recordException({
+      name: error48.name,
+      message: error48.message,
+      stack: error48.stack
+    });
+    span.setStatus({
+      code: import_api2.SpanStatusCode.ERROR,
+      message: error48.message
+    });
+  } else {
+    span.setStatus({ code: import_api2.SpanStatusCode.ERROR });
+  }
+}
+async function selectTelemetryAttributes({
+  telemetry,
+  attributes: attributes2
+}) {
+  if ((telemetry == null ? undefined : telemetry.isEnabled) !== true) {
+    return {};
+  }
+  const resultAttributes = {};
+  for (const [key, value] of Object.entries(attributes2)) {
+    if (value == null) {
+      continue;
+    }
+    if (typeof value === "object" && "input" in value && typeof value.input === "function") {
+      if ((telemetry == null ? undefined : telemetry.recordInputs) === false) {
+        continue;
+      }
+      const result = await value.input();
+      if (result != null) {
+        resultAttributes[key] = result;
+      }
+      continue;
+    }
+    if (typeof value === "object" && "output" in value && typeof value.output === "function") {
+      if ((telemetry == null ? undefined : telemetry.recordOutputs) === false) {
+        continue;
+      }
+      const result = await value.output();
+      if (result != null) {
+        resultAttributes[key] = result;
+      }
+      continue;
+    }
+    resultAttributes[key] = value;
+  }
+  return resultAttributes;
+}
+function stringifyForTelemetry(prompt) {
+  return JSON.stringify(prompt.map((message) => ({
+    ...message,
+    content: typeof message.content === "string" ? message.content : message.content.map((part) => part.type === "file" ? {
+      ...part,
+      data: part.data instanceof Uint8Array ? convertDataContentToBase64String(part.data) : part.data
+    } : part)
+  })));
+}
+function getGlobalTelemetryIntegrations() {
+  var _a21;
+  return (_a21 = globalThis.AI_SDK_TELEMETRY_INTEGRATIONS) != null ? _a21 : [];
+}
+function getGlobalTelemetryIntegration() {
+  const globalIntegrations = getGlobalTelemetryIntegrations();
+  return (integrations) => {
+    const localIntegrations = asArray(integrations);
+    const allIntegrations = [...globalIntegrations, ...localIntegrations];
+    function createTelemetryComposite(getListenerFromIntegration) {
+      const listeners = allIntegrations.map(getListenerFromIntegration).filter(Boolean);
+      return async (event) => {
+        for (const listener of listeners) {
+          try {
+            await listener(event);
+          } catch (_ignored) {}
+        }
+      };
+    }
+    return {
+      onStart: createTelemetryComposite((integration) => integration.onStart),
+      onStepStart: createTelemetryComposite((integration) => integration.onStepStart),
+      onToolCallStart: createTelemetryComposite((integration) => integration.onToolCallStart),
+      onToolCallFinish: createTelemetryComposite((integration) => integration.onToolCallFinish),
+      onStepFinish: createTelemetryComposite((integration) => integration.onStepFinish),
+      onFinish: createTelemetryComposite((integration) => integration.onFinish)
+    };
+  };
+}
+function asLanguageModelUsage(usage) {
+  return {
+    inputTokens: usage.inputTokens.total,
+    inputTokenDetails: {
+      noCacheTokens: usage.inputTokens.noCache,
+      cacheReadTokens: usage.inputTokens.cacheRead,
+      cacheWriteTokens: usage.inputTokens.cacheWrite
+    },
+    outputTokens: usage.outputTokens.total,
+    outputTokenDetails: {
+      textTokens: usage.outputTokens.text,
+      reasoningTokens: usage.outputTokens.reasoning
+    },
+    totalTokens: addTokenCounts(usage.inputTokens.total, usage.outputTokens.total),
+    raw: usage.raw,
+    reasoningTokens: usage.outputTokens.reasoning,
+    cachedInputTokens: usage.inputTokens.cacheRead
+  };
+}
+function createNullLanguageModelUsage() {
+  return {
+    inputTokens: undefined,
+    inputTokenDetails: {
+      noCacheTokens: undefined,
+      cacheReadTokens: undefined,
+      cacheWriteTokens: undefined
+    },
+    outputTokens: undefined,
+    outputTokenDetails: {
+      textTokens: undefined,
+      reasoningTokens: undefined
+    },
+    totalTokens: undefined,
+    raw: undefined
+  };
+}
+function addLanguageModelUsage(usage1, usage2) {
+  var _a21, _b16, _c, _d, _e, _f, _g, _h, _i, _j;
+  return {
+    inputTokens: addTokenCounts(usage1.inputTokens, usage2.inputTokens),
+    inputTokenDetails: {
+      noCacheTokens: addTokenCounts((_a21 = usage1.inputTokenDetails) == null ? undefined : _a21.noCacheTokens, (_b16 = usage2.inputTokenDetails) == null ? undefined : _b16.noCacheTokens),
+      cacheReadTokens: addTokenCounts((_c = usage1.inputTokenDetails) == null ? undefined : _c.cacheReadTokens, (_d = usage2.inputTokenDetails) == null ? undefined : _d.cacheReadTokens),
+      cacheWriteTokens: addTokenCounts((_e = usage1.inputTokenDetails) == null ? undefined : _e.cacheWriteTokens, (_f = usage2.inputTokenDetails) == null ? undefined : _f.cacheWriteTokens)
+    },
+    outputTokens: addTokenCounts(usage1.outputTokens, usage2.outputTokens),
+    outputTokenDetails: {
+      textTokens: addTokenCounts((_g = usage1.outputTokenDetails) == null ? undefined : _g.textTokens, (_h = usage2.outputTokenDetails) == null ? undefined : _h.textTokens),
+      reasoningTokens: addTokenCounts((_i = usage1.outputTokenDetails) == null ? undefined : _i.reasoningTokens, (_j = usage2.outputTokenDetails) == null ? undefined : _j.reasoningTokens)
+    },
+    totalTokens: addTokenCounts(usage1.totalTokens, usage2.totalTokens),
+    reasoningTokens: addTokenCounts(usage1.reasoningTokens, usage2.reasoningTokens),
+    cachedInputTokens: addTokenCounts(usage1.cachedInputTokens, usage2.cachedInputTokens)
+  };
+}
+function addTokenCounts(tokenCount1, tokenCount2) {
+  return tokenCount1 == null && tokenCount2 == null ? undefined : (tokenCount1 != null ? tokenCount1 : 0) + (tokenCount2 != null ? tokenCount2 : 0);
+}
+function mergeObjects(base, overrides) {
+  if (base === undefined && overrides === undefined) {
+    return;
+  }
+  if (base === undefined) {
+    return overrides;
+  }
+  if (overrides === undefined) {
+    return base;
+  }
+  const result = { ...base };
+  for (const key in overrides) {
+    if (key === "__proto__" || key === "constructor" || key === "prototype") {
+      continue;
+    }
+    if (Object.prototype.hasOwnProperty.call(overrides, key)) {
+      const overridesValue = overrides[key];
+      if (overridesValue === undefined)
+        continue;
+      const baseValue = key in base ? base[key] : undefined;
+      const isSourceObject = overridesValue !== null && typeof overridesValue === "object" && !Array.isArray(overridesValue) && !(overridesValue instanceof Date) && !(overridesValue instanceof RegExp);
+      const isTargetObject = baseValue !== null && baseValue !== undefined && typeof baseValue === "object" && !Array.isArray(baseValue) && !(baseValue instanceof Date) && !(baseValue instanceof RegExp);
+      if (isSourceObject && isTargetObject) {
+        result[key] = mergeObjects(baseValue, overridesValue);
+      } else {
+        result[key] = overridesValue;
+      }
+    }
+  }
+  return result;
+}
+function getRetryDelayInMs({
+  error: error48,
+  exponentialBackoffDelay
+}) {
+  const headers = APICallError.isInstance(error48) ? error48.responseHeaders : APICallError.isInstance(error48.cause) ? error48.cause.responseHeaders : undefined;
+  if (!headers)
+    return exponentialBackoffDelay;
+  let ms;
+  const retryAfterMs = headers["retry-after-ms"];
+  if (retryAfterMs) {
+    const timeoutMs = parseFloat(retryAfterMs);
+    if (!Number.isNaN(timeoutMs)) {
+      ms = timeoutMs;
+    }
+  }
+  const retryAfter = headers["retry-after"];
+  if (retryAfter && ms === undefined) {
+    const timeoutSeconds = parseFloat(retryAfter);
+    if (!Number.isNaN(timeoutSeconds)) {
+      ms = timeoutSeconds * 1000;
+    } else {
+      ms = Date.parse(retryAfter) - Date.now();
+    }
+  }
+  if (ms != null && !Number.isNaN(ms) && 0 <= ms && (ms < 60 * 1000 || ms < exponentialBackoffDelay)) {
+    return ms;
+  }
+  return exponentialBackoffDelay;
+}
+var retryWithExponentialBackoffRespectingRetryHeaders = ({
+  maxRetries = 2,
+  initialDelayInMs = 2000,
+  backoffFactor = 2,
+  abortSignal
+} = {}) => async (f) => _retryWithExponentialBackoff(f, {
+  maxRetries,
+  delayInMs: initialDelayInMs,
+  backoffFactor,
+  abortSignal
+});
+async function _retryWithExponentialBackoff(f, {
+  maxRetries,
+  delayInMs,
+  backoffFactor,
+  abortSignal
+}, errors3 = []) {
+  try {
+    return await f();
+  } catch (error48) {
+    if (isAbortError(error48)) {
+      throw error48;
+    }
+    if (maxRetries === 0) {
+      throw error48;
+    }
+    const errorMessage = getErrorMessage2(error48);
+    const newErrors = [...errors3, error48];
+    const tryNumber = newErrors.length;
+    if (tryNumber > maxRetries) {
+      throw new RetryError({
+        message: `Failed after ${tryNumber} attempts. Last error: ${errorMessage}`,
+        reason: "maxRetriesExceeded",
+        errors: newErrors
+      });
+    }
+    if (error48 instanceof Error && (APICallError.isInstance(error48) && error48.isRetryable === true || GatewayError.isInstance(error48) && error48.isRetryable === true) && tryNumber <= maxRetries) {
+      await delay(getRetryDelayInMs({
+        error: error48,
+        exponentialBackoffDelay: delayInMs
+      }), { abortSignal });
+      return _retryWithExponentialBackoff(f, {
+        maxRetries,
+        delayInMs: backoffFactor * delayInMs,
+        backoffFactor,
+        abortSignal
+      }, newErrors);
+    }
+    if (tryNumber === 1) {
+      throw error48;
+    }
+    throw new RetryError({
+      message: `Failed after ${tryNumber} attempts with non-retryable error: '${errorMessage}'`,
+      reason: "errorNotRetryable",
+      errors: newErrors
+    });
+  }
+}
+function prepareRetries({
+  maxRetries,
+  abortSignal
+}) {
+  if (maxRetries != null) {
+    if (!Number.isInteger(maxRetries)) {
+      throw new InvalidArgumentError2({
+        parameter: "maxRetries",
+        value: maxRetries,
+        message: "maxRetries must be an integer"
+      });
+    }
+    if (maxRetries < 0) {
+      throw new InvalidArgumentError2({
+        parameter: "maxRetries",
+        value: maxRetries,
+        message: "maxRetries must be >= 0"
+      });
+    }
+  }
+  const maxRetriesResult = maxRetries != null ? maxRetries : 2;
+  return {
+    maxRetries: maxRetriesResult,
+    retry: retryWithExponentialBackoffRespectingRetryHeaders({
+      maxRetries: maxRetriesResult,
+      abortSignal
+    })
+  };
+}
+function collectToolApprovals({
+  messages
+}) {
+  const lastMessage = messages.at(-1);
+  if ((lastMessage == null ? undefined : lastMessage.role) != "tool") {
+    return {
+      approvedToolApprovals: [],
+      deniedToolApprovals: []
+    };
+  }
+  const toolCallsByToolCallId = {};
+  for (const message of messages) {
+    if (message.role === "assistant" && typeof message.content !== "string") {
+      const content = message.content;
+      for (const part of content) {
+        if (part.type === "tool-call") {
+          toolCallsByToolCallId[part.toolCallId] = part;
+        }
+      }
+    }
+  }
+  const toolApprovalRequestsByApprovalId = {};
+  for (const message of messages) {
+    if (message.role === "assistant" && typeof message.content !== "string") {
+      const content = message.content;
+      for (const part of content) {
+        if (part.type === "tool-approval-request") {
+          toolApprovalRequestsByApprovalId[part.approvalId] = part;
+        }
+      }
+    }
+  }
+  const toolResults = {};
+  for (const part of lastMessage.content) {
+    if (part.type === "tool-result") {
+      toolResults[part.toolCallId] = part;
+    }
+  }
+  const approvedToolApprovals = [];
+  const deniedToolApprovals = [];
+  const approvalResponses = lastMessage.content.filter((part) => part.type === "tool-approval-response");
+  for (const approvalResponse of approvalResponses) {
+    const approvalRequest = toolApprovalRequestsByApprovalId[approvalResponse.approvalId];
+    if (approvalRequest == null) {
+      throw new InvalidToolApprovalError({
+        approvalId: approvalResponse.approvalId
+      });
+    }
+    if (toolResults[approvalRequest.toolCallId] != null) {
+      continue;
+    }
+    const toolCall = toolCallsByToolCallId[approvalRequest.toolCallId];
+    if (toolCall == null) {
+      throw new ToolCallNotFoundForApprovalError({
+        toolCallId: approvalRequest.toolCallId,
+        approvalId: approvalRequest.approvalId
+      });
+    }
+    const approval = {
+      approvalRequest,
+      approvalResponse,
+      toolCall
+    };
+    if (approvalResponse.approved) {
+      approvedToolApprovals.push(approval);
+    } else {
+      deniedToolApprovals.push(approval);
+    }
+  }
+  return { approvedToolApprovals, deniedToolApprovals };
+}
+function now() {
+  var _a21, _b16;
+  return (_b16 = (_a21 = globalThis == null ? undefined : globalThis.performance) == null ? undefined : _a21.now()) != null ? _b16 : Date.now();
+}
+async function executeToolCall({
+  toolCall,
+  tools,
+  tracer,
+  telemetry,
+  messages,
+  abortSignal,
+  experimental_context,
+  stepNumber,
+  model,
+  onPreliminaryToolResult,
+  onToolCallStart,
+  onToolCallFinish
+}) {
+  const { toolName, toolCallId, input } = toolCall;
+  const tool2 = tools == null ? undefined : tools[toolName];
+  if ((tool2 == null ? undefined : tool2.execute) == null) {
+    return;
+  }
+  const baseCallbackEvent = {
+    stepNumber,
+    model,
+    toolCall,
+    messages,
+    abortSignal,
+    functionId: telemetry == null ? undefined : telemetry.functionId,
+    metadata: telemetry == null ? undefined : telemetry.metadata,
+    experimental_context
+  };
+  return recordSpan({
+    name: "ai.toolCall",
+    attributes: selectTelemetryAttributes({
+      telemetry,
+      attributes: {
+        ...assembleOperationName({
+          operationId: "ai.toolCall",
+          telemetry
+        }),
+        "ai.toolCall.name": toolName,
+        "ai.toolCall.id": toolCallId,
+        "ai.toolCall.args": {
+          output: () => JSON.stringify(input)
+        }
+      }
+    }),
+    tracer,
+    fn: async (span) => {
+      let output;
+      await notify({ event: baseCallbackEvent, callbacks: onToolCallStart });
+      const startTime = now();
+      try {
+        const stream = executeTool({
+          execute: tool2.execute.bind(tool2),
+          input,
+          options: {
+            toolCallId,
+            messages,
+            abortSignal,
+            experimental_context
+          }
+        });
+        for await (const part of stream) {
+          if (part.type === "preliminary") {
+            onPreliminaryToolResult == null || onPreliminaryToolResult({
+              ...toolCall,
+              type: "tool-result",
+              output: part.output,
+              preliminary: true
+            });
+          } else {
+            output = part.output;
+          }
+        }
+      } catch (error48) {
+        const durationMs2 = now() - startTime;
+        await notify({
+          event: {
+            ...baseCallbackEvent,
+            success: false,
+            error: error48,
+            durationMs: durationMs2
+          },
+          callbacks: onToolCallFinish
+        });
+        recordErrorOnSpan(span, error48);
+        return {
+          type: "tool-error",
+          toolCallId,
+          toolName,
+          input,
+          error: error48,
+          dynamic: tool2.type === "dynamic",
+          ...toolCall.providerMetadata != null ? { providerMetadata: toolCall.providerMetadata } : {},
+          ...toolCall.toolMetadata != null ? { toolMetadata: toolCall.toolMetadata } : {}
+        };
+      }
+      const durationMs = now() - startTime;
+      await notify({
+        event: {
+          ...baseCallbackEvent,
+          success: true,
+          output,
+          durationMs
+        },
+        callbacks: onToolCallFinish
+      });
+      try {
+        span.setAttributes(await selectTelemetryAttributes({
+          telemetry,
+          attributes: {
+            "ai.toolCall.result": {
+              output: () => JSON.stringify(output)
+            }
+          }
+        }));
+      } catch (ignored) {}
+      return {
+        type: "tool-result",
+        toolCallId,
+        toolName,
+        input,
+        output,
+        dynamic: tool2.type === "dynamic",
+        ...toolCall.providerMetadata != null ? { providerMetadata: toolCall.providerMetadata } : {},
+        ...toolCall.toolMetadata != null ? { toolMetadata: toolCall.toolMetadata } : {}
+      };
+    }
+  });
+}
+var DefaultGeneratedFile = class {
+  constructor({
+    data: data2,
+    mediaType
+  }) {
+    const isUint8Array = data2 instanceof Uint8Array;
+    this.base64Data = isUint8Array ? undefined : data2;
+    this.uint8ArrayData = isUint8Array ? data2 : undefined;
+    this.mediaType = mediaType;
+  }
+  get base64() {
+    if (this.base64Data == null) {
+      this.base64Data = convertUint8ArrayToBase64(this.uint8ArrayData);
+    }
+    return this.base64Data;
+  }
+  get uint8Array() {
+    if (this.uint8ArrayData == null) {
+      this.uint8ArrayData = convertBase64ToUint8Array(this.base64Data);
+    }
+    return this.uint8ArrayData;
+  }
+};
+var DefaultGeneratedFileWithType = class extends DefaultGeneratedFile {
+  constructor(options2) {
+    super(options2);
+    this.type = "file";
+  }
+};
+async function isApprovalNeeded({
+  tool: tool2,
+  toolCall,
+  messages,
+  experimental_context
+}) {
+  if (tool2.needsApproval == null) {
+    return false;
+  }
+  if (typeof tool2.needsApproval === "boolean") {
+    return tool2.needsApproval;
+  }
+  return await tool2.needsApproval(toolCall.input, {
+    toolCallId: toolCall.toolCallId,
+    messages,
+    experimental_context
+  });
+}
+var output_exports = {};
+__export2(output_exports, {
+  array: () => array2,
+  choice: () => choice,
+  json: () => json2,
+  object: () => object2,
+  text: () => text4
+});
+function fixJson(input) {
+  const stack = ["ROOT"];
+  let lastValidIndex = -1;
+  let literalStart = null;
+  function processValueStart(char, i, swapState) {
+    {
+      switch (char) {
+        case '"': {
+          lastValidIndex = i;
+          stack.pop();
+          stack.push(swapState);
+          stack.push("INSIDE_STRING");
+          break;
+        }
+        case "f":
+        case "t":
+        case "n": {
+          lastValidIndex = i;
+          literalStart = i;
+          stack.pop();
+          stack.push(swapState);
+          stack.push("INSIDE_LITERAL");
+          break;
+        }
+        case "-": {
+          stack.pop();
+          stack.push(swapState);
+          stack.push("INSIDE_NUMBER");
+          break;
+        }
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9": {
+          lastValidIndex = i;
+          stack.pop();
+          stack.push(swapState);
+          stack.push("INSIDE_NUMBER");
+          break;
+        }
+        case "{": {
+          lastValidIndex = i;
+          stack.pop();
+          stack.push(swapState);
+          stack.push("INSIDE_OBJECT_START");
+          break;
+        }
+        case "[": {
+          lastValidIndex = i;
+          stack.pop();
+          stack.push(swapState);
+          stack.push("INSIDE_ARRAY_START");
+          break;
+        }
+      }
+    }
+  }
+  function processAfterObjectValue(char, i) {
+    switch (char) {
+      case ",": {
+        stack.pop();
+        stack.push("INSIDE_OBJECT_AFTER_COMMA");
+        break;
+      }
+      case "}": {
+        lastValidIndex = i;
+        stack.pop();
+        break;
+      }
+    }
+  }
+  function processAfterArrayValue(char, i) {
+    switch (char) {
+      case ",": {
+        stack.pop();
+        stack.push("INSIDE_ARRAY_AFTER_COMMA");
+        break;
+      }
+      case "]": {
+        lastValidIndex = i;
+        stack.pop();
+        break;
+      }
+    }
+  }
+  for (let i = 0;i < input.length; i++) {
+    const char = input[i];
+    const currentState = stack[stack.length - 1];
+    switch (currentState) {
+      case "ROOT":
+        processValueStart(char, i, "FINISH");
+        break;
+      case "INSIDE_OBJECT_START": {
+        switch (char) {
+          case '"': {
+            stack.pop();
+            stack.push("INSIDE_OBJECT_KEY");
+            break;
+          }
+          case "}": {
+            lastValidIndex = i;
+            stack.pop();
+            break;
+          }
+        }
+        break;
+      }
+      case "INSIDE_OBJECT_AFTER_COMMA": {
+        switch (char) {
+          case '"': {
+            stack.pop();
+            stack.push("INSIDE_OBJECT_KEY");
+            break;
+          }
+        }
+        break;
+      }
+      case "INSIDE_OBJECT_KEY": {
+        switch (char) {
+          case '"': {
+            stack.pop();
+            stack.push("INSIDE_OBJECT_AFTER_KEY");
+            break;
+          }
+        }
+        break;
+      }
+      case "INSIDE_OBJECT_AFTER_KEY": {
+        switch (char) {
+          case ":": {
+            stack.pop();
+            stack.push("INSIDE_OBJECT_BEFORE_VALUE");
+            break;
+          }
+        }
+        break;
+      }
+      case "INSIDE_OBJECT_BEFORE_VALUE": {
+        processValueStart(char, i, "INSIDE_OBJECT_AFTER_VALUE");
+        break;
+      }
+      case "INSIDE_OBJECT_AFTER_VALUE": {
+        processAfterObjectValue(char, i);
+        break;
+      }
+      case "INSIDE_STRING": {
+        switch (char) {
+          case '"': {
+            stack.pop();
+            lastValidIndex = i;
+            break;
+          }
+          case "\\": {
+            stack.push("INSIDE_STRING_ESCAPE");
+            break;
+          }
+          default: {
+            lastValidIndex = i;
+          }
+        }
+        break;
+      }
+      case "INSIDE_ARRAY_START": {
+        switch (char) {
+          case "]": {
+            lastValidIndex = i;
+            stack.pop();
+            break;
+          }
+          default: {
+            lastValidIndex = i;
+            processValueStart(char, i, "INSIDE_ARRAY_AFTER_VALUE");
+            break;
+          }
+        }
+        break;
+      }
+      case "INSIDE_ARRAY_AFTER_VALUE": {
+        switch (char) {
+          case ",": {
+            stack.pop();
+            stack.push("INSIDE_ARRAY_AFTER_COMMA");
+            break;
+          }
+          case "]": {
+            lastValidIndex = i;
+            stack.pop();
+            break;
+          }
+          default: {
+            lastValidIndex = i;
+            break;
+          }
+        }
+        break;
+      }
+      case "INSIDE_ARRAY_AFTER_COMMA": {
+        processValueStart(char, i, "INSIDE_ARRAY_AFTER_VALUE");
+        break;
+      }
+      case "INSIDE_STRING_ESCAPE": {
+        stack.pop();
+        lastValidIndex = i;
+        break;
+      }
+      case "INSIDE_NUMBER": {
+        switch (char) {
+          case "0":
+          case "1":
+          case "2":
+          case "3":
+          case "4":
+          case "5":
+          case "6":
+          case "7":
+          case "8":
+          case "9": {
+            lastValidIndex = i;
+            break;
+          }
+          case "e":
+          case "E":
+          case "-":
+          case ".": {
+            break;
+          }
+          case ",": {
+            stack.pop();
+            if (stack[stack.length - 1] === "INSIDE_ARRAY_AFTER_VALUE") {
+              processAfterArrayValue(char, i);
+            }
+            if (stack[stack.length - 1] === "INSIDE_OBJECT_AFTER_VALUE") {
+              processAfterObjectValue(char, i);
+            }
+            break;
+          }
+          case "}": {
+            stack.pop();
+            if (stack[stack.length - 1] === "INSIDE_OBJECT_AFTER_VALUE") {
+              processAfterObjectValue(char, i);
+            }
+            break;
+          }
+          case "]": {
+            stack.pop();
+            if (stack[stack.length - 1] === "INSIDE_ARRAY_AFTER_VALUE") {
+              processAfterArrayValue(char, i);
+            }
+            break;
+          }
+          default: {
+            stack.pop();
+            break;
+          }
+        }
+        break;
+      }
+      case "INSIDE_LITERAL": {
+        const partialLiteral = input.substring(literalStart, i + 1);
+        if (!"false".startsWith(partialLiteral) && !"true".startsWith(partialLiteral) && !"null".startsWith(partialLiteral)) {
+          stack.pop();
+          if (stack[stack.length - 1] === "INSIDE_OBJECT_AFTER_VALUE") {
+            processAfterObjectValue(char, i);
+          } else if (stack[stack.length - 1] === "INSIDE_ARRAY_AFTER_VALUE") {
+            processAfterArrayValue(char, i);
+          }
+        } else {
+          lastValidIndex = i;
+        }
+        break;
+      }
+    }
+  }
+  let result = input.slice(0, lastValidIndex + 1);
+  for (let i = stack.length - 1;i >= 0; i--) {
+    const state = stack[i];
+    switch (state) {
+      case "INSIDE_STRING": {
+        result += '"';
+        break;
+      }
+      case "INSIDE_OBJECT_KEY":
+      case "INSIDE_OBJECT_AFTER_KEY":
+      case "INSIDE_OBJECT_AFTER_COMMA":
+      case "INSIDE_OBJECT_START":
+      case "INSIDE_OBJECT_BEFORE_VALUE":
+      case "INSIDE_OBJECT_AFTER_VALUE": {
+        result += "}";
+        break;
+      }
+      case "INSIDE_ARRAY_START":
+      case "INSIDE_ARRAY_AFTER_COMMA":
+      case "INSIDE_ARRAY_AFTER_VALUE": {
+        result += "]";
+        break;
+      }
+      case "INSIDE_LITERAL": {
+        const partialLiteral = input.substring(literalStart, input.length);
+        if ("true".startsWith(partialLiteral)) {
+          result += "true".slice(partialLiteral.length);
+        } else if ("false".startsWith(partialLiteral)) {
+          result += "false".slice(partialLiteral.length);
+        } else if ("null".startsWith(partialLiteral)) {
+          result += "null".slice(partialLiteral.length);
+        }
+      }
+    }
+  }
+  return result;
+}
+async function parsePartialJson(jsonText) {
+  if (jsonText === undefined) {
+    return { value: undefined, state: "undefined-input" };
+  }
+  let result = await safeParseJSON({ text: jsonText });
+  if (result.success) {
+    return { value: result.value, state: "successful-parse" };
+  }
+  result = await safeParseJSON({ text: fixJson(jsonText) });
+  if (result.success) {
+    return { value: result.value, state: "repaired-parse" };
+  }
+  return { value: undefined, state: "failed-parse" };
+}
+var text4 = () => ({
+  name: "text",
+  responseFormat: Promise.resolve({ type: "text" }),
+  async parseCompleteOutput({ text: text22 }) {
+    return text22;
+  },
+  async parsePartialOutput({ text: text22 }) {
+    return { partial: text22 };
+  },
+  createElementStreamTransform() {
+    return;
+  }
+});
+var object2 = ({
+  schema: inputSchema,
+  name: name21,
+  description
+}) => {
+  const schema = asSchema(inputSchema);
+  return {
+    name: "object",
+    responseFormat: resolve(schema.jsonSchema).then((jsonSchema2) => ({
+      type: "json",
+      schema: jsonSchema2,
+      ...name21 != null && { name: name21 },
+      ...description != null && { description }
+    })),
+    async parseCompleteOutput({ text: text22 }, context2) {
+      const parseResult = await safeParseJSON({ text: text22 });
+      if (!parseResult.success) {
+        throw new NoObjectGeneratedError({
+          message: "No object generated: could not parse the response.",
+          cause: parseResult.error,
+          text: text22,
+          response: context2.response,
+          usage: context2.usage,
+          finishReason: context2.finishReason
+        });
+      }
+      const validationResult = await safeValidateTypes({
+        value: parseResult.value,
+        schema
+      });
+      if (!validationResult.success) {
+        throw new NoObjectGeneratedError({
+          message: "No object generated: response did not match schema.",
+          cause: validationResult.error,
+          text: text22,
+          response: context2.response,
+          usage: context2.usage,
+          finishReason: context2.finishReason
+        });
+      }
+      return validationResult.value;
+    },
+    async parsePartialOutput({ text: text22 }) {
+      const result = await parsePartialJson(text22);
+      switch (result.state) {
+        case "failed-parse":
+        case "undefined-input": {
+          return;
+        }
+        case "repaired-parse":
+        case "successful-parse": {
+          return {
+            partial: result.value
+          };
+        }
+      }
+    },
+    createElementStreamTransform() {
+      return;
+    }
+  };
+};
+var array2 = ({
+  element: inputElementSchema,
+  name: name21,
+  description
+}) => {
+  const elementSchema = asSchema(inputElementSchema);
+  return {
+    name: "array",
+    responseFormat: resolve(elementSchema.jsonSchema).then((jsonSchema2) => {
+      const { $schema, ...itemSchema } = jsonSchema2;
+      return {
+        type: "json",
+        schema: {
+          $schema: "http://json-schema.org/draft-07/schema#",
+          type: "object",
+          properties: {
+            elements: { type: "array", items: itemSchema }
+          },
+          required: ["elements"],
+          additionalProperties: false
+        },
+        ...name21 != null && { name: name21 },
+        ...description != null && { description }
+      };
+    }),
+    async parseCompleteOutput({ text: text22 }, context2) {
+      const parseResult = await safeParseJSON({ text: text22 });
+      if (!parseResult.success) {
+        throw new NoObjectGeneratedError({
+          message: "No object generated: could not parse the response.",
+          cause: parseResult.error,
+          text: text22,
+          response: context2.response,
+          usage: context2.usage,
+          finishReason: context2.finishReason
+        });
+      }
+      const outerValue = parseResult.value;
+      if (outerValue == null || typeof outerValue !== "object" || !("elements" in outerValue) || !Array.isArray(outerValue.elements)) {
+        throw new NoObjectGeneratedError({
+          message: "No object generated: response did not match schema.",
+          cause: new TypeValidationError({
+            value: outerValue,
+            cause: "response must be an object with an elements array"
+          }),
+          text: text22,
+          response: context2.response,
+          usage: context2.usage,
+          finishReason: context2.finishReason
+        });
+      }
+      for (const element of outerValue.elements) {
+        const validationResult = await safeValidateTypes({
+          value: element,
+          schema: elementSchema
+        });
+        if (!validationResult.success) {
+          throw new NoObjectGeneratedError({
+            message: "No object generated: response did not match schema.",
+            cause: validationResult.error,
+            text: text22,
+            response: context2.response,
+            usage: context2.usage,
+            finishReason: context2.finishReason
+          });
+        }
+      }
+      return outerValue.elements;
+    },
+    async parsePartialOutput({ text: text22 }) {
+      const result = await parsePartialJson(text22);
+      switch (result.state) {
+        case "failed-parse":
+        case "undefined-input": {
+          return;
+        }
+        case "repaired-parse":
+        case "successful-parse": {
+          const outerValue = result.value;
+          if (outerValue == null || typeof outerValue !== "object" || !("elements" in outerValue) || !Array.isArray(outerValue.elements)) {
+            return;
+          }
+          const rawElements = result.state === "repaired-parse" && outerValue.elements.length > 0 ? outerValue.elements.slice(0, -1) : outerValue.elements;
+          const parsedElements = [];
+          for (const rawElement of rawElements) {
+            const validationResult = await safeValidateTypes({
+              value: rawElement,
+              schema: elementSchema
+            });
+            if (validationResult.success) {
+              parsedElements.push(validationResult.value);
+            }
+          }
+          return { partial: parsedElements };
+        }
+      }
+    },
+    createElementStreamTransform() {
+      let publishedElements = 0;
+      return new TransformStream({
+        transform({ partialOutput }, controller) {
+          if (partialOutput != null) {
+            for (;publishedElements < partialOutput.length; publishedElements++) {
+              controller.enqueue(partialOutput[publishedElements]);
+            }
+          }
+        }
+      });
+    }
+  };
+};
+var choice = ({
+  options: choiceOptions,
+  name: name21,
+  description
+}) => {
+  return {
+    name: "choice",
+    responseFormat: Promise.resolve({
+      type: "json",
+      schema: {
+        $schema: "http://json-schema.org/draft-07/schema#",
+        type: "object",
+        properties: {
+          result: { type: "string", enum: choiceOptions }
+        },
+        required: ["result"],
+        additionalProperties: false
+      },
+      ...name21 != null && { name: name21 },
+      ...description != null && { description }
+    }),
+    async parseCompleteOutput({ text: text22 }, context2) {
+      const parseResult = await safeParseJSON({ text: text22 });
+      if (!parseResult.success) {
+        throw new NoObjectGeneratedError({
+          message: "No object generated: could not parse the response.",
+          cause: parseResult.error,
+          text: text22,
+          response: context2.response,
+          usage: context2.usage,
+          finishReason: context2.finishReason
+        });
+      }
+      const outerValue = parseResult.value;
+      if (outerValue == null || typeof outerValue !== "object" || !("result" in outerValue) || typeof outerValue.result !== "string" || !choiceOptions.includes(outerValue.result)) {
+        throw new NoObjectGeneratedError({
+          message: "No object generated: response did not match schema.",
+          cause: new TypeValidationError({
+            value: outerValue,
+            cause: "response must be an object that contains a choice value."
+          }),
+          text: text22,
+          response: context2.response,
+          usage: context2.usage,
+          finishReason: context2.finishReason
+        });
+      }
+      return outerValue.result;
+    },
+    async parsePartialOutput({ text: text22 }) {
+      const result = await parsePartialJson(text22);
+      switch (result.state) {
+        case "failed-parse":
+        case "undefined-input": {
+          return;
+        }
+        case "repaired-parse":
+        case "successful-parse": {
+          const outerValue = result.value;
+          if (outerValue == null || typeof outerValue !== "object" || !("result" in outerValue) || typeof outerValue.result !== "string") {
+            return;
+          }
+          const potentialMatches = choiceOptions.filter((choiceOption) => choiceOption.startsWith(outerValue.result));
+          if (result.state === "successful-parse") {
+            return potentialMatches.includes(outerValue.result) ? { partial: outerValue.result } : undefined;
+          } else {
+            return potentialMatches.length === 1 ? { partial: potentialMatches[0] } : undefined;
+          }
+        }
+      }
+    },
+    createElementStreamTransform() {
+      return;
+    }
+  };
+};
+var json2 = ({
+  name: name21,
+  description
+} = {}) => {
+  return {
+    name: "json",
+    responseFormat: Promise.resolve({
+      type: "json",
+      ...name21 != null && { name: name21 },
+      ...description != null && { description }
+    }),
+    async parseCompleteOutput({ text: text22 }, context2) {
+      const parseResult = await safeParseJSON({ text: text22 });
+      if (!parseResult.success) {
+        throw new NoObjectGeneratedError({
+          message: "No object generated: could not parse the response.",
+          cause: parseResult.error,
+          text: text22,
+          response: context2.response,
+          usage: context2.usage,
+          finishReason: context2.finishReason
+        });
+      }
+      return parseResult.value;
+    },
+    async parsePartialOutput({ text: text22 }) {
+      const result = await parsePartialJson(text22);
+      switch (result.state) {
+        case "failed-parse":
+        case "undefined-input": {
+          return;
+        }
+        case "repaired-parse":
+        case "successful-parse": {
+          return result.value === undefined ? undefined : { partial: result.value };
+        }
+      }
+    },
+    createElementStreamTransform() {
+      return;
+    }
+  };
+};
+async function parseToolCall({
+  toolCall,
+  tools,
+  repairToolCall,
+  system,
+  messages
+}) {
+  try {
+    if (tools == null) {
+      if (toolCall.providerExecuted && toolCall.dynamic) {
+        return await parseProviderExecutedDynamicToolCall(toolCall);
+      }
+      throw new NoSuchToolError({ toolName: toolCall.toolName });
+    }
+    try {
+      return await doParseToolCall({ toolCall, tools });
+    } catch (error48) {
+      if (repairToolCall == null || !(NoSuchToolError.isInstance(error48) || InvalidToolInputError.isInstance(error48))) {
+        throw error48;
+      }
+      let repairedToolCall = null;
+      try {
+        repairedToolCall = await repairToolCall({
+          toolCall,
+          tools,
+          inputSchema: async ({ toolName }) => {
+            const { inputSchema } = tools[toolName];
+            return await asSchema(inputSchema).jsonSchema;
+          },
+          system,
+          messages,
+          error: error48
+        });
+      } catch (repairError) {
+        throw new ToolCallRepairError({
+          cause: repairError,
+          originalError: error48
+        });
+      }
+      if (repairedToolCall == null) {
+        throw error48;
+      }
+      return await doParseToolCall({ toolCall: repairedToolCall, tools });
+    }
+  } catch (error48) {
+    const parsedInput = await safeParseJSON({ text: toolCall.input });
+    const input = parsedInput.success ? parsedInput.value : toolCall.input;
+    const tool2 = tools == null ? undefined : tools[toolCall.toolName];
+    return {
+      type: "tool-call",
+      toolCallId: toolCall.toolCallId,
+      toolName: toolCall.toolName,
+      input,
+      dynamic: true,
+      invalid: true,
+      error: error48,
+      title: tool2 == null ? undefined : tool2.title,
+      providerExecuted: toolCall.providerExecuted,
+      providerMetadata: toolCall.providerMetadata,
+      ...(tool2 == null ? undefined : tool2.metadata) != null ? { toolMetadata: tool2.metadata } : {}
+    };
+  }
+}
+async function parseProviderExecutedDynamicToolCall(toolCall) {
+  const parseResult = toolCall.input.trim() === "" ? { success: true, value: {} } : await safeParseJSON({ text: toolCall.input });
+  if (parseResult.success === false) {
+    throw new InvalidToolInputError({
+      toolName: toolCall.toolName,
+      toolInput: toolCall.input,
+      cause: parseResult.error
+    });
+  }
+  return {
+    type: "tool-call",
+    toolCallId: toolCall.toolCallId,
+    toolName: toolCall.toolName,
+    input: parseResult.value,
+    providerExecuted: true,
+    dynamic: true,
+    providerMetadata: toolCall.providerMetadata
+  };
+}
+async function doParseToolCall({
+  toolCall,
+  tools
+}) {
+  const toolName = toolCall.toolName;
+  const tool2 = tools[toolName];
+  if (tool2 == null) {
+    if (toolCall.providerExecuted && toolCall.dynamic) {
+      return await parseProviderExecutedDynamicToolCall(toolCall);
+    }
+    throw new NoSuchToolError({
+      toolName: toolCall.toolName,
+      availableTools: Object.keys(tools)
+    });
+  }
+  const schema = asSchema(tool2.inputSchema);
+  const parseResult = toolCall.input.trim() === "" ? await safeValidateTypes({ value: {}, schema }) : await safeParseJSON({ text: toolCall.input, schema });
+  if (parseResult.success === false) {
+    throw new InvalidToolInputError({
+      toolName,
+      toolInput: toolCall.input,
+      cause: parseResult.error
+    });
+  }
+  return tool2.type === "dynamic" ? {
+    type: "tool-call",
+    toolCallId: toolCall.toolCallId,
+    toolName: toolCall.toolName,
+    input: parseResult.value,
+    providerExecuted: toolCall.providerExecuted,
+    providerMetadata: toolCall.providerMetadata,
+    ...tool2.metadata != null ? { toolMetadata: tool2.metadata } : {},
+    dynamic: true,
+    title: tool2.title
+  } : {
+    type: "tool-call",
+    toolCallId: toolCall.toolCallId,
+    toolName,
+    input: parseResult.value,
+    providerExecuted: toolCall.providerExecuted,
+    providerMetadata: toolCall.providerMetadata,
+    ...tool2.metadata != null ? { toolMetadata: tool2.metadata } : {},
+    title: tool2.title
+  };
+}
+var DefaultStepResult = class {
+  constructor({
+    stepNumber,
+    model,
+    functionId,
+    metadata,
+    experimental_context,
+    content,
+    finishReason,
+    rawFinishReason,
+    usage,
+    warnings,
+    request,
+    response,
+    providerMetadata
+  }) {
+    this.stepNumber = stepNumber;
+    this.model = model;
+    this.functionId = functionId;
+    this.metadata = metadata;
+    this.experimental_context = experimental_context;
+    this.content = content;
+    this.finishReason = finishReason;
+    this.rawFinishReason = rawFinishReason;
+    this.usage = usage;
+    this.warnings = warnings;
+    this.request = request;
+    this.response = response;
+    this.providerMetadata = providerMetadata;
+  }
+  get text() {
+    return this.content.filter((part) => part.type === "text").map((part) => part.text).join("");
+  }
+  get reasoning() {
+    return this.content.filter((part) => part.type === "reasoning");
+  }
+  get reasoningText() {
+    return this.reasoning.length === 0 ? undefined : this.reasoning.map((part) => part.text).join("");
+  }
+  get files() {
+    return this.content.filter((part) => part.type === "file").map((part) => part.file);
+  }
+  get sources() {
+    return this.content.filter((part) => part.type === "source");
+  }
+  get toolCalls() {
+    return this.content.filter((part) => part.type === "tool-call");
+  }
+  get staticToolCalls() {
+    return this.toolCalls.filter((toolCall) => toolCall.dynamic !== true);
+  }
+  get dynamicToolCalls() {
+    return this.toolCalls.filter((toolCall) => toolCall.dynamic === true);
+  }
+  get toolResults() {
+    return this.content.filter((part) => part.type === "tool-result");
+  }
+  get staticToolResults() {
+    return this.toolResults.filter((toolResult) => toolResult.dynamic !== true);
+  }
+  get dynamicToolResults() {
+    return this.toolResults.filter((toolResult) => toolResult.dynamic === true);
+  }
+};
+function stepCountIs(stepCount) {
+  return ({ steps }) => steps.length === stepCount;
+}
+async function isStopConditionMet({
+  stopConditions,
+  steps
+}) {
+  return (await Promise.all(stopConditions.map((condition) => condition({ steps })))).some((result) => result);
+}
+async function toResponseMessages({
+  content: inputContent,
+  tools
+}) {
+  const responseMessages = [];
+  const content = [];
+  for (const part of inputContent) {
+    if (part.type === "source") {
+      continue;
+    }
+    if ((part.type === "tool-result" || part.type === "tool-error") && !part.providerExecuted) {
+      continue;
+    }
+    if (part.type === "text" && part.text.length === 0) {
+      continue;
+    }
+    switch (part.type) {
+      case "text":
+        content.push({
+          type: "text",
+          text: part.text,
+          providerOptions: part.providerMetadata
+        });
+        break;
+      case "reasoning":
+        content.push({
+          type: "reasoning",
+          text: part.text,
+          providerOptions: part.providerMetadata
+        });
+        break;
+      case "file":
+        content.push({
+          type: "file",
+          data: part.file.base64,
+          mediaType: part.file.mediaType,
+          providerOptions: part.providerMetadata
+        });
+        break;
+      case "tool-call":
+        content.push({
+          type: "tool-call",
+          toolCallId: part.toolCallId,
+          toolName: part.toolName,
+          input: part.invalid && typeof part.input !== "object" ? {} : part.input,
+          providerExecuted: part.providerExecuted,
+          providerOptions: part.providerMetadata
+        });
+        break;
+      case "tool-result": {
+        const output = await createToolModelOutput({
+          toolCallId: part.toolCallId,
+          input: part.input,
+          tool: tools == null ? undefined : tools[part.toolName],
+          output: part.output,
+          errorMode: "none"
+        });
+        content.push({
+          type: "tool-result",
+          toolCallId: part.toolCallId,
+          toolName: part.toolName,
+          output,
+          providerOptions: part.providerMetadata
+        });
+        break;
+      }
+      case "tool-error": {
+        const output = await createToolModelOutput({
+          toolCallId: part.toolCallId,
+          input: part.input,
+          tool: tools == null ? undefined : tools[part.toolName],
+          output: part.error,
+          errorMode: "json"
+        });
+        content.push({
+          type: "tool-result",
+          toolCallId: part.toolCallId,
+          toolName: part.toolName,
+          output,
+          providerOptions: part.providerMetadata
+        });
+        break;
+      }
+      case "tool-approval-request":
+        content.push({
+          type: "tool-approval-request",
+          approvalId: part.approvalId,
+          toolCallId: part.toolCall.toolCallId
+        });
+        break;
+    }
+  }
+  if (content.length > 0) {
+    responseMessages.push({
+      role: "assistant",
+      content
+    });
+  }
+  const toolResultContent = [];
+  for (const part of inputContent) {
+    if (!(part.type === "tool-result" || part.type === "tool-error") || part.providerExecuted) {
+      continue;
+    }
+    const output = await createToolModelOutput({
+      toolCallId: part.toolCallId,
+      input: part.input,
+      tool: tools == null ? undefined : tools[part.toolName],
+      output: part.type === "tool-result" ? part.output : part.error,
+      errorMode: part.type === "tool-error" ? "text" : "none"
+    });
+    toolResultContent.push({
+      type: "tool-result",
+      toolCallId: part.toolCallId,
+      toolName: part.toolName,
+      output,
+      ...part.providerMetadata != null ? { providerOptions: part.providerMetadata } : {}
+    });
+  }
+  if (toolResultContent.length > 0) {
+    responseMessages.push({
+      role: "tool",
+      content: toolResultContent
+    });
+  }
+  return responseMessages;
+}
+function mergeAbortSignals(...signals) {
+  const validSignals = signals.filter((signal) => signal != null);
+  if (validSignals.length === 0) {
+    return;
+  }
+  if (validSignals.length === 1) {
+    return validSignals[0];
+  }
+  const controller = new AbortController;
+  for (const signal of validSignals) {
+    if (signal.aborted) {
+      controller.abort(signal.reason);
+      return controller.signal;
+    }
+    signal.addEventListener("abort", () => {
+      controller.abort(signal.reason);
+    }, { once: true });
+  }
+  return controller.signal;
+}
+var originalGenerateId = createIdGenerator({
+  prefix: "aitxt",
+  size: 24
+});
+function prepareHeaders(headers, defaultHeaders) {
+  const responseHeaders = new Headers(headers != null ? headers : {});
+  for (const [key, value] of Object.entries(defaultHeaders)) {
+    if (!responseHeaders.has(key)) {
+      responseHeaders.set(key, value);
+    }
+  }
+  return responseHeaders;
+}
+function createTextStreamResponse({
+  status,
+  statusText,
+  headers,
+  textStream
+}) {
+  return new Response(textStream.pipeThrough(new TextEncoderStream), {
+    status: status != null ? status : 200,
+    statusText,
+    headers: prepareHeaders(headers, {
+      "content-type": "text/plain; charset=utf-8"
+    })
+  });
+}
+function writeToServerResponse({
+  response,
+  status,
+  statusText,
+  headers,
+  stream
+}) {
+  const statusCode = status != null ? status : 200;
+  if (statusText !== undefined) {
+    response.writeHead(statusCode, statusText, headers);
+  } else {
+    response.writeHead(statusCode, headers);
+  }
+  const reader = stream.getReader();
+  const read = async () => {
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done)
+          break;
+        const canContinue = response.write(value);
+        if (!canContinue) {
+          await new Promise((resolve3) => {
+            response.once("drain", resolve3);
+          });
+        }
+      }
+    } catch (error48) {
+      throw error48;
+    } finally {
+      response.end();
+    }
+  };
+  read();
+}
+function pipeTextStreamToResponse({
+  response,
+  status,
+  statusText,
+  headers,
+  textStream
+}) {
+  writeToServerResponse({
+    response,
+    status,
+    statusText,
+    headers: Object.fromEntries(prepareHeaders(headers, {
+      "content-type": "text/plain; charset=utf-8"
+    }).entries()),
+    stream: textStream.pipeThrough(new TextEncoderStream)
+  });
+}
+var JsonToSseTransformStream = class extends TransformStream {
+  constructor() {
+    super({
+      transform(part, controller) {
+        controller.enqueue(`data: ${JSON.stringify(part)}
+
+`);
+      },
+      flush(controller) {
+        controller.enqueue(`data: [DONE]
+
+`);
+      }
+    });
+  }
+};
+var UI_MESSAGE_STREAM_HEADERS = {
+  "content-type": "text/event-stream",
+  "cache-control": "no-cache",
+  connection: "keep-alive",
+  "x-vercel-ai-ui-message-stream": "v1",
+  "x-accel-buffering": "no"
+};
+function createUIMessageStreamResponse({
+  status,
+  statusText,
+  headers,
+  stream,
+  consumeSseStream
+}) {
+  let sseStream = stream.pipeThrough(new JsonToSseTransformStream);
+  if (consumeSseStream) {
+    const [stream1, stream2] = sseStream.tee();
+    sseStream = stream1;
+    consumeSseStream({ stream: stream2 });
+  }
+  return new Response(sseStream.pipeThrough(new TextEncoderStream), {
+    status,
+    statusText,
+    headers: prepareHeaders(headers, UI_MESSAGE_STREAM_HEADERS)
+  });
+}
+function getResponseUIMessageId({
+  originalMessages,
+  responseMessageId
+}) {
+  if (originalMessages == null) {
+    return;
+  }
+  const lastMessage = originalMessages[originalMessages.length - 1];
+  return (lastMessage == null ? undefined : lastMessage.role) === "assistant" ? lastMessage.id : typeof responseMessageId === "function" ? responseMessageId() : responseMessageId;
+}
+var toolMetadataSchema = exports_external.record(exports_external.string(), jsonValueSchema3.optional());
+var uiMessageChunkSchema = lazySchema(() => zodSchema(exports_external.union([
+  exports_external.strictObject({
+    type: exports_external.literal("text-start"),
+    id: exports_external.string(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("text-delta"),
+    id: exports_external.string(),
+    delta: exports_external.string(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("text-end"),
+    id: exports_external.string(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("error"),
+    errorText: exports_external.string()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("tool-input-start"),
+    toolCallId: exports_external.string(),
+    toolName: exports_external.string(),
+    providerExecuted: exports_external.boolean().optional(),
+    providerMetadata: providerMetadataSchema.optional(),
+    toolMetadata: toolMetadataSchema.optional(),
+    dynamic: exports_external.boolean().optional(),
+    title: exports_external.string().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("tool-input-delta"),
+    toolCallId: exports_external.string(),
+    inputTextDelta: exports_external.string()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("tool-input-available"),
+    toolCallId: exports_external.string(),
+    toolName: exports_external.string(),
+    input: exports_external.unknown(),
+    providerExecuted: exports_external.boolean().optional(),
+    providerMetadata: providerMetadataSchema.optional(),
+    toolMetadata: toolMetadataSchema.optional(),
+    dynamic: exports_external.boolean().optional(),
+    title: exports_external.string().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("tool-input-error"),
+    toolCallId: exports_external.string(),
+    toolName: exports_external.string(),
+    input: exports_external.unknown(),
+    providerExecuted: exports_external.boolean().optional(),
+    providerMetadata: providerMetadataSchema.optional(),
+    toolMetadata: toolMetadataSchema.optional(),
+    dynamic: exports_external.boolean().optional(),
+    errorText: exports_external.string(),
+    title: exports_external.string().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("tool-approval-request"),
+    approvalId: exports_external.string(),
+    toolCallId: exports_external.string()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("tool-output-available"),
+    toolCallId: exports_external.string(),
+    output: exports_external.unknown(),
+    providerExecuted: exports_external.boolean().optional(),
+    providerMetadata: providerMetadataSchema.optional(),
+    toolMetadata: toolMetadataSchema.optional(),
+    dynamic: exports_external.boolean().optional(),
+    preliminary: exports_external.boolean().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("tool-output-error"),
+    toolCallId: exports_external.string(),
+    errorText: exports_external.string(),
+    providerExecuted: exports_external.boolean().optional(),
+    providerMetadata: providerMetadataSchema.optional(),
+    toolMetadata: toolMetadataSchema.optional(),
+    dynamic: exports_external.boolean().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("tool-output-denied"),
+    toolCallId: exports_external.string()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("reasoning-start"),
+    id: exports_external.string(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("reasoning-delta"),
+    id: exports_external.string(),
+    delta: exports_external.string(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("reasoning-end"),
+    id: exports_external.string(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("source-url"),
+    sourceId: exports_external.string(),
+    url: exports_external.string(),
+    title: exports_external.string().optional(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("source-document"),
+    sourceId: exports_external.string(),
+    mediaType: exports_external.string(),
+    title: exports_external.string(),
+    filename: exports_external.string().optional(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("file"),
+    url: exports_external.string(),
+    mediaType: exports_external.string(),
+    providerMetadata: providerMetadataSchema.optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.custom((value) => typeof value === "string" && value.startsWith("data-"), { message: 'Type must start with "data-"' }),
+    id: exports_external.string().optional(),
+    data: exports_external.unknown(),
+    transient: exports_external.boolean().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("start-step")
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("finish-step")
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("start"),
+    messageId: exports_external.string().optional(),
+    messageMetadata: exports_external.unknown().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("finish"),
+    finishReason: exports_external.enum([
+      "stop",
+      "length",
+      "content-filter",
+      "tool-calls",
+      "error",
+      "other"
+    ]).optional(),
+    messageMetadata: exports_external.unknown().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("abort"),
+    reason: exports_external.string().optional()
+  }),
+  exports_external.strictObject({
+    type: exports_external.literal("message-metadata"),
+    messageMetadata: exports_external.unknown()
+  })
+])));
+function isDataUIMessageChunk(chunk) {
+  return chunk.type.startsWith("data-");
+}
+function isStaticToolUIPart(part) {
+  return part.type.startsWith("tool-");
+}
+function isDynamicToolUIPart(part) {
+  return part.type === "dynamic-tool";
+}
+function isToolUIPart(part) {
+  return isStaticToolUIPart(part) || isDynamicToolUIPart(part);
+}
+function getStaticToolName(part) {
+  return part.type.split("-").slice(1).join("-");
+}
+function createStreamingUIMessageState({
+  lastMessage,
+  messageId
+}) {
+  return {
+    message: (lastMessage == null ? undefined : lastMessage.role) === "assistant" ? lastMessage : {
+      id: messageId,
+      metadata: undefined,
+      role: "assistant",
+      parts: []
+    },
+    activeTextParts: {},
+    activeReasoningParts: {},
+    partialToolCalls: {}
+  };
+}
+function processUIMessageStream({
+  stream,
+  messageMetadataSchema,
+  dataPartSchemas,
+  runUpdateMessageJob,
+  onError,
+  onToolCall,
+  onData
+}) {
+  return stream.pipeThrough(new TransformStream({
+    async transform(chunk, controller) {
+      await runUpdateMessageJob(async ({ state, write: write2 }) => {
+        var _a21, _b16, _c, _d;
+        function getToolInvocation(toolCallId) {
+          const toolInvocations = state.message.parts.filter(isToolUIPart);
+          const toolInvocation = toolInvocations.find((invocation) => invocation.toolCallId === toolCallId);
+          if (toolInvocation == null) {
+            throw new UIMessageStreamError({
+              chunkType: "tool-invocation",
+              chunkId: toolCallId,
+              message: `No tool invocation found for tool call ID "${toolCallId}".`
+            });
+          }
+          return toolInvocation;
+        }
+        function updateToolPart(options2) {
+          var _a222;
+          const part = state.message.parts.find((part2) => isStaticToolUIPart(part2) && part2.toolCallId === options2.toolCallId);
+          const anyOptions = options2;
+          const anyPart = part;
+          if (part != null) {
+            part.state = options2.state;
+            anyPart.input = anyOptions.input;
+            anyPart.output = anyOptions.output;
+            anyPart.errorText = anyOptions.errorText;
+            anyPart.rawInput = anyOptions.rawInput;
+            anyPart.preliminary = anyOptions.preliminary;
+            if (options2.title !== undefined) {
+              anyPart.title = options2.title;
+            }
+            if (options2.toolMetadata !== undefined) {
+              anyPart.toolMetadata = options2.toolMetadata;
+            }
+            anyPart.providerExecuted = (_a222 = anyOptions.providerExecuted) != null ? _a222 : part.providerExecuted;
+            const providerMetadata = anyOptions.providerMetadata;
+            if (providerMetadata != null) {
+              if (options2.state === "output-available" || options2.state === "output-error") {
+                const resultPart = part;
+                resultPart.resultProviderMetadata = providerMetadata;
+              } else {
+                part.callProviderMetadata = providerMetadata;
+              }
+            }
+          } else {
+            state.message.parts.push({
+              type: `tool-${options2.toolName}`,
+              toolCallId: options2.toolCallId,
+              state: options2.state,
+              title: options2.title,
+              ...options2.toolMetadata !== undefined ? { toolMetadata: options2.toolMetadata } : {},
+              input: anyOptions.input,
+              output: anyOptions.output,
+              rawInput: anyOptions.rawInput,
+              errorText: anyOptions.errorText,
+              providerExecuted: anyOptions.providerExecuted,
+              preliminary: anyOptions.preliminary,
+              ...anyOptions.providerMetadata != null && (options2.state === "output-available" || options2.state === "output-error") ? { resultProviderMetadata: anyOptions.providerMetadata } : {},
+              ...anyOptions.providerMetadata != null && !(options2.state === "output-available" || options2.state === "output-error") ? { callProviderMetadata: anyOptions.providerMetadata } : {}
+            });
+          }
+        }
+        function updateDynamicToolPart(options2) {
+          var _a222, _b23;
+          const part = state.message.parts.find((part2) => part2.type === "dynamic-tool" && part2.toolCallId === options2.toolCallId);
+          const anyOptions = options2;
+          const anyPart = part;
+          if (part != null) {
+            part.state = options2.state;
+            anyPart.toolName = options2.toolName;
+            anyPart.input = anyOptions.input;
+            anyPart.output = anyOptions.output;
+            anyPart.errorText = anyOptions.errorText;
+            anyPart.rawInput = (_a222 = anyOptions.rawInput) != null ? _a222 : anyPart.rawInput;
+            anyPart.preliminary = anyOptions.preliminary;
+            if (options2.title !== undefined) {
+              anyPart.title = options2.title;
+            }
+            if (options2.toolMetadata !== undefined) {
+              anyPart.toolMetadata = options2.toolMetadata;
+            }
+            anyPart.providerExecuted = (_b23 = anyOptions.providerExecuted) != null ? _b23 : part.providerExecuted;
+            const providerMetadata = anyOptions.providerMetadata;
+            if (providerMetadata != null) {
+              if (options2.state === "output-available" || options2.state === "output-error") {
+                const resultPart = part;
+                resultPart.resultProviderMetadata = providerMetadata;
+              } else {
+                part.callProviderMetadata = providerMetadata;
+              }
+            }
+          } else {
+            state.message.parts.push({
+              type: "dynamic-tool",
+              toolName: options2.toolName,
+              toolCallId: options2.toolCallId,
+              state: options2.state,
+              input: anyOptions.input,
+              output: anyOptions.output,
+              errorText: anyOptions.errorText,
+              preliminary: anyOptions.preliminary,
+              providerExecuted: anyOptions.providerExecuted,
+              title: options2.title,
+              ...options2.toolMetadata !== undefined ? { toolMetadata: options2.toolMetadata } : {},
+              ...anyOptions.providerMetadata != null && (options2.state === "output-available" || options2.state === "output-error") ? { resultProviderMetadata: anyOptions.providerMetadata } : {},
+              ...anyOptions.providerMetadata != null && !(options2.state === "output-available" || options2.state === "output-error") ? { callProviderMetadata: anyOptions.providerMetadata } : {}
+            });
+          }
+        }
+        async function updateMessageMetadata(metadata) {
+          if (metadata != null) {
+            const mergedMetadata = state.message.metadata != null ? mergeObjects(state.message.metadata, metadata) : metadata;
+            if (messageMetadataSchema != null) {
+              await validateTypes({
+                value: mergedMetadata,
+                schema: messageMetadataSchema,
+                context: {
+                  field: "message.metadata",
+                  entityId: state.message.id
+                }
+              });
+            }
+            state.message.metadata = mergedMetadata;
+          }
+        }
+        switch (chunk.type) {
+          case "text-start": {
+            const textPart = {
+              type: "text",
+              text: "",
+              providerMetadata: chunk.providerMetadata,
+              state: "streaming"
+            };
+            state.activeTextParts[chunk.id] = textPart;
+            state.message.parts.push(textPart);
+            write2();
+            break;
+          }
+          case "text-delta": {
+            const textPart = state.activeTextParts[chunk.id];
+            if (textPart == null) {
+              throw new UIMessageStreamError({
+                chunkType: "text-delta",
+                chunkId: chunk.id,
+                message: `Received text-delta for missing text part with ID "${chunk.id}". Ensure a "text-start" chunk is sent before any "text-delta" chunks.`
+              });
+            }
+            textPart.text += chunk.delta;
+            textPart.providerMetadata = (_a21 = chunk.providerMetadata) != null ? _a21 : textPart.providerMetadata;
+            write2();
+            break;
+          }
+          case "text-end": {
+            const textPart = state.activeTextParts[chunk.id];
+            if (textPart == null) {
+              throw new UIMessageStreamError({
+                chunkType: "text-end",
+                chunkId: chunk.id,
+                message: `Received text-end for missing text part with ID "${chunk.id}". Ensure a "text-start" chunk is sent before any "text-end" chunks.`
+              });
+            }
+            textPart.state = "done";
+            textPart.providerMetadata = (_b16 = chunk.providerMetadata) != null ? _b16 : textPart.providerMetadata;
+            delete state.activeTextParts[chunk.id];
+            write2();
+            break;
+          }
+          case "reasoning-start": {
+            const reasoningPart = {
+              type: "reasoning",
+              text: "",
+              providerMetadata: chunk.providerMetadata,
+              state: "streaming"
+            };
+            state.activeReasoningParts[chunk.id] = reasoningPart;
+            state.message.parts.push(reasoningPart);
+            write2();
+            break;
+          }
+          case "reasoning-delta": {
+            const reasoningPart = state.activeReasoningParts[chunk.id];
+            if (reasoningPart == null) {
+              throw new UIMessageStreamError({
+                chunkType: "reasoning-delta",
+                chunkId: chunk.id,
+                message: `Received reasoning-delta for missing reasoning part with ID "${chunk.id}". Ensure a "reasoning-start" chunk is sent before any "reasoning-delta" chunks.`
+              });
+            }
+            reasoningPart.text += chunk.delta;
+            reasoningPart.providerMetadata = (_c = chunk.providerMetadata) != null ? _c : reasoningPart.providerMetadata;
+            write2();
+            break;
+          }
+          case "reasoning-end": {
+            const reasoningPart = state.activeReasoningParts[chunk.id];
+            if (reasoningPart == null) {
+              throw new UIMessageStreamError({
+                chunkType: "reasoning-end",
+                chunkId: chunk.id,
+                message: `Received reasoning-end for missing reasoning part with ID "${chunk.id}". Ensure a "reasoning-start" chunk is sent before any "reasoning-end" chunks.`
+              });
+            }
+            reasoningPart.providerMetadata = (_d = chunk.providerMetadata) != null ? _d : reasoningPart.providerMetadata;
+            reasoningPart.state = "done";
+            delete state.activeReasoningParts[chunk.id];
+            write2();
+            break;
+          }
+          case "file": {
+            state.message.parts.push({
+              type: "file",
+              mediaType: chunk.mediaType,
+              url: chunk.url,
+              ...chunk.providerMetadata != null ? { providerMetadata: chunk.providerMetadata } : {}
+            });
+            write2();
+            break;
+          }
+          case "source-url": {
+            state.message.parts.push({
+              type: "source-url",
+              sourceId: chunk.sourceId,
+              url: chunk.url,
+              title: chunk.title,
+              providerMetadata: chunk.providerMetadata
+            });
+            write2();
+            break;
+          }
+          case "source-document": {
+            state.message.parts.push({
+              type: "source-document",
+              sourceId: chunk.sourceId,
+              mediaType: chunk.mediaType,
+              title: chunk.title,
+              filename: chunk.filename,
+              providerMetadata: chunk.providerMetadata
+            });
+            write2();
+            break;
+          }
+          case "tool-input-start": {
+            const toolInvocations = state.message.parts.filter(isStaticToolUIPart);
+            state.partialToolCalls[chunk.toolCallId] = {
+              text: "",
+              toolName: chunk.toolName,
+              index: toolInvocations.length,
+              dynamic: chunk.dynamic,
+              title: chunk.title,
+              toolMetadata: chunk.toolMetadata
+            };
+            if (chunk.dynamic) {
+              updateDynamicToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: chunk.toolName,
+                state: "input-streaming",
+                input: undefined,
+                providerExecuted: chunk.providerExecuted,
+                title: chunk.title,
+                toolMetadata: chunk.toolMetadata,
+                providerMetadata: chunk.providerMetadata
+              });
+            } else {
+              updateToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: chunk.toolName,
+                state: "input-streaming",
+                input: undefined,
+                providerExecuted: chunk.providerExecuted,
+                title: chunk.title,
+                toolMetadata: chunk.toolMetadata,
+                providerMetadata: chunk.providerMetadata
+              });
+            }
+            write2();
+            break;
+          }
+          case "tool-input-delta": {
+            const partialToolCall = state.partialToolCalls[chunk.toolCallId];
+            if (partialToolCall == null) {
+              throw new UIMessageStreamError({
+                chunkType: "tool-input-delta",
+                chunkId: chunk.toolCallId,
+                message: `Received tool-input-delta for missing tool call with ID "${chunk.toolCallId}". Ensure a "tool-input-start" chunk is sent before any "tool-input-delta" chunks.`
+              });
+            }
+            partialToolCall.text += chunk.inputTextDelta;
+            const { value: partialArgs } = await parsePartialJson(partialToolCall.text);
+            if (partialToolCall.dynamic) {
+              updateDynamicToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: partialToolCall.toolName,
+                state: "input-streaming",
+                input: partialArgs,
+                title: partialToolCall.title,
+                toolMetadata: partialToolCall.toolMetadata
+              });
+            } else {
+              updateToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: partialToolCall.toolName,
+                state: "input-streaming",
+                input: partialArgs,
+                title: partialToolCall.title,
+                toolMetadata: partialToolCall.toolMetadata
+              });
+            }
+            write2();
+            break;
+          }
+          case "tool-input-available": {
+            if (chunk.dynamic) {
+              updateDynamicToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: chunk.toolName,
+                state: "input-available",
+                input: chunk.input,
+                providerExecuted: chunk.providerExecuted,
+                providerMetadata: chunk.providerMetadata,
+                title: chunk.title,
+                toolMetadata: chunk.toolMetadata
+              });
+            } else {
+              updateToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: chunk.toolName,
+                state: "input-available",
+                input: chunk.input,
+                providerExecuted: chunk.providerExecuted,
+                providerMetadata: chunk.providerMetadata,
+                title: chunk.title,
+                toolMetadata: chunk.toolMetadata
+              });
+            }
+            write2();
+            if (onToolCall && !chunk.providerExecuted) {
+              await onToolCall({
+                toolCall: chunk
+              });
+            }
+            break;
+          }
+          case "tool-input-error": {
+            const existingPart = state.message.parts.filter(isToolUIPart).find((p) => p.toolCallId === chunk.toolCallId);
+            const isDynamic = existingPart != null ? existingPart.type === "dynamic-tool" : !!chunk.dynamic;
+            if (isDynamic) {
+              updateDynamicToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: chunk.toolName,
+                state: "output-error",
+                input: chunk.input,
+                errorText: chunk.errorText,
+                providerExecuted: chunk.providerExecuted,
+                providerMetadata: chunk.providerMetadata,
+                toolMetadata: chunk.toolMetadata
+              });
+            } else {
+              updateToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: chunk.toolName,
+                state: "output-error",
+                input: undefined,
+                rawInput: chunk.input,
+                errorText: chunk.errorText,
+                providerExecuted: chunk.providerExecuted,
+                providerMetadata: chunk.providerMetadata,
+                toolMetadata: chunk.toolMetadata
+              });
+            }
+            write2();
+            break;
+          }
+          case "tool-approval-request": {
+            const toolInvocation = getToolInvocation(chunk.toolCallId);
+            toolInvocation.state = "approval-requested";
+            toolInvocation.approval = { id: chunk.approvalId };
+            write2();
+            break;
+          }
+          case "tool-output-denied": {
+            const toolInvocation = getToolInvocation(chunk.toolCallId);
+            toolInvocation.state = "output-denied";
+            write2();
+            break;
+          }
+          case "tool-output-available": {
+            const toolInvocation = getToolInvocation(chunk.toolCallId);
+            if (toolInvocation.type === "dynamic-tool") {
+              updateDynamicToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: toolInvocation.toolName,
+                state: "output-available",
+                input: toolInvocation.input,
+                output: chunk.output,
+                preliminary: chunk.preliminary,
+                providerExecuted: chunk.providerExecuted,
+                providerMetadata: chunk.providerMetadata,
+                title: toolInvocation.title,
+                toolMetadata: toolInvocation.toolMetadata
+              });
+            } else {
+              updateToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: getStaticToolName(toolInvocation),
+                state: "output-available",
+                input: toolInvocation.input,
+                output: chunk.output,
+                providerExecuted: chunk.providerExecuted,
+                preliminary: chunk.preliminary,
+                providerMetadata: chunk.providerMetadata,
+                title: toolInvocation.title,
+                toolMetadata: toolInvocation.toolMetadata
+              });
+            }
+            write2();
+            break;
+          }
+          case "tool-output-error": {
+            const toolInvocation = getToolInvocation(chunk.toolCallId);
+            if (toolInvocation.type === "dynamic-tool") {
+              updateDynamicToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: toolInvocation.toolName,
+                state: "output-error",
+                input: toolInvocation.input,
+                errorText: chunk.errorText,
+                providerExecuted: chunk.providerExecuted,
+                providerMetadata: chunk.providerMetadata,
+                title: toolInvocation.title,
+                toolMetadata: toolInvocation.toolMetadata
+              });
+            } else {
+              updateToolPart({
+                toolCallId: chunk.toolCallId,
+                toolName: getStaticToolName(toolInvocation),
+                state: "output-error",
+                input: toolInvocation.input,
+                rawInput: toolInvocation.rawInput,
+                errorText: chunk.errorText,
+                providerExecuted: chunk.providerExecuted,
+                providerMetadata: chunk.providerMetadata,
+                title: toolInvocation.title,
+                toolMetadata: toolInvocation.toolMetadata
+              });
+            }
+            write2();
+            break;
+          }
+          case "start-step": {
+            state.message.parts.push({ type: "step-start" });
+            break;
+          }
+          case "finish-step": {
+            state.activeTextParts = {};
+            state.activeReasoningParts = {};
+            break;
+          }
+          case "start": {
+            if (chunk.messageId != null) {
+              state.message.id = chunk.messageId;
+            }
+            await updateMessageMetadata(chunk.messageMetadata);
+            if (chunk.messageId != null || chunk.messageMetadata != null) {
+              write2();
+            }
+            break;
+          }
+          case "finish": {
+            if (chunk.finishReason != null) {
+              state.finishReason = chunk.finishReason;
+            }
+            await updateMessageMetadata(chunk.messageMetadata);
+            if (chunk.messageMetadata != null) {
+              write2();
+            }
+            break;
+          }
+          case "message-metadata": {
+            await updateMessageMetadata(chunk.messageMetadata);
+            if (chunk.messageMetadata != null) {
+              write2();
+            }
+            break;
+          }
+          case "error": {
+            onError == null || onError(new Error(chunk.errorText));
+            break;
+          }
+          default: {
+            if (isDataUIMessageChunk(chunk)) {
+              if ((dataPartSchemas == null ? undefined : dataPartSchemas[chunk.type]) != null) {
+                const partIdx = state.message.parts.findIndex((p) => ("id" in p) && ("data" in p) && p.id === chunk.id && p.type === chunk.type);
+                const actualPartIdx = partIdx >= 0 ? partIdx : state.message.parts.length;
+                await validateTypes({
+                  value: chunk.data,
+                  schema: dataPartSchemas[chunk.type],
+                  context: {
+                    field: `message.parts[${actualPartIdx}].data`,
+                    entityName: chunk.type,
+                    entityId: chunk.id
+                  }
+                });
+              }
+              const dataChunk = chunk;
+              if (dataChunk.transient) {
+                onData == null || onData(dataChunk);
+                break;
+              }
+              const existingUIPart = dataChunk.id != null ? state.message.parts.find((chunkArg) => dataChunk.type === chunkArg.type && dataChunk.id === chunkArg.id) : undefined;
+              if (existingUIPart != null) {
+                existingUIPart.data = dataChunk.data;
+              } else {
+                state.message.parts.push(dataChunk);
+              }
+              onData == null || onData(dataChunk);
+              write2();
+            }
+          }
+        }
+        controller.enqueue(chunk);
+      });
+    }
+  }));
+}
+function handleUIMessageStreamFinish({
+  messageId,
+  originalMessages = [],
+  onStepFinish,
+  onFinish,
+  onError,
+  stream
+}) {
+  let lastMessage = originalMessages == null ? undefined : originalMessages[originalMessages.length - 1];
+  if ((lastMessage == null ? undefined : lastMessage.role) !== "assistant") {
+    lastMessage = undefined;
+  } else {
+    messageId = lastMessage.id;
+  }
+  let isAborted2 = false;
+  const idInjectedStream = stream.pipeThrough(new TransformStream({
+    transform(chunk, controller) {
+      if (chunk.type === "start") {
+        const startChunk = chunk;
+        if (startChunk.messageId == null && messageId != null) {
+          startChunk.messageId = messageId;
+        }
+      }
+      if (chunk.type === "abort") {
+        isAborted2 = true;
+      }
+      controller.enqueue(chunk);
+    }
+  }));
+  if (onFinish == null && onStepFinish == null) {
+    return idInjectedStream;
+  }
+  const state = createStreamingUIMessageState({
+    lastMessage: lastMessage ? structuredClone(lastMessage) : undefined,
+    messageId: messageId != null ? messageId : ""
+  });
+  const runUpdateMessageJob = async (job) => {
+    await job({ state, write: () => {} });
+  };
+  let finishCalled = false;
+  const callOnFinish = async () => {
+    if (finishCalled || !onFinish) {
+      return;
+    }
+    finishCalled = true;
+    const isContinuation = state.message.id === (lastMessage == null ? undefined : lastMessage.id);
+    await onFinish({
+      isAborted: isAborted2,
+      isContinuation,
+      responseMessage: state.message,
+      messages: [
+        ...isContinuation ? originalMessages.slice(0, -1) : originalMessages,
+        state.message
+      ],
+      finishReason: state.finishReason
+    });
+  };
+  const callOnStepFinish = async () => {
+    if (!onStepFinish) {
+      return;
+    }
+    const isContinuation = state.message.id === (lastMessage == null ? undefined : lastMessage.id);
+    try {
+      await onStepFinish({
+        isContinuation,
+        responseMessage: structuredClone(state.message),
+        messages: [
+          ...isContinuation ? originalMessages.slice(0, -1) : originalMessages,
+          structuredClone(state.message)
+        ]
+      });
+    } catch (error48) {
+      onError(error48);
+    }
+  };
+  return processUIMessageStream({
+    stream: idInjectedStream,
+    runUpdateMessageJob,
+    onError
+  }).pipeThrough(new TransformStream({
+    async transform(chunk, controller) {
+      if (chunk.type === "finish-step") {
+        await callOnStepFinish();
+      }
+      controller.enqueue(chunk);
+    },
+    async cancel() {
+      await callOnFinish();
+    },
+    async flush() {
+      await callOnFinish();
+    }
+  }));
+}
+function pipeUIMessageStreamToResponse({
+  response,
+  status,
+  statusText,
+  headers,
+  stream,
+  consumeSseStream
+}) {
+  let sseStream = stream.pipeThrough(new JsonToSseTransformStream);
+  if (consumeSseStream) {
+    const [stream1, stream2] = sseStream.tee();
+    sseStream = stream1;
+    consumeSseStream({ stream: stream2 });
+  }
+  writeToServerResponse({
+    response,
+    status,
+    statusText,
+    headers: Object.fromEntries(prepareHeaders(headers, UI_MESSAGE_STREAM_HEADERS).entries()),
+    stream: sseStream.pipeThrough(new TextEncoderStream)
+  });
+}
+function createAsyncIterableStream(source) {
+  const stream = source.pipeThrough(new TransformStream);
+  stream[Symbol.asyncIterator] = function() {
+    const reader = this.getReader();
+    let finished = false;
+    async function cleanup(cancelStream) {
+      var _a21;
+      if (finished)
+        return;
+      finished = true;
+      try {
+        if (cancelStream) {
+          await ((_a21 = reader.cancel) == null ? undefined : _a21.call(reader));
+        }
+      } finally {
+        try {
+          reader.releaseLock();
+        } catch (e) {}
+      }
+    }
+    return {
+      async next() {
+        if (finished) {
+          return { done: true, value: undefined };
+        }
+        const { done, value } = await reader.read();
+        if (done) {
+          await cleanup(true);
+          return { done: true, value: undefined };
+        }
+        return { done: false, value };
+      },
+      async return() {
+        await cleanup(true);
+        return { done: true, value: undefined };
+      },
+      async throw(err) {
+        await cleanup(true);
+        throw err;
+      }
+    };
+  };
+  return stream;
+}
+async function consumeStream({
+  stream,
+  onError
+}) {
+  const reader = stream.getReader();
+  try {
+    while (true) {
+      const { done } = await reader.read();
+      if (done)
+        break;
+    }
+  } catch (error48) {
+    onError == null || onError(error48);
+  } finally {
+    reader.releaseLock();
+  }
+}
+function createResolvablePromise() {
+  let resolve3;
+  let reject;
+  const promise2 = new Promise((res, rej) => {
+    resolve3 = res;
+    reject = rej;
+  });
+  return {
+    promise: promise2,
+    resolve: resolve3,
+    reject
+  };
+}
+function createStitchableStream() {
+  let innerStreamReaders = [];
+  let controller = null;
+  let isClosed = false;
+  let waitForNewStream = createResolvablePromise();
+  const terminate = () => {
+    isClosed = true;
+    waitForNewStream.resolve();
+    innerStreamReaders.forEach((reader) => reader.cancel());
+    innerStreamReaders = [];
+    controller == null || controller.close();
+  };
+  const processPull = async () => {
+    if (isClosed && innerStreamReaders.length === 0) {
+      controller == null || controller.close();
+      return;
+    }
+    if (innerStreamReaders.length === 0) {
+      waitForNewStream = createResolvablePromise();
+      await waitForNewStream.promise;
+      return processPull();
+    }
+    try {
+      const { value, done } = await innerStreamReaders[0].read();
+      if (done) {
+        innerStreamReaders.shift();
+        if (innerStreamReaders.length === 0 && isClosed) {
+          controller == null || controller.close();
+        } else {
+          await processPull();
+        }
+      } else {
+        controller == null || controller.enqueue(value);
+      }
+    } catch (error48) {
+      controller == null || controller.error(error48);
+      innerStreamReaders.shift();
+      terminate();
+    }
+  };
+  return {
+    stream: new ReadableStream({
+      start(controllerParam) {
+        controller = controllerParam;
+      },
+      pull: processPull,
+      async cancel() {
+        for (const reader of innerStreamReaders) {
+          await reader.cancel();
+        }
+        innerStreamReaders = [];
+        isClosed = true;
+      }
+    }),
+    addStream: (innerStream) => {
+      if (isClosed) {
+        throw new Error("Cannot add inner stream: outer stream is closed");
+      }
+      innerStreamReaders.push(innerStream.getReader());
+      waitForNewStream.resolve();
+    },
+    close: () => {
+      isClosed = true;
+      waitForNewStream.resolve();
+      if (innerStreamReaders.length === 0) {
+        controller == null || controller.close();
+      }
+    },
+    terminate
+  };
+}
+function runToolsTransformation({
+  tools,
+  generatorStream,
+  tracer,
+  telemetry,
+  system,
+  messages,
+  abortSignal,
+  repairToolCall,
+  experimental_context,
+  generateId: generateId2,
+  stepNumber,
+  model,
+  onToolCallStart,
+  onToolCallFinish
+}) {
+  let toolResultsStreamController = null;
+  const toolResultsStream = new ReadableStream({
+    start(controller) {
+      toolResultsStreamController = controller;
+    }
+  });
+  const outstandingToolResults = /* @__PURE__ */ new Set;
+  const toolInputs = /* @__PURE__ */ new Map;
+  const toolCallsByToolCallId = /* @__PURE__ */ new Map;
+  let canClose = false;
+  let finishChunk = undefined;
+  function attemptClose() {
+    if (canClose && outstandingToolResults.size === 0) {
+      if (finishChunk != null) {
+        toolResultsStreamController.enqueue(finishChunk);
+      }
+      toolResultsStreamController.close();
+    }
+  }
+  const forwardStream = new TransformStream({
+    async transform(chunk, controller) {
+      const chunkType = chunk.type;
+      switch (chunkType) {
+        case "stream-start":
+        case "text-start":
+        case "text-delta":
+        case "text-end":
+        case "reasoning-start":
+        case "reasoning-delta":
+        case "reasoning-end":
+        case "tool-input-start":
+        case "tool-input-delta":
+        case "tool-input-end":
+        case "source":
+        case "response-metadata":
+        case "error":
+        case "raw": {
+          controller.enqueue(chunk);
+          break;
+        }
+        case "file": {
+          controller.enqueue({
+            type: "file",
+            file: new DefaultGeneratedFileWithType({
+              data: chunk.data,
+              mediaType: chunk.mediaType
+            }),
+            ...chunk.providerMetadata != null ? { providerMetadata: chunk.providerMetadata } : {}
+          });
+          break;
+        }
+        case "finish": {
+          finishChunk = {
+            type: "finish",
+            finishReason: chunk.finishReason.unified,
+            rawFinishReason: chunk.finishReason.raw,
+            usage: asLanguageModelUsage(chunk.usage),
+            providerMetadata: chunk.providerMetadata
+          };
+          break;
+        }
+        case "tool-approval-request": {
+          const toolCall = toolCallsByToolCallId.get(chunk.toolCallId);
+          if (toolCall == null) {
+            toolResultsStreamController.enqueue({
+              type: "error",
+              error: new ToolCallNotFoundForApprovalError({
+                toolCallId: chunk.toolCallId,
+                approvalId: chunk.approvalId
+              })
+            });
+            break;
+          }
+          controller.enqueue({
+            type: "tool-approval-request",
+            approvalId: chunk.approvalId,
+            toolCall
+          });
+          break;
+        }
+        case "tool-call": {
+          try {
+            const toolCall = await parseToolCall({
+              toolCall: chunk,
+              tools,
+              repairToolCall,
+              system,
+              messages
+            });
+            toolCallsByToolCallId.set(toolCall.toolCallId, toolCall);
+            controller.enqueue(toolCall);
+            if (toolCall.invalid) {
+              toolResultsStreamController.enqueue({
+                type: "tool-error",
+                toolCallId: toolCall.toolCallId,
+                toolName: toolCall.toolName,
+                input: toolCall.input,
+                error: getErrorMessage2(toolCall.error),
+                dynamic: true,
+                title: toolCall.title,
+                ...toolCall.toolMetadata != null ? { toolMetadata: toolCall.toolMetadata } : {}
+              });
+              break;
+            }
+            const tool2 = tools == null ? undefined : tools[toolCall.toolName];
+            if (tool2 == null) {
+              break;
+            }
+            if (tool2.onInputAvailable != null) {
+              await tool2.onInputAvailable({
+                input: toolCall.input,
+                toolCallId: toolCall.toolCallId,
+                messages,
+                abortSignal,
+                experimental_context
+              });
+            }
+            if (await isApprovalNeeded({
+              tool: tool2,
+              toolCall,
+              messages,
+              experimental_context
+            })) {
+              toolResultsStreamController.enqueue({
+                type: "tool-approval-request",
+                approvalId: generateId2(),
+                toolCall
+              });
+              break;
+            }
+            toolInputs.set(toolCall.toolCallId, toolCall.input);
+            if (tool2.execute != null && toolCall.providerExecuted !== true) {
+              const toolExecutionId = generateId2();
+              outstandingToolResults.add(toolExecutionId);
+              executeToolCall({
+                toolCall,
+                tools,
+                tracer,
+                telemetry,
+                messages,
+                abortSignal,
+                experimental_context,
+                stepNumber,
+                model,
+                onToolCallStart,
+                onToolCallFinish,
+                onPreliminaryToolResult: (result) => {
+                  toolResultsStreamController.enqueue(result);
+                }
+              }).then((result) => {
+                toolResultsStreamController.enqueue(result);
+              }).catch((error48) => {
+                toolResultsStreamController.enqueue({
+                  type: "error",
+                  error: error48
+                });
+              }).finally(() => {
+                outstandingToolResults.delete(toolExecutionId);
+                attemptClose();
+              });
+            }
+          } catch (error48) {
+            toolResultsStreamController.enqueue({ type: "error", error: error48 });
+          }
+          break;
+        }
+        case "tool-result": {
+          const toolName = chunk.toolName;
+          const toolCall = toolCallsByToolCallId.get(chunk.toolCallId);
+          if (chunk.isError) {
+            toolResultsStreamController.enqueue({
+              type: "tool-error",
+              toolCallId: chunk.toolCallId,
+              toolName,
+              input: toolInputs.get(chunk.toolCallId),
+              providerExecuted: true,
+              error: chunk.result,
+              dynamic: chunk.dynamic,
+              ...chunk.providerMetadata != null ? { providerMetadata: chunk.providerMetadata } : {},
+              ...(toolCall == null ? undefined : toolCall.toolMetadata) != null ? { toolMetadata: toolCall.toolMetadata } : {}
+            });
+          } else {
+            controller.enqueue({
+              type: "tool-result",
+              toolCallId: chunk.toolCallId,
+              toolName,
+              input: toolInputs.get(chunk.toolCallId),
+              output: chunk.result,
+              providerExecuted: true,
+              dynamic: chunk.dynamic,
+              ...chunk.providerMetadata != null ? { providerMetadata: chunk.providerMetadata } : {},
+              ...(toolCall == null ? undefined : toolCall.toolMetadata) != null ? { toolMetadata: toolCall.toolMetadata } : {}
+            });
+          }
+          break;
+        }
+        default: {
+          const _exhaustiveCheck = chunkType;
+          throw new Error(`Unhandled chunk type: ${_exhaustiveCheck}`);
+        }
+      }
+    },
+    flush() {
+      canClose = true;
+      attemptClose();
+    }
+  });
+  return new ReadableStream({
+    async start(controller) {
+      return Promise.all([
+        generatorStream.pipeThrough(forwardStream).pipeTo(new WritableStream({
+          write(chunk) {
+            controller.enqueue(chunk);
+          },
+          close() {}
+        })),
+        toolResultsStream.pipeTo(new WritableStream({
+          write(chunk) {
+            controller.enqueue(chunk);
+          },
+          close() {
+            controller.close();
+          }
+        }))
+      ]);
+    }
+  });
+}
+var originalGenerateId2 = createIdGenerator({
+  prefix: "aitxt",
+  size: 24
+});
+function streamText({
+  model,
+  tools,
+  toolChoice,
+  system,
+  prompt,
+  messages,
+  allowSystemInMessages,
+  maxRetries,
+  abortSignal,
+  timeout,
+  headers,
+  stopWhen = stepCountIs(1),
+  experimental_output,
+  output = experimental_output,
+  experimental_telemetry: telemetry,
+  prepareStep,
+  providerOptions,
+  experimental_activeTools,
+  activeTools = experimental_activeTools,
+  experimental_repairToolCall: repairToolCall,
+  experimental_transform: transform2,
+  experimental_download: download2,
+  includeRawChunks = false,
+  onChunk,
+  onError = ({ error: error48 }) => {
+    console.error(error48);
+  },
+  onFinish,
+  onAbort,
+  onStepFinish,
+  experimental_onStart: onStart,
+  experimental_onStepStart: onStepStart,
+  experimental_onToolCallStart: onToolCallStart,
+  experimental_onToolCallFinish: onToolCallFinish,
+  experimental_context,
+  experimental_include: include,
+  _internal: { now: now2 = now, generateId: generateId2 = originalGenerateId2 } = {},
+  ...settings
+}) {
+  const totalTimeoutMs = getTotalTimeoutMs(timeout);
+  const stepTimeoutMs = getStepTimeoutMs(timeout);
+  const chunkTimeoutMs = getChunkTimeoutMs(timeout);
+  const stepAbortController = stepTimeoutMs != null ? new AbortController : undefined;
+  const chunkAbortController = chunkTimeoutMs != null ? new AbortController : undefined;
+  return new DefaultStreamTextResult({
+    model: resolveLanguageModel(model),
+    telemetry,
+    headers,
+    settings,
+    maxRetries,
+    abortSignal: mergeAbortSignals(abortSignal, totalTimeoutMs != null ? AbortSignal.timeout(totalTimeoutMs) : undefined, stepAbortController == null ? undefined : stepAbortController.signal, chunkAbortController == null ? undefined : chunkAbortController.signal),
+    stepTimeoutMs,
+    stepAbortController,
+    chunkTimeoutMs,
+    chunkAbortController,
+    system,
+    prompt,
+    messages,
+    allowSystemInMessages,
+    tools,
+    toolChoice,
+    transforms: asArray(transform2),
+    activeTools,
+    repairToolCall,
+    stopConditions: asArray(stopWhen),
+    output,
+    providerOptions,
+    prepareStep,
+    includeRawChunks,
+    timeout,
+    stopWhen,
+    originalAbortSignal: abortSignal,
+    onChunk,
+    onError,
+    onFinish,
+    onAbort,
+    onStepFinish,
+    onStart,
+    onStepStart,
+    onToolCallStart,
+    onToolCallFinish,
+    now: now2,
+    generateId: generateId2,
+    experimental_context,
+    download: download2,
+    include
+  });
+}
+function createOutputTransformStream(output) {
+  let firstTextChunkId = undefined;
+  let text22 = "";
+  let textChunk = "";
+  let textProviderMetadata = undefined;
+  let lastPublishedValue = "";
+  function publishTextChunk({
+    controller,
+    partialOutput = undefined
+  }) {
+    controller.enqueue({
+      part: {
+        type: "text-delta",
+        id: firstTextChunkId,
+        text: textChunk,
+        providerMetadata: textProviderMetadata
+      },
+      partialOutput
+    });
+    textChunk = "";
+  }
+  return new TransformStream({
+    async transform(chunk, controller) {
+      var _a21;
+      if (chunk.type === "finish-step" && textChunk.length > 0) {
+        publishTextChunk({ controller });
+      }
+      if (chunk.type !== "text-delta" && chunk.type !== "text-start" && chunk.type !== "text-end") {
+        controller.enqueue({ part: chunk, partialOutput: undefined });
+        return;
+      }
+      if (firstTextChunkId == null) {
+        firstTextChunkId = chunk.id;
+      } else if (chunk.id !== firstTextChunkId) {
+        controller.enqueue({ part: chunk, partialOutput: undefined });
+        return;
+      }
+      if (chunk.type === "text-start") {
+        controller.enqueue({ part: chunk, partialOutput: undefined });
+        return;
+      }
+      if (chunk.type === "text-end") {
+        if (textChunk.length > 0) {
+          publishTextChunk({ controller });
+        }
+        controller.enqueue({ part: chunk, partialOutput: undefined });
+        return;
+      }
+      text22 += chunk.text;
+      textChunk += chunk.text;
+      textProviderMetadata = (_a21 = chunk.providerMetadata) != null ? _a21 : textProviderMetadata;
+      const result = await output.parsePartialOutput({ text: text22 });
+      if (result !== undefined) {
+        const currentValue = typeof result.partial === "string" ? result.partial : JSON.stringify(result.partial);
+        if (currentValue !== lastPublishedValue) {
+          publishTextChunk({ controller, partialOutput: result.partial });
+          lastPublishedValue = currentValue;
+        }
+      }
+    }
+  });
+}
+var DefaultStreamTextResult = class {
+  constructor({
+    model,
+    telemetry,
+    headers,
+    settings,
+    maxRetries: maxRetriesArg,
+    abortSignal,
+    stepTimeoutMs,
+    stepAbortController,
+    chunkTimeoutMs,
+    chunkAbortController,
+    system,
+    prompt,
+    messages,
+    allowSystemInMessages,
+    tools,
+    toolChoice,
+    transforms,
+    activeTools,
+    repairToolCall,
+    stopConditions,
+    output,
+    providerOptions,
+    prepareStep,
+    includeRawChunks,
+    now: now2,
+    generateId: generateId2,
+    timeout,
+    stopWhen,
+    originalAbortSignal,
+    onChunk,
+    onError,
+    onFinish,
+    onAbort,
+    onStepFinish,
+    onStart,
+    onStepStart,
+    onToolCallStart,
+    onToolCallFinish,
+    experimental_context,
+    download: download2,
+    include
+  }) {
+    this._totalUsage = new DelayedPromise;
+    this._finishReason = new DelayedPromise;
+    this._rawFinishReason = new DelayedPromise;
+    this._steps = new DelayedPromise;
+    this.outputSpecification = output;
+    this.includeRawChunks = includeRawChunks;
+    this.tools = tools;
+    const createGlobalTelemetry = getGlobalTelemetryIntegration();
+    const globalTelemetry = createGlobalTelemetry(telemetry == null ? undefined : telemetry.integrations);
+    let stepFinish;
+    let recordedContent = [];
+    const recordedResponseMessages = [];
+    let recordedFinishReason = undefined;
+    let recordedRawFinishReason = undefined;
+    let recordedTotalUsage = undefined;
+    let recordedRequest = {};
+    let recordedWarnings = [];
+    const recordedSteps = [];
+    const pendingDeferredToolCalls = /* @__PURE__ */ new Map;
+    let rootSpan;
+    let activeTextContent = {};
+    let activeReasoningContent = {};
+    const eventProcessor = new TransformStream({
+      async transform(chunk, controller) {
+        var _a21, _b16, _c, _d;
+        controller.enqueue(chunk);
+        const { part } = chunk;
+        if (part.type === "text-delta" || part.type === "reasoning-delta" || part.type === "source" || part.type === "tool-call" || part.type === "tool-result" || part.type === "tool-input-start" || part.type === "tool-input-delta" || part.type === "raw") {
+          await (onChunk == null ? undefined : onChunk({ chunk: part }));
+        }
+        if (part.type === "error") {
+          await onError({ error: wrapGatewayError(part.error) });
+        }
+        if (part.type === "text-start") {
+          activeTextContent[part.id] = {
+            type: "text",
+            text: "",
+            providerMetadata: part.providerMetadata
+          };
+          recordedContent.push(activeTextContent[part.id]);
+        }
+        if (part.type === "text-delta") {
+          const activeText = activeTextContent[part.id];
+          if (activeText == null) {
+            controller.enqueue({
+              part: {
+                type: "error",
+                error: `text part ${part.id} not found`
+              },
+              partialOutput: undefined
+            });
+            return;
+          }
+          activeText.text += part.text;
+          activeText.providerMetadata = (_a21 = part.providerMetadata) != null ? _a21 : activeText.providerMetadata;
+        }
+        if (part.type === "text-end") {
+          const activeText = activeTextContent[part.id];
+          if (activeText == null) {
+            controller.enqueue({
+              part: {
+                type: "error",
+                error: `text part ${part.id} not found`
+              },
+              partialOutput: undefined
+            });
+            return;
+          }
+          activeText.providerMetadata = (_b16 = part.providerMetadata) != null ? _b16 : activeText.providerMetadata;
+          delete activeTextContent[part.id];
+        }
+        if (part.type === "reasoning-start") {
+          activeReasoningContent[part.id] = {
+            type: "reasoning",
+            text: "",
+            providerMetadata: part.providerMetadata
+          };
+          recordedContent.push(activeReasoningContent[part.id]);
+        }
+        if (part.type === "reasoning-delta") {
+          const activeReasoning = activeReasoningContent[part.id];
+          if (activeReasoning == null) {
+            controller.enqueue({
+              part: {
+                type: "error",
+                error: `reasoning part ${part.id} not found`
+              },
+              partialOutput: undefined
+            });
+            return;
+          }
+          activeReasoning.text += part.text;
+          activeReasoning.providerMetadata = (_c = part.providerMetadata) != null ? _c : activeReasoning.providerMetadata;
+        }
+        if (part.type === "reasoning-end") {
+          const activeReasoning = activeReasoningContent[part.id];
+          if (activeReasoning == null) {
+            controller.enqueue({
+              part: {
+                type: "error",
+                error: `reasoning part ${part.id} not found`
+              },
+              partialOutput: undefined
+            });
+            return;
+          }
+          activeReasoning.providerMetadata = (_d = part.providerMetadata) != null ? _d : activeReasoning.providerMetadata;
+          delete activeReasoningContent[part.id];
+        }
+        if (part.type === "file") {
+          recordedContent.push({
+            type: "file",
+            file: part.file,
+            ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+          });
+        }
+        if (part.type === "source") {
+          recordedContent.push(part);
+        }
+        if (part.type === "tool-call") {
+          recordedContent.push(part);
+        }
+        if (part.type === "tool-result" && !part.preliminary) {
+          recordedContent.push(part);
+        }
+        if (part.type === "tool-approval-request") {
+          recordedContent.push(part);
+        }
+        if (part.type === "tool-error") {
+          recordedContent.push(part);
+        }
+        if (part.type === "start-step") {
+          recordedContent = [];
+          activeReasoningContent = {};
+          activeTextContent = {};
+          recordedRequest = part.request;
+          recordedWarnings = part.warnings;
+        }
+        if (part.type === "finish-step") {
+          const stepMessages = await toResponseMessages({
+            content: recordedContent,
+            tools
+          });
+          const currentStepResult = new DefaultStepResult({
+            stepNumber: recordedSteps.length,
+            model: modelInfo,
+            ...callbackTelemetryProps,
+            experimental_context,
+            content: recordedContent,
+            finishReason: part.finishReason,
+            rawFinishReason: part.rawFinishReason,
+            usage: part.usage,
+            warnings: recordedWarnings,
+            request: recordedRequest,
+            response: {
+              ...part.response,
+              messages: [...recordedResponseMessages, ...stepMessages]
+            },
+            providerMetadata: part.providerMetadata
+          });
+          await notify({
+            event: currentStepResult,
+            callbacks: [onStepFinish, globalTelemetry.onStepFinish]
+          });
+          logWarnings({
+            warnings: recordedWarnings,
+            provider: modelInfo.provider,
+            model: modelInfo.modelId
+          });
+          recordedSteps.push(currentStepResult);
+          recordedResponseMessages.push(...stepMessages);
+          stepFinish.resolve();
+        }
+        if (part.type === "finish") {
+          recordedTotalUsage = part.totalUsage;
+          recordedFinishReason = part.finishReason;
+          recordedRawFinishReason = part.rawFinishReason;
+        }
+      },
+      async flush(controller) {
+        var _a21, _b16, _c, _d, _e, _f, _g;
+        try {
+          if (recordedSteps.length === 0) {
+            const error48 = (abortSignal == null ? undefined : abortSignal.aborted) ? abortSignal.reason : new NoOutputGeneratedError({
+              message: "No output generated. Check the stream for errors."
+            });
+            self2._finishReason.reject(error48);
+            self2._rawFinishReason.reject(error48);
+            self2._totalUsage.reject(error48);
+            self2._steps.reject(error48);
+            return;
+          }
+          const finishReason = recordedFinishReason != null ? recordedFinishReason : "other";
+          const totalUsage = recordedTotalUsage != null ? recordedTotalUsage : createNullLanguageModelUsage();
+          self2._finishReason.resolve(finishReason);
+          self2._rawFinishReason.resolve(recordedRawFinishReason);
+          self2._totalUsage.resolve(totalUsage);
+          self2._steps.resolve(recordedSteps);
+          const finalStep = recordedSteps[recordedSteps.length - 1];
+          await notify({
+            event: {
+              stepNumber: finalStep.stepNumber,
+              model: finalStep.model,
+              functionId: finalStep.functionId,
+              metadata: finalStep.metadata,
+              experimental_context: finalStep.experimental_context,
+              finishReason: finalStep.finishReason,
+              rawFinishReason: finalStep.rawFinishReason,
+              totalUsage,
+              usage: finalStep.usage,
+              content: finalStep.content,
+              text: finalStep.text,
+              reasoningText: finalStep.reasoningText,
+              reasoning: finalStep.reasoning,
+              files: finalStep.files,
+              sources: finalStep.sources,
+              toolCalls: finalStep.toolCalls,
+              staticToolCalls: finalStep.staticToolCalls,
+              dynamicToolCalls: finalStep.dynamicToolCalls,
+              toolResults: finalStep.toolResults,
+              staticToolResults: finalStep.staticToolResults,
+              dynamicToolResults: finalStep.dynamicToolResults,
+              request: finalStep.request,
+              response: finalStep.response,
+              warnings: finalStep.warnings,
+              providerMetadata: finalStep.providerMetadata,
+              steps: recordedSteps
+            },
+            callbacks: [
+              onFinish,
+              globalTelemetry.onFinish
+            ]
+          });
+          rootSpan.setAttributes(await selectTelemetryAttributes({
+            telemetry,
+            attributes: {
+              "ai.response.finishReason": finishReason,
+              "ai.response.text": { output: () => finalStep.text },
+              "ai.response.reasoning": {
+                output: () => finalStep.reasoningText
+              },
+              "ai.response.toolCalls": {
+                output: () => {
+                  var _a222;
+                  return ((_a222 = finalStep.toolCalls) == null ? undefined : _a222.length) ? JSON.stringify(finalStep.toolCalls) : undefined;
+                }
+              },
+              "ai.response.providerMetadata": JSON.stringify(finalStep.providerMetadata),
+              "ai.usage.inputTokens": totalUsage.inputTokens,
+              "ai.usage.inputTokenDetails.noCacheTokens": (_a21 = totalUsage.inputTokenDetails) == null ? undefined : _a21.noCacheTokens,
+              "ai.usage.inputTokenDetails.cacheReadTokens": (_b16 = totalUsage.inputTokenDetails) == null ? undefined : _b16.cacheReadTokens,
+              "ai.usage.inputTokenDetails.cacheWriteTokens": (_c = totalUsage.inputTokenDetails) == null ? undefined : _c.cacheWriteTokens,
+              "ai.usage.outputTokens": totalUsage.outputTokens,
+              "ai.usage.outputTokenDetails.textTokens": (_d = totalUsage.outputTokenDetails) == null ? undefined : _d.textTokens,
+              "ai.usage.outputTokenDetails.reasoningTokens": (_e = totalUsage.outputTokenDetails) == null ? undefined : _e.reasoningTokens,
+              "ai.usage.totalTokens": totalUsage.totalTokens,
+              "ai.usage.reasoningTokens": (_f = totalUsage.outputTokenDetails) == null ? undefined : _f.reasoningTokens,
+              "ai.usage.cachedInputTokens": (_g = totalUsage.inputTokenDetails) == null ? undefined : _g.cacheReadTokens
+            }
+          }));
+        } catch (error48) {
+          controller.error(error48);
+        } finally {
+          rootSpan.end();
+        }
+      }
+    });
+    const stitchableStream = createStitchableStream();
+    this.addStream = stitchableStream.addStream;
+    this.closeStream = stitchableStream.close;
+    const reader = stitchableStream.stream.getReader();
+    let stream = new ReadableStream({
+      async start(controller) {
+        controller.enqueue({ type: "start" });
+      },
+      async pull(controller) {
+        function abort() {
+          onAbort == null || onAbort({ steps: recordedSteps });
+          controller.enqueue({
+            type: "abort",
+            ...(abortSignal == null ? undefined : abortSignal.reason) !== undefined ? { reason: getErrorMessage(abortSignal.reason) } : {}
+          });
+          controller.close();
+        }
+        try {
+          const { done, value } = await reader.read();
+          if (done) {
+            controller.close();
+            return;
+          }
+          if (abortSignal == null ? undefined : abortSignal.aborted) {
+            abort();
+            return;
+          }
+          controller.enqueue(value);
+        } catch (error48) {
+          if (isAbortError(error48) && (abortSignal == null ? undefined : abortSignal.aborted)) {
+            abort();
+          } else {
+            controller.error(error48);
+          }
+        }
+      },
+      cancel(reason) {
+        return stitchableStream.stream.cancel(reason);
+      }
+    });
+    for (const transform2 of transforms) {
+      stream = stream.pipeThrough(transform2({
+        tools,
+        stopStream() {
+          stitchableStream.terminate();
+        }
+      }));
+    }
+    this.baseStream = stream.pipeThrough(createOutputTransformStream(output != null ? output : text4())).pipeThrough(eventProcessor);
+    const { maxRetries, retry } = prepareRetries({
+      maxRetries: maxRetriesArg,
+      abortSignal
+    });
+    const tracer = getTracer(telemetry);
+    const callSettings = prepareCallSettings(settings);
+    const baseTelemetryAttributes = getBaseTelemetryAttributes({
+      model,
+      telemetry,
+      headers,
+      settings: { ...callSettings, maxRetries }
+    });
+    const self2 = this;
+    const modelInfo = { provider: model.provider, modelId: model.modelId };
+    const callbackTelemetryProps = {
+      functionId: telemetry == null ? undefined : telemetry.functionId,
+      metadata: telemetry == null ? undefined : telemetry.metadata
+    };
+    recordSpan({
+      name: "ai.streamText",
+      attributes: selectTelemetryAttributes({
+        telemetry,
+        attributes: {
+          ...assembleOperationName({ operationId: "ai.streamText", telemetry }),
+          ...baseTelemetryAttributes,
+          "ai.prompt": {
+            input: () => JSON.stringify({ system, prompt, messages })
+          }
+        }
+      }),
+      tracer,
+      endWhenDone: false,
+      fn: async (rootSpanArg) => {
+        rootSpan = rootSpanArg;
+        const initialPrompt = await standardizePrompt({
+          system,
+          prompt,
+          messages,
+          allowSystemInMessages
+        });
+        await notify({
+          event: {
+            model: modelInfo,
+            system,
+            prompt,
+            messages,
+            tools,
+            toolChoice,
+            activeTools,
+            maxOutputTokens: callSettings.maxOutputTokens,
+            temperature: callSettings.temperature,
+            topP: callSettings.topP,
+            topK: callSettings.topK,
+            presencePenalty: callSettings.presencePenalty,
+            frequencyPenalty: callSettings.frequencyPenalty,
+            stopSequences: callSettings.stopSequences,
+            seed: callSettings.seed,
+            maxRetries,
+            timeout,
+            headers,
+            providerOptions,
+            stopWhen,
+            output,
+            abortSignal: originalAbortSignal,
+            include,
+            ...callbackTelemetryProps,
+            experimental_context
+          },
+          callbacks: [
+            onStart,
+            globalTelemetry.onStart
+          ]
+        });
+        const initialMessages = initialPrompt.messages;
+        const initialResponseMessages = [];
+        const { approvedToolApprovals, deniedToolApprovals } = collectToolApprovals({ messages: initialMessages });
+        if (deniedToolApprovals.length > 0 || approvedToolApprovals.length > 0) {
+          const localApprovedToolApprovals = approvedToolApprovals.filter((toolApproval) => !toolApproval.toolCall.providerExecuted);
+          const localDeniedToolApprovals = deniedToolApprovals.filter((toolApproval) => !toolApproval.toolCall.providerExecuted);
+          const deniedProviderExecutedToolApprovals = deniedToolApprovals.filter((toolApproval) => toolApproval.toolCall.providerExecuted);
+          let toolExecutionStepStreamController;
+          const toolExecutionStepStream = new ReadableStream({
+            start(controller) {
+              toolExecutionStepStreamController = controller;
+            }
+          });
+          self2.addStream(toolExecutionStepStream);
+          try {
+            for (const toolApproval of [
+              ...localDeniedToolApprovals,
+              ...deniedProviderExecutedToolApprovals
+            ]) {
+              toolExecutionStepStreamController == null || toolExecutionStepStreamController.enqueue({
+                type: "tool-output-denied",
+                toolCallId: toolApproval.toolCall.toolCallId,
+                toolName: toolApproval.toolCall.toolName
+              });
+            }
+            const toolOutputs = [];
+            await Promise.all(localApprovedToolApprovals.map(async (toolApproval) => {
+              const result = await executeToolCall({
+                toolCall: toolApproval.toolCall,
+                tools,
+                tracer,
+                telemetry,
+                messages: initialMessages,
+                abortSignal,
+                experimental_context,
+                stepNumber: recordedSteps.length,
+                model: modelInfo,
+                onToolCallStart: [
+                  onToolCallStart,
+                  globalTelemetry.onToolCallStart
+                ],
+                onToolCallFinish: [
+                  onToolCallFinish,
+                  globalTelemetry.onToolCallFinish
+                ],
+                onPreliminaryToolResult: (result2) => {
+                  toolExecutionStepStreamController == null || toolExecutionStepStreamController.enqueue(result2);
+                }
+              });
+              if (result != null) {
+                toolExecutionStepStreamController == null || toolExecutionStepStreamController.enqueue(result);
+                toolOutputs.push(result);
+              }
+            }));
+            if (toolOutputs.length > 0 || localDeniedToolApprovals.length > 0) {
+              const localToolContent = [];
+              for (const output2 of toolOutputs) {
+                localToolContent.push({
+                  type: "tool-result",
+                  toolCallId: output2.toolCallId,
+                  toolName: output2.toolName,
+                  output: await createToolModelOutput({
+                    toolCallId: output2.toolCallId,
+                    input: output2.input,
+                    tool: tools == null ? undefined : tools[output2.toolName],
+                    output: output2.type === "tool-result" ? output2.output : output2.error,
+                    errorMode: output2.type === "tool-error" ? "text" : "none"
+                  })
+                });
+              }
+              for (const toolApproval of localDeniedToolApprovals) {
+                localToolContent.push({
+                  type: "tool-result",
+                  toolCallId: toolApproval.toolCall.toolCallId,
+                  toolName: toolApproval.toolCall.toolName,
+                  output: {
+                    type: "execution-denied",
+                    reason: toolApproval.approvalResponse.reason
+                  }
+                });
+              }
+              initialResponseMessages.push({
+                role: "tool",
+                content: localToolContent
+              });
+            }
+          } finally {
+            toolExecutionStepStreamController == null || toolExecutionStepStreamController.close();
+          }
+        }
+        recordedResponseMessages.push(...initialResponseMessages);
+        async function streamStep({
+          currentStep,
+          responseMessages,
+          usage
+        }) {
+          var _a21, _b16, _c, _d, _e, _f, _g, _h, _i;
+          const includeRawChunks2 = self2.includeRawChunks;
+          const stepTimeoutId = stepTimeoutMs != null ? setTimeout(() => stepAbortController.abort(), stepTimeoutMs) : undefined;
+          let chunkTimeoutId = undefined;
+          function resetChunkTimeout() {
+            if (chunkTimeoutMs != null) {
+              if (chunkTimeoutId != null) {
+                clearTimeout(chunkTimeoutId);
+              }
+              chunkTimeoutId = setTimeout(() => chunkAbortController.abort(), chunkTimeoutMs);
+            }
+          }
+          function clearChunkTimeout() {
+            if (chunkTimeoutId != null) {
+              clearTimeout(chunkTimeoutId);
+              chunkTimeoutId = undefined;
+            }
+          }
+          function clearStepTimeout() {
+            if (stepTimeoutId != null) {
+              clearTimeout(stepTimeoutId);
+            }
+          }
+          try {
+            stepFinish = new DelayedPromise;
+            const stepInputMessages = [...initialMessages, ...responseMessages];
+            const prepareStepResult = await (prepareStep == null ? undefined : prepareStep({
+              model,
+              steps: recordedSteps,
+              stepNumber: recordedSteps.length,
+              messages: stepInputMessages,
+              experimental_context
+            }));
+            const stepModel = resolveLanguageModel((_a21 = prepareStepResult == null ? undefined : prepareStepResult.model) != null ? _a21 : model);
+            const stepModelInfo = {
+              provider: stepModel.provider,
+              modelId: stepModel.modelId
+            };
+            const promptMessages = await convertToLanguageModelPrompt({
+              prompt: {
+                system: (_b16 = prepareStepResult == null ? undefined : prepareStepResult.system) != null ? _b16 : initialPrompt.system,
+                messages: (_c = prepareStepResult == null ? undefined : prepareStepResult.messages) != null ? _c : stepInputMessages
+              },
+              supportedUrls: await stepModel.supportedUrls,
+              download: download2
+            });
+            const stepActiveTools = (_d = prepareStepResult == null ? undefined : prepareStepResult.activeTools) != null ? _d : activeTools;
+            const { toolChoice: stepToolChoice, tools: stepTools } = await prepareToolsAndToolChoice({
+              tools,
+              toolChoice: (_e = prepareStepResult == null ? undefined : prepareStepResult.toolChoice) != null ? _e : toolChoice,
+              activeTools: stepActiveTools
+            });
+            experimental_context = (_f = prepareStepResult == null ? undefined : prepareStepResult.experimental_context) != null ? _f : experimental_context;
+            const stepMessages = (_g = prepareStepResult == null ? undefined : prepareStepResult.messages) != null ? _g : stepInputMessages;
+            const stepSystem = (_h = prepareStepResult == null ? undefined : prepareStepResult.system) != null ? _h : initialPrompt.system;
+            const stepProviderOptions = mergeObjects(providerOptions, prepareStepResult == null ? undefined : prepareStepResult.providerOptions);
+            await notify({
+              event: {
+                stepNumber: recordedSteps.length,
+                model: stepModelInfo,
+                system: stepSystem,
+                messages: stepMessages,
+                tools,
+                toolChoice: stepToolChoice,
+                activeTools: stepActiveTools,
+                steps: [...recordedSteps],
+                providerOptions: stepProviderOptions,
+                timeout,
+                headers,
+                stopWhen,
+                output,
+                abortSignal: originalAbortSignal,
+                include,
+                ...callbackTelemetryProps,
+                experimental_context
+              },
+              callbacks: [
+                onStepStart,
+                globalTelemetry.onStepStart
+              ]
+            });
+            const {
+              result: { stream: stream2, response, request },
+              doStreamSpan,
+              startTimestampMs
+            } = await retry(() => recordSpan({
+              name: "ai.streamText.doStream",
+              attributes: selectTelemetryAttributes({
+                telemetry,
+                attributes: {
+                  ...assembleOperationName({
+                    operationId: "ai.streamText.doStream",
+                    telemetry
+                  }),
+                  ...baseTelemetryAttributes,
+                  "ai.model.provider": stepModel.provider,
+                  "ai.model.id": stepModel.modelId,
+                  "ai.prompt.messages": {
+                    input: () => stringifyForTelemetry(promptMessages)
+                  },
+                  "ai.prompt.tools": {
+                    input: () => stepTools == null ? undefined : stepTools.map((tool2) => JSON.stringify(tool2))
+                  },
+                  "ai.prompt.toolChoice": {
+                    input: () => stepToolChoice != null ? JSON.stringify(stepToolChoice) : undefined
+                  },
+                  "gen_ai.system": stepModel.provider,
+                  "gen_ai.request.model": stepModel.modelId,
+                  "gen_ai.request.frequency_penalty": callSettings.frequencyPenalty,
+                  "gen_ai.request.max_tokens": callSettings.maxOutputTokens,
+                  "gen_ai.request.presence_penalty": callSettings.presencePenalty,
+                  "gen_ai.request.stop_sequences": callSettings.stopSequences,
+                  "gen_ai.request.temperature": callSettings.temperature,
+                  "gen_ai.request.top_k": callSettings.topK,
+                  "gen_ai.request.top_p": callSettings.topP
+                }
+              }),
+              tracer,
+              endWhenDone: false,
+              fn: async (doStreamSpan2) => ({
+                startTimestampMs: now2(),
+                doStreamSpan: doStreamSpan2,
+                result: await stepModel.doStream({
+                  ...callSettings,
+                  tools: stepTools,
+                  toolChoice: stepToolChoice,
+                  responseFormat: await (output == null ? undefined : output.responseFormat),
+                  prompt: promptMessages,
+                  providerOptions: stepProviderOptions,
+                  abortSignal,
+                  headers,
+                  includeRawChunks: includeRawChunks2
+                })
+              })
+            }));
+            const streamWithToolResults = runToolsTransformation({
+              tools,
+              generatorStream: stream2,
+              tracer,
+              telemetry,
+              system,
+              messages: stepInputMessages,
+              repairToolCall,
+              abortSignal,
+              experimental_context,
+              generateId: generateId2,
+              stepNumber: recordedSteps.length,
+              model: stepModelInfo,
+              onToolCallStart: [
+                onToolCallStart,
+                globalTelemetry.onToolCallStart
+              ],
+              onToolCallFinish: [
+                onToolCallFinish,
+                globalTelemetry.onToolCallFinish
+              ]
+            });
+            const stepRequest = ((_i = include == null ? undefined : include.requestBody) != null ? _i : true) ? request != null ? request : {} : { ...request, body: undefined };
+            const stepToolCalls = [];
+            const stepToolOutputs = [];
+            let warnings;
+            const activeToolCallToolNames = {};
+            let stepFinishReason = "other";
+            let stepRawFinishReason = undefined;
+            let stepUsage = createNullLanguageModelUsage();
+            let stepProviderMetadata;
+            let stepFirstChunk = true;
+            let stepResponse = {
+              id: generateId2(),
+              timestamp: /* @__PURE__ */ new Date,
+              modelId: modelInfo.modelId
+            };
+            let activeText = "";
+            self2.addStream(streamWithToolResults.pipeThrough(new TransformStream({
+              async transform(chunk, controller) {
+                var _a222, _b23, _c2, _d2, _e2;
+                resetChunkTimeout();
+                if (chunk.type === "stream-start") {
+                  warnings = chunk.warnings;
+                  return;
+                }
+                if (stepFirstChunk) {
+                  const msToFirstChunk = now2() - startTimestampMs;
+                  stepFirstChunk = false;
+                  doStreamSpan.addEvent("ai.stream.firstChunk", {
+                    "ai.response.msToFirstChunk": msToFirstChunk
+                  });
+                  doStreamSpan.setAttributes({
+                    "ai.response.msToFirstChunk": msToFirstChunk
+                  });
+                  controller.enqueue({
+                    type: "start-step",
+                    request: stepRequest,
+                    warnings: warnings != null ? warnings : []
+                  });
+                }
+                const chunkType = chunk.type;
+                switch (chunkType) {
+                  case "tool-approval-request":
+                  case "text-start":
+                  case "text-end": {
+                    controller.enqueue(chunk);
+                    break;
+                  }
+                  case "text-delta": {
+                    if (chunk.delta.length > 0) {
+                      controller.enqueue({
+                        type: "text-delta",
+                        id: chunk.id,
+                        text: chunk.delta,
+                        providerMetadata: chunk.providerMetadata
+                      });
+                      activeText += chunk.delta;
+                    }
+                    break;
+                  }
+                  case "reasoning-start":
+                  case "reasoning-end": {
+                    controller.enqueue(chunk);
+                    break;
+                  }
+                  case "reasoning-delta": {
+                    controller.enqueue({
+                      type: "reasoning-delta",
+                      id: chunk.id,
+                      text: chunk.delta,
+                      providerMetadata: chunk.providerMetadata
+                    });
+                    break;
+                  }
+                  case "tool-call": {
+                    controller.enqueue(chunk);
+                    stepToolCalls.push(chunk);
+                    break;
+                  }
+                  case "tool-result": {
+                    controller.enqueue(chunk);
+                    if (!chunk.preliminary) {
+                      stepToolOutputs.push(chunk);
+                    }
+                    break;
+                  }
+                  case "tool-error": {
+                    controller.enqueue(chunk);
+                    stepToolOutputs.push(chunk);
+                    break;
+                  }
+                  case "response-metadata": {
+                    stepResponse = {
+                      id: (_a222 = chunk.id) != null ? _a222 : stepResponse.id,
+                      timestamp: (_b23 = chunk.timestamp) != null ? _b23 : stepResponse.timestamp,
+                      modelId: (_c2 = chunk.modelId) != null ? _c2 : stepResponse.modelId
+                    };
+                    break;
+                  }
+                  case "finish": {
+                    stepUsage = chunk.usage;
+                    stepFinishReason = chunk.finishReason;
+                    stepRawFinishReason = chunk.rawFinishReason;
+                    stepProviderMetadata = chunk.providerMetadata;
+                    const msToFinish = now2() - startTimestampMs;
+                    doStreamSpan.addEvent("ai.stream.finish");
+                    doStreamSpan.setAttributes({
+                      "ai.response.msToFinish": msToFinish,
+                      "ai.response.avgOutputTokensPerSecond": 1000 * ((_d2 = stepUsage.outputTokens) != null ? _d2 : 0) / msToFinish
+                    });
+                    break;
+                  }
+                  case "file": {
+                    controller.enqueue(chunk);
+                    break;
+                  }
+                  case "source": {
+                    controller.enqueue(chunk);
+                    break;
+                  }
+                  case "tool-input-start": {
+                    activeToolCallToolNames[chunk.id] = chunk.toolName;
+                    const tool2 = tools == null ? undefined : tools[chunk.toolName];
+                    if ((tool2 == null ? undefined : tool2.onInputStart) != null) {
+                      await tool2.onInputStart({
+                        toolCallId: chunk.id,
+                        messages: stepInputMessages,
+                        abortSignal,
+                        experimental_context
+                      });
+                    }
+                    controller.enqueue({
+                      ...chunk,
+                      dynamic: (_e2 = chunk.dynamic) != null ? _e2 : (tool2 == null ? undefined : tool2.type) === "dynamic",
+                      title: tool2 == null ? undefined : tool2.title
+                    });
+                    break;
+                  }
+                  case "tool-input-end": {
+                    delete activeToolCallToolNames[chunk.id];
+                    controller.enqueue(chunk);
+                    break;
+                  }
+                  case "tool-input-delta": {
+                    const toolName = activeToolCallToolNames[chunk.id];
+                    const tool2 = tools == null ? undefined : tools[toolName];
+                    if ((tool2 == null ? undefined : tool2.onInputDelta) != null) {
+                      await tool2.onInputDelta({
+                        inputTextDelta: chunk.delta,
+                        toolCallId: chunk.id,
+                        messages: stepInputMessages,
+                        abortSignal,
+                        experimental_context
+                      });
+                    }
+                    controller.enqueue(chunk);
+                    break;
+                  }
+                  case "error": {
+                    controller.enqueue(chunk);
+                    stepFinishReason = "error";
+                    break;
+                  }
+                  case "raw": {
+                    if (includeRawChunks2) {
+                      controller.enqueue(chunk);
+                    }
+                    break;
+                  }
+                  default: {
+                    const exhaustiveCheck = chunkType;
+                    throw new Error(`Unknown chunk type: ${exhaustiveCheck}`);
+                  }
+                }
+              },
+              async flush(controller) {
+                var _a222, _b23, _c2, _d2, _e2, _f2, _g2;
+                const stepToolCallsJson = stepToolCalls.length > 0 ? JSON.stringify(stepToolCalls) : undefined;
+                try {
+                  doStreamSpan.setAttributes(await selectTelemetryAttributes({
+                    telemetry,
+                    attributes: {
+                      "ai.response.finishReason": stepFinishReason,
+                      "ai.response.toolCalls": {
+                        output: () => stepToolCallsJson
+                      },
+                      "ai.response.id": stepResponse.id,
+                      "ai.response.model": stepResponse.modelId,
+                      "ai.response.timestamp": stepResponse.timestamp.toISOString(),
+                      "ai.usage.inputTokens": stepUsage.inputTokens,
+                      "ai.usage.inputTokenDetails.noCacheTokens": (_a222 = stepUsage.inputTokenDetails) == null ? undefined : _a222.noCacheTokens,
+                      "ai.usage.inputTokenDetails.cacheReadTokens": (_b23 = stepUsage.inputTokenDetails) == null ? undefined : _b23.cacheReadTokens,
+                      "ai.usage.inputTokenDetails.cacheWriteTokens": (_c2 = stepUsage.inputTokenDetails) == null ? undefined : _c2.cacheWriteTokens,
+                      "ai.usage.outputTokens": stepUsage.outputTokens,
+                      "ai.usage.outputTokenDetails.textTokens": (_d2 = stepUsage.outputTokenDetails) == null ? undefined : _d2.textTokens,
+                      "ai.usage.outputTokenDetails.reasoningTokens": (_e2 = stepUsage.outputTokenDetails) == null ? undefined : _e2.reasoningTokens,
+                      "ai.usage.totalTokens": stepUsage.totalTokens,
+                      "ai.usage.reasoningTokens": (_f2 = stepUsage.outputTokenDetails) == null ? undefined : _f2.reasoningTokens,
+                      "ai.usage.cachedInputTokens": (_g2 = stepUsage.inputTokenDetails) == null ? undefined : _g2.cacheReadTokens,
+                      "gen_ai.response.finish_reasons": [
+                        stepFinishReason
+                      ],
+                      "gen_ai.response.id": stepResponse.id,
+                      "gen_ai.response.model": stepResponse.modelId,
+                      "gen_ai.usage.input_tokens": stepUsage.inputTokens,
+                      "gen_ai.usage.output_tokens": stepUsage.outputTokens
+                    }
+                  }));
+                } catch (error48) {}
+                controller.enqueue({
+                  type: "finish-step",
+                  finishReason: stepFinishReason,
+                  rawFinishReason: stepRawFinishReason,
+                  usage: stepUsage,
+                  providerMetadata: stepProviderMetadata,
+                  response: {
+                    ...stepResponse,
+                    headers: response == null ? undefined : response.headers
+                  }
+                });
+                const combinedUsage = addLanguageModelUsage(usage, stepUsage);
+                await stepFinish.promise;
+                const processedStep = recordedSteps[recordedSteps.length - 1];
+                try {
+                  doStreamSpan.setAttributes(await selectTelemetryAttributes({
+                    telemetry,
+                    attributes: {
+                      "ai.response.text": {
+                        output: () => processedStep.text
+                      },
+                      "ai.response.reasoning": {
+                        output: () => processedStep.reasoningText
+                      },
+                      "ai.response.providerMetadata": JSON.stringify(processedStep.providerMetadata)
+                    }
+                  }));
+                } catch (error48) {} finally {
+                  doStreamSpan.end();
+                }
+                const clientToolCalls = stepToolCalls.filter((toolCall) => toolCall.providerExecuted !== true);
+                const clientToolOutputs = stepToolOutputs.filter((toolOutput) => toolOutput.providerExecuted !== true);
+                for (const toolCall of stepToolCalls) {
+                  if (toolCall.providerExecuted !== true)
+                    continue;
+                  const tool2 = tools == null ? undefined : tools[toolCall.toolName];
+                  if ((tool2 == null ? undefined : tool2.type) === "provider" && tool2.supportsDeferredResults) {
+                    const hasResultInStep = stepToolOutputs.some((output2) => (output2.type === "tool-result" || output2.type === "tool-error") && output2.toolCallId === toolCall.toolCallId);
+                    if (!hasResultInStep) {
+                      pendingDeferredToolCalls.set(toolCall.toolCallId, {
+                        toolName: toolCall.toolName
+                      });
+                    }
+                  }
+                }
+                for (const output2 of stepToolOutputs) {
+                  if (output2.type === "tool-result" || output2.type === "tool-error") {
+                    pendingDeferredToolCalls.delete(output2.toolCallId);
+                  }
+                }
+                clearStepTimeout();
+                clearChunkTimeout();
+                if ((clientToolCalls.length > 0 && clientToolOutputs.length === clientToolCalls.length || pendingDeferredToolCalls.size > 0) && !await isStopConditionMet({
+                  stopConditions,
+                  steps: recordedSteps
+                })) {
+                  responseMessages.push(...await toResponseMessages({
+                    content: recordedSteps[recordedSteps.length - 1].content,
+                    tools
+                  }));
+                  try {
+                    await streamStep({
+                      currentStep: currentStep + 1,
+                      responseMessages,
+                      usage: combinedUsage
+                    });
+                  } catch (error48) {
+                    controller.enqueue({
+                      type: "error",
+                      error: error48
+                    });
+                    self2.closeStream();
+                  }
+                } else {
+                  controller.enqueue({
+                    type: "finish",
+                    finishReason: stepFinishReason,
+                    rawFinishReason: stepRawFinishReason,
+                    totalUsage: combinedUsage
+                  });
+                  self2.closeStream();
+                }
+              }
+            })));
+          } finally {
+            clearStepTimeout();
+            clearChunkTimeout();
+          }
+        }
+        await streamStep({
+          currentStep: 0,
+          responseMessages: initialResponseMessages,
+          usage: createNullLanguageModelUsage()
+        });
+      }
+    }).catch((error48) => {
+      self2.addStream(new ReadableStream({
+        start(controller) {
+          controller.enqueue({ type: "error", error: error48 });
+          controller.close();
+        }
+      }));
+      self2.closeStream();
+    });
+  }
+  get steps() {
+    this.consumeStream();
+    return this._steps.promise;
+  }
+  get finalStep() {
+    return this.steps.then((steps) => steps[steps.length - 1]);
+  }
+  get content() {
+    return this.finalStep.then((step) => step.content);
+  }
+  get warnings() {
+    return this.finalStep.then((step) => step.warnings);
+  }
+  get providerMetadata() {
+    return this.finalStep.then((step) => step.providerMetadata);
+  }
+  get text() {
+    return this.finalStep.then((step) => step.text);
+  }
+  get reasoningText() {
+    return this.finalStep.then((step) => step.reasoningText);
+  }
+  get reasoning() {
+    return this.finalStep.then((step) => step.reasoning);
+  }
+  get sources() {
+    return this.finalStep.then((step) => step.sources);
+  }
+  get files() {
+    return this.finalStep.then((step) => step.files);
+  }
+  get toolCalls() {
+    return this.finalStep.then((step) => step.toolCalls);
+  }
+  get staticToolCalls() {
+    return this.finalStep.then((step) => step.staticToolCalls);
+  }
+  get dynamicToolCalls() {
+    return this.finalStep.then((step) => step.dynamicToolCalls);
+  }
+  get toolResults() {
+    return this.finalStep.then((step) => step.toolResults);
+  }
+  get staticToolResults() {
+    return this.finalStep.then((step) => step.staticToolResults);
+  }
+  get dynamicToolResults() {
+    return this.finalStep.then((step) => step.dynamicToolResults);
+  }
+  get usage() {
+    return this.finalStep.then((step) => step.usage);
+  }
+  get request() {
+    return this.finalStep.then((step) => step.request);
+  }
+  get response() {
+    return this.finalStep.then((step) => step.response);
+  }
+  get totalUsage() {
+    this.consumeStream();
+    return this._totalUsage.promise;
+  }
+  get finishReason() {
+    this.consumeStream();
+    return this._finishReason.promise;
+  }
+  get rawFinishReason() {
+    this.consumeStream();
+    return this._rawFinishReason.promise;
+  }
+  teeStream() {
+    const [stream1, stream2] = this.baseStream.tee();
+    this.baseStream = stream2;
+    return stream1;
+  }
+  get textStream() {
+    return createAsyncIterableStream(this.teeStream().pipeThrough(new TransformStream({
+      transform({ part }, controller) {
+        if (part.type === "text-delta") {
+          controller.enqueue(part.text);
+        }
+      }
+    })));
+  }
+  get fullStream() {
+    return createAsyncIterableStream(this.teeStream().pipeThrough(new TransformStream({
+      transform({ part }, controller) {
+        controller.enqueue(part);
+      }
+    })));
+  }
+  async consumeStream(options2) {
+    var _a21;
+    try {
+      await consumeStream({
+        stream: this.fullStream,
+        onError: options2 == null ? undefined : options2.onError
+      });
+    } catch (error48) {
+      (_a21 = options2 == null ? undefined : options2.onError) == null || _a21.call(options2, error48);
+    }
+  }
+  get experimental_partialOutputStream() {
+    return this.partialOutputStream;
+  }
+  get partialOutputStream() {
+    return createAsyncIterableStream(this.teeStream().pipeThrough(new TransformStream({
+      transform({ partialOutput }, controller) {
+        if (partialOutput != null) {
+          controller.enqueue(partialOutput);
+        }
+      }
+    })));
+  }
+  get elementStream() {
+    var _a21, _b16, _c;
+    const transform2 = (_a21 = this.outputSpecification) == null ? undefined : _a21.createElementStreamTransform();
+    if (transform2 == null) {
+      throw new UnsupportedFunctionalityError({
+        functionality: `element streams in ${(_c = (_b16 = this.outputSpecification) == null ? undefined : _b16.name) != null ? _c : "text"} mode`
+      });
+    }
+    return createAsyncIterableStream(this.teeStream().pipeThrough(transform2));
+  }
+  get output() {
+    return this.finalStep.then((step) => {
+      var _a21;
+      const output = (_a21 = this.outputSpecification) != null ? _a21 : text4();
+      return output.parseCompleteOutput({ text: step.text }, {
+        response: step.response,
+        usage: step.usage,
+        finishReason: step.finishReason
+      });
+    });
+  }
+  toUIMessageStream({
+    originalMessages,
+    generateMessageId,
+    onFinish,
+    messageMetadata,
+    sendReasoning = true,
+    sendSources = false,
+    sendStart = true,
+    sendFinish = true,
+    onError = getErrorMessage
+  } = {}) {
+    const responseMessageId = generateMessageId != null ? getResponseUIMessageId({
+      originalMessages,
+      responseMessageId: generateMessageId
+    }) : undefined;
+    const isDynamic = (part) => {
+      var _a21;
+      const tool2 = (_a21 = this.tools) == null ? undefined : _a21[part.toolName];
+      if (tool2 == null) {
+        return part.dynamic;
+      }
+      return (tool2 == null ? undefined : tool2.type) === "dynamic" ? true : undefined;
+    };
+    const baseStream = this.fullStream.pipeThrough(new TransformStream({
+      transform: async (part, controller) => {
+        const messageMetadataValue = messageMetadata == null ? undefined : messageMetadata({ part });
+        const partType = part.type;
+        switch (partType) {
+          case "text-start": {
+            controller.enqueue({
+              type: "text-start",
+              id: part.id,
+              ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+            });
+            break;
+          }
+          case "text-delta": {
+            controller.enqueue({
+              type: "text-delta",
+              id: part.id,
+              delta: part.text,
+              ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+            });
+            break;
+          }
+          case "text-end": {
+            controller.enqueue({
+              type: "text-end",
+              id: part.id,
+              ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+            });
+            break;
+          }
+          case "reasoning-start":
+          case "reasoning-end": {
+            if (sendReasoning) {
+              controller.enqueue({
+                type: partType,
+                id: part.id,
+                ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+              });
+            }
+            break;
+          }
+          case "reasoning-delta": {
+            if (sendReasoning) {
+              controller.enqueue({
+                type: "reasoning-delta",
+                id: part.id,
+                delta: part.text,
+                ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+              });
+            }
+            break;
+          }
+          case "file": {
+            controller.enqueue({
+              type: "file",
+              mediaType: part.file.mediaType,
+              url: `data:${part.file.mediaType};base64,${part.file.base64}`,
+              ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+            });
+            break;
+          }
+          case "source": {
+            if (sendSources && part.sourceType === "url") {
+              controller.enqueue({
+                type: "source-url",
+                sourceId: part.id,
+                url: part.url,
+                title: part.title,
+                ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+              });
+            }
+            if (sendSources && part.sourceType === "document") {
+              controller.enqueue({
+                type: "source-document",
+                sourceId: part.id,
+                mediaType: part.mediaType,
+                title: part.title,
+                filename: part.filename,
+                ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {}
+              });
+            }
+            break;
+          }
+          case "tool-input-start": {
+            const dynamic = isDynamic(part);
+            controller.enqueue({
+              type: "tool-input-start",
+              toolCallId: part.id,
+              toolName: part.toolName,
+              ...part.providerExecuted != null ? { providerExecuted: part.providerExecuted } : {},
+              ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {},
+              ...part.toolMetadata != null ? { toolMetadata: part.toolMetadata } : {},
+              ...dynamic != null ? { dynamic } : {},
+              ...part.title != null ? { title: part.title } : {}
+            });
+            break;
+          }
+          case "tool-input-delta": {
+            controller.enqueue({
+              type: "tool-input-delta",
+              toolCallId: part.id,
+              inputTextDelta: part.delta
+            });
+            break;
+          }
+          case "tool-call": {
+            const dynamic = isDynamic(part);
+            if (part.invalid) {
+              controller.enqueue({
+                type: "tool-input-error",
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+                input: part.input,
+                ...part.providerExecuted != null ? { providerExecuted: part.providerExecuted } : {},
+                ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {},
+                ...part.toolMetadata != null ? { toolMetadata: part.toolMetadata } : {},
+                ...dynamic != null ? { dynamic } : {},
+                errorText: onError(part.error),
+                ...part.title != null ? { title: part.title } : {}
+              });
+            } else {
+              controller.enqueue({
+                type: "tool-input-available",
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+                input: part.input,
+                ...part.providerExecuted != null ? { providerExecuted: part.providerExecuted } : {},
+                ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {},
+                ...part.toolMetadata != null ? { toolMetadata: part.toolMetadata } : {},
+                ...dynamic != null ? { dynamic } : {},
+                ...part.title != null ? { title: part.title } : {}
+              });
+            }
+            break;
+          }
+          case "tool-approval-request": {
+            controller.enqueue({
+              type: "tool-approval-request",
+              approvalId: part.approvalId,
+              toolCallId: part.toolCall.toolCallId
+            });
+            break;
+          }
+          case "tool-result": {
+            const dynamic = isDynamic(part);
+            controller.enqueue({
+              type: "tool-output-available",
+              toolCallId: part.toolCallId,
+              output: part.output,
+              ...part.providerExecuted != null ? { providerExecuted: part.providerExecuted } : {},
+              ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {},
+              ...part.toolMetadata != null ? { toolMetadata: part.toolMetadata } : {},
+              ...part.preliminary != null ? { preliminary: part.preliminary } : {},
+              ...dynamic != null ? { dynamic } : {}
+            });
+            break;
+          }
+          case "tool-error": {
+            const dynamic = isDynamic(part);
+            controller.enqueue({
+              type: "tool-output-error",
+              toolCallId: part.toolCallId,
+              errorText: part.providerExecuted ? typeof part.error === "string" ? part.error : JSON.stringify(part.error) : onError(part.error),
+              ...part.providerExecuted != null ? { providerExecuted: part.providerExecuted } : {},
+              ...part.providerMetadata != null ? { providerMetadata: part.providerMetadata } : {},
+              ...part.toolMetadata != null ? { toolMetadata: part.toolMetadata } : {},
+              ...dynamic != null ? { dynamic } : {}
+            });
+            break;
+          }
+          case "tool-output-denied": {
+            controller.enqueue({
+              type: "tool-output-denied",
+              toolCallId: part.toolCallId
+            });
+            break;
+          }
+          case "error": {
+            controller.enqueue({
+              type: "error",
+              errorText: onError(part.error)
+            });
+            break;
+          }
+          case "start-step": {
+            controller.enqueue({ type: "start-step" });
+            break;
+          }
+          case "finish-step": {
+            controller.enqueue({ type: "finish-step" });
+            break;
+          }
+          case "start": {
+            if (sendStart) {
+              controller.enqueue({
+                type: "start",
+                ...messageMetadataValue != null ? { messageMetadata: messageMetadataValue } : {},
+                ...responseMessageId != null ? { messageId: responseMessageId } : {}
+              });
+            }
+            break;
+          }
+          case "finish": {
+            if (sendFinish) {
+              controller.enqueue({
+                type: "finish",
+                finishReason: part.finishReason,
+                ...messageMetadataValue != null ? { messageMetadata: messageMetadataValue } : {}
+              });
+            }
+            break;
+          }
+          case "abort": {
+            controller.enqueue(part);
+            break;
+          }
+          case "tool-input-end": {
+            break;
+          }
+          case "raw": {
+            break;
+          }
+          default: {
+            const exhaustiveCheck = partType;
+            throw new Error(`Unknown chunk type: ${exhaustiveCheck}`);
+          }
+        }
+        if (messageMetadataValue != null && partType !== "start" && partType !== "finish") {
+          controller.enqueue({
+            type: "message-metadata",
+            messageMetadata: messageMetadataValue
+          });
+        }
+      }
+    }));
+    return createAsyncIterableStream(handleUIMessageStreamFinish({
+      stream: baseStream,
+      messageId: responseMessageId != null ? responseMessageId : generateMessageId == null ? undefined : generateMessageId(),
+      originalMessages,
+      onFinish,
+      onError
+    }));
+  }
+  pipeUIMessageStreamToResponse(response, {
+    originalMessages,
+    generateMessageId,
+    onFinish,
+    messageMetadata,
+    sendReasoning,
+    sendSources,
+    sendFinish,
+    sendStart,
+    onError,
+    ...init
+  } = {}) {
+    pipeUIMessageStreamToResponse({
+      response,
+      stream: this.toUIMessageStream({
+        originalMessages,
+        generateMessageId,
+        onFinish,
+        messageMetadata,
+        sendReasoning,
+        sendSources,
+        sendFinish,
+        sendStart,
+        onError
+      }),
+      ...init
+    });
+  }
+  pipeTextStreamToResponse(response, init) {
+    pipeTextStreamToResponse({
+      response,
+      textStream: this.textStream,
+      ...init
+    });
+  }
+  toUIMessageStreamResponse({
+    originalMessages,
+    generateMessageId,
+    onFinish,
+    messageMetadata,
+    sendReasoning,
+    sendSources,
+    sendFinish,
+    sendStart,
+    onError,
+    ...init
+  } = {}) {
+    return createUIMessageStreamResponse({
+      stream: this.toUIMessageStream({
+        originalMessages,
+        generateMessageId,
+        onFinish,
+        messageMetadata,
+        sendReasoning,
+        sendSources,
+        sendFinish,
+        sendStart,
+        onError
+      }),
+      ...init
+    });
+  }
+  toTextStreamResponse(init) {
+    return createTextStreamResponse({
+      textStream: this.textStream,
+      ...init
+    });
+  }
+};
+var toolMetadataSchema2 = exports_external.record(exports_external.string(), jsonValueSchema3.optional());
+var uiMessagesSchema = lazySchema(() => zodSchema(exports_external.array(exports_external.object({
+  id: exports_external.string(),
+  role: exports_external.enum(["system", "user", "assistant"]),
+  metadata: exports_external.unknown().optional(),
+  parts: exports_external.array(exports_external.union([
+    exports_external.object({
+      type: exports_external.literal("text"),
+      text: exports_external.string(),
+      state: exports_external.enum(["streaming", "done"]).optional(),
+      providerMetadata: providerMetadataSchema.optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("reasoning"),
+      text: exports_external.string(),
+      state: exports_external.enum(["streaming", "done"]).optional(),
+      providerMetadata: providerMetadataSchema.optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("source-url"),
+      sourceId: exports_external.string(),
+      url: exports_external.string(),
+      title: exports_external.string().optional(),
+      providerMetadata: providerMetadataSchema.optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("source-document"),
+      sourceId: exports_external.string(),
+      mediaType: exports_external.string(),
+      title: exports_external.string(),
+      filename: exports_external.string().optional(),
+      providerMetadata: providerMetadataSchema.optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("file"),
+      mediaType: exports_external.string(),
+      filename: exports_external.string().optional(),
+      url: exports_external.string(),
+      providerMetadata: providerMetadataSchema.optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("step-start")
+    }),
+    exports_external.object({
+      type: exports_external.string().startsWith("data-"),
+      id: exports_external.string().optional(),
+      data: exports_external.unknown()
+    }),
+    exports_external.object({
+      type: exports_external.literal("dynamic-tool"),
+      toolName: exports_external.string(),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("input-streaming"),
+      input: exports_external.unknown().optional(),
+      providerExecuted: exports_external.boolean().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      approval: exports_external.never().optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("dynamic-tool"),
+      toolName: exports_external.string(),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("input-available"),
+      input: exports_external.unknown(),
+      providerExecuted: exports_external.boolean().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.never().optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("dynamic-tool"),
+      toolName: exports_external.string(),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("approval-requested"),
+      input: exports_external.unknown(),
+      providerExecuted: exports_external.boolean().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.never().optional(),
+        reason: exports_external.never().optional()
+      })
+    }),
+    exports_external.object({
+      type: exports_external.literal("dynamic-tool"),
+      toolName: exports_external.string(),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("approval-responded"),
+      input: exports_external.unknown(),
+      providerExecuted: exports_external.boolean().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.boolean(),
+        reason: exports_external.string().optional()
+      })
+    }),
+    exports_external.object({
+      type: exports_external.literal("dynamic-tool"),
+      toolName: exports_external.string(),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("output-available"),
+      input: exports_external.unknown(),
+      providerExecuted: exports_external.boolean().optional(),
+      output: exports_external.unknown(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      resultProviderMetadata: providerMetadataSchema.optional(),
+      preliminary: exports_external.boolean().optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.literal(true),
+        reason: exports_external.string().optional()
+      }).optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("dynamic-tool"),
+      toolName: exports_external.string(),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("output-error"),
+      input: exports_external.unknown().optional(),
+      rawInput: exports_external.unknown().optional(),
+      providerExecuted: exports_external.boolean().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.string(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      resultProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.literal(true),
+        reason: exports_external.string().optional()
+      }).optional()
+    }),
+    exports_external.object({
+      type: exports_external.literal("dynamic-tool"),
+      toolName: exports_external.string(),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("output-denied"),
+      input: exports_external.unknown(),
+      providerExecuted: exports_external.boolean().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.literal(false),
+        reason: exports_external.string().optional()
+      })
+    }),
+    exports_external.object({
+      type: exports_external.string().startsWith("tool-"),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("input-streaming"),
+      providerExecuted: exports_external.boolean().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      input: exports_external.unknown().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      approval: exports_external.never().optional()
+    }),
+    exports_external.object({
+      type: exports_external.string().startsWith("tool-"),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("input-available"),
+      providerExecuted: exports_external.boolean().optional(),
+      input: exports_external.unknown(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.never().optional()
+    }),
+    exports_external.object({
+      type: exports_external.string().startsWith("tool-"),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("approval-requested"),
+      input: exports_external.unknown(),
+      providerExecuted: exports_external.boolean().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.never().optional(),
+        reason: exports_external.never().optional()
+      })
+    }),
+    exports_external.object({
+      type: exports_external.string().startsWith("tool-"),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("approval-responded"),
+      input: exports_external.unknown(),
+      providerExecuted: exports_external.boolean().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.boolean(),
+        reason: exports_external.string().optional()
+      })
+    }),
+    exports_external.object({
+      type: exports_external.string().startsWith("tool-"),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("output-available"),
+      providerExecuted: exports_external.boolean().optional(),
+      input: exports_external.unknown(),
+      output: exports_external.unknown(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      resultProviderMetadata: providerMetadataSchema.optional(),
+      preliminary: exports_external.boolean().optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.literal(true),
+        reason: exports_external.string().optional()
+      }).optional()
+    }),
+    exports_external.object({
+      type: exports_external.string().startsWith("tool-"),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("output-error"),
+      providerExecuted: exports_external.boolean().optional(),
+      input: exports_external.unknown().optional(),
+      rawInput: exports_external.unknown().optional(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.string(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      resultProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.literal(true),
+        reason: exports_external.string().optional()
+      }).optional()
+    }),
+    exports_external.object({
+      type: exports_external.string().startsWith("tool-"),
+      toolCallId: exports_external.string(),
+      toolMetadata: toolMetadataSchema2.optional(),
+      state: exports_external.literal("output-denied"),
+      providerExecuted: exports_external.boolean().optional(),
+      input: exports_external.unknown(),
+      output: exports_external.never().optional(),
+      errorText: exports_external.never().optional(),
+      callProviderMetadata: providerMetadataSchema.optional(),
+      approval: exports_external.object({
+        id: exports_external.string(),
+        approved: exports_external.literal(false),
+        reason: exports_external.string().optional()
+      })
+    })
+  ])).nonempty("Message must contain at least one part")
+})).nonempty("Messages array must not be empty")));
+function splitArray(array22, chunkSize) {
+  if (chunkSize <= 0) {
+    throw new Error("chunkSize must be greater than 0");
+  }
+  const result = [];
+  for (let i = 0;i < array22.length; i += chunkSize) {
+    result.push(array22.slice(i, i + chunkSize));
+  }
+  return result;
+}
+async function embedMany({
+  model: modelArg,
+  values,
+  maxParallelCalls = Infinity,
+  maxRetries: maxRetriesArg,
+  abortSignal,
+  headers,
+  providerOptions,
+  experimental_telemetry: telemetry
+}) {
+  const model = resolveEmbeddingModel(modelArg);
+  const { maxRetries, retry } = prepareRetries({
+    maxRetries: maxRetriesArg,
+    abortSignal
+  });
+  const headersWithUserAgent = withUserAgentSuffix(headers != null ? headers : {}, `ai/${VERSION4}`);
+  const baseTelemetryAttributes = getBaseTelemetryAttributes({
+    model,
+    telemetry,
+    headers: headersWithUserAgent,
+    settings: { maxRetries }
+  });
+  const tracer = getTracer(telemetry);
+  return recordSpan({
+    name: "ai.embedMany",
+    attributes: selectTelemetryAttributes({
+      telemetry,
+      attributes: {
+        ...assembleOperationName({ operationId: "ai.embedMany", telemetry }),
+        ...baseTelemetryAttributes,
+        "ai.values": {
+          input: () => values.map((value) => JSON.stringify(value))
+        }
+      }
+    }),
+    tracer,
+    fn: async (span) => {
+      var _a21;
+      const [maxEmbeddingsPerCall, supportsParallelCalls] = await Promise.all([
+        model.maxEmbeddingsPerCall,
+        model.supportsParallelCalls
+      ]);
+      if (maxEmbeddingsPerCall == null || maxEmbeddingsPerCall === Infinity) {
+        const { embeddings: embeddings2, usage, warnings: warnings2, response, providerMetadata: providerMetadata2 } = await retry(() => {
+          return recordSpan({
+            name: "ai.embedMany.doEmbed",
+            attributes: selectTelemetryAttributes({
+              telemetry,
+              attributes: {
+                ...assembleOperationName({
+                  operationId: "ai.embedMany.doEmbed",
+                  telemetry
+                }),
+                ...baseTelemetryAttributes,
+                "ai.values": {
+                  input: () => values.map((value) => JSON.stringify(value))
+                }
+              }
+            }),
+            tracer,
+            fn: async (doEmbedSpan) => {
+              var _a222, _b16;
+              const modelResponse = await model.doEmbed({
+                values,
+                abortSignal,
+                headers: headersWithUserAgent,
+                providerOptions
+              });
+              const embeddings3 = modelResponse.embeddings;
+              const usage2 = (_a222 = modelResponse.usage) != null ? _a222 : { tokens: NaN };
+              doEmbedSpan.setAttributes(await selectTelemetryAttributes({
+                telemetry,
+                attributes: {
+                  "ai.embeddings": {
+                    output: () => embeddings3.map((embedding) => JSON.stringify(embedding))
+                  },
+                  "ai.usage.tokens": usage2.tokens
+                }
+              }));
+              return {
+                embeddings: embeddings3,
+                usage: usage2,
+                warnings: (_b16 = modelResponse.warnings) != null ? _b16 : [],
+                providerMetadata: modelResponse.providerMetadata,
+                response: modelResponse.response
+              };
+            }
+          });
+        });
+        span.setAttributes(await selectTelemetryAttributes({
+          telemetry,
+          attributes: {
+            "ai.embeddings": {
+              output: () => embeddings2.map((embedding) => JSON.stringify(embedding))
+            },
+            "ai.usage.tokens": usage.tokens
+          }
+        }));
+        logWarnings({
+          warnings: warnings2,
+          provider: model.provider,
+          model: model.modelId
+        });
+        return new DefaultEmbedManyResult({
+          values,
+          embeddings: embeddings2,
+          usage,
+          warnings: warnings2,
+          providerMetadata: providerMetadata2,
+          responses: [response]
+        });
+      }
+      const valueChunks = splitArray(values, maxEmbeddingsPerCall);
+      const embeddings = [];
+      const warnings = [];
+      const responses = [];
+      let tokens = 0;
+      let providerMetadata;
+      const parallelChunks = splitArray(valueChunks, supportsParallelCalls ? maxParallelCalls : 1);
+      for (const parallelChunk of parallelChunks) {
+        const results = await Promise.all(parallelChunk.map((chunk) => {
+          return retry(() => {
+            return recordSpan({
+              name: "ai.embedMany.doEmbed",
+              attributes: selectTelemetryAttributes({
+                telemetry,
+                attributes: {
+                  ...assembleOperationName({
+                    operationId: "ai.embedMany.doEmbed",
+                    telemetry
+                  }),
+                  ...baseTelemetryAttributes,
+                  "ai.values": {
+                    input: () => chunk.map((value) => JSON.stringify(value))
+                  }
+                }
+              }),
+              tracer,
+              fn: async (doEmbedSpan) => {
+                var _a222, _b16;
+                const modelResponse = await model.doEmbed({
+                  values: chunk,
+                  abortSignal,
+                  headers: headersWithUserAgent,
+                  providerOptions
+                });
+                const embeddings2 = modelResponse.embeddings;
+                const usage = (_a222 = modelResponse.usage) != null ? _a222 : { tokens: NaN };
+                doEmbedSpan.setAttributes(await selectTelemetryAttributes({
+                  telemetry,
+                  attributes: {
+                    "ai.embeddings": {
+                      output: () => embeddings2.map((embedding) => JSON.stringify(embedding))
+                    },
+                    "ai.usage.tokens": usage.tokens
+                  }
+                }));
+                return {
+                  embeddings: embeddings2,
+                  usage,
+                  warnings: (_b16 = modelResponse.warnings) != null ? _b16 : [],
+                  providerMetadata: modelResponse.providerMetadata,
+                  response: modelResponse.response
+                };
+              }
+            });
+          });
+        }));
+        for (const result of results) {
+          embeddings.push(...result.embeddings);
+          warnings.push(...result.warnings);
+          responses.push(result.response);
+          tokens += result.usage.tokens;
+          if (result.providerMetadata) {
+            if (!providerMetadata) {
+              providerMetadata = { ...result.providerMetadata };
+            } else {
+              for (const [providerName, metadata] of Object.entries(result.providerMetadata)) {
+                providerMetadata[providerName] = {
+                  ...(_a21 = providerMetadata[providerName]) != null ? _a21 : {},
+                  ...metadata
+                };
+              }
+            }
+          }
+        }
+      }
+      span.setAttributes(await selectTelemetryAttributes({
+        telemetry,
+        attributes: {
+          "ai.embeddings": {
+            output: () => embeddings.map((embedding) => JSON.stringify(embedding))
+          },
+          "ai.usage.tokens": tokens
+        }
+      }));
+      logWarnings({
+        warnings,
+        provider: model.provider,
+        model: model.modelId
+      });
+      return new DefaultEmbedManyResult({
+        values,
+        embeddings,
+        usage: { tokens },
+        warnings,
+        providerMetadata,
+        responses
+      });
+    }
+  });
+}
+var DefaultEmbedManyResult = class {
+  constructor(options2) {
+    this.values = options2.values;
+    this.embeddings = options2.embeddings;
+    this.usage = options2.usage;
+    this.warnings = options2.warnings;
+    this.providerMetadata = options2.providerMetadata;
+    this.responses = options2.responses;
+  }
+};
+var originalGenerateId3 = createIdGenerator({ prefix: "aiobj", size: 24 });
+function createDownload(options2) {
+  return ({ url: url2, abortSignal }) => download({ url: url2, maxBytes: options2 == null ? undefined : options2.maxBytes, abortSignal });
+}
+var originalGenerateId4 = createIdGenerator({ prefix: "aiobj", size: 24 });
+var defaultDownload = createDownload();
+var name20 = "AI_NoSuchProviderError";
+var marker20 = `vercel.ai.error.${name20}`;
+var symbol20 = Symbol.for(marker20);
+var _a20;
+_a20 = symbol20;
+var defaultDownload2 = createDownload();
+
+// src/api/ai.ts
+import { eq as eq10, inArray as inArray4, or as or4, isNull } from "drizzle-orm";
+
+// src/db/vectors.ts
+import * as lancedb from "@lancedb/lancedb";
+import { mkdirSync as mkdirSync2, existsSync as existsSync2 } from "fs";
+var DB_PATH2 = "./data/db/vectors";
+if (!existsSync2(DB_PATH2)) {
+  mkdirSync2(DB_PATH2, { recursive: true });
+}
+var _db = null;
+async function getLanceDB() {
+  if (!_db) {
+    _db = await lancedb.connect(DB_PATH2);
+  }
+  return _db;
+}
+
+// src/api/ai.ts
+var BATCH_SIZE = 20;
+async function getEmbeddingConfig() {
+  const [setting] = await db.select().from(globalSettings).where(eq10(globalSettings.key, "ai_embedding_setting")).limit(1);
+  if (!setting) {
+    return null;
+  }
+  return JSON.parse(setting.value);
+}
+function getBaseURL(provider) {
+  switch (provider) {
+    case "siliconflow":
+      return "https://api.siliconflow.cn/v1";
+    default:
+      throw new Error(`\u4E0D\u652F\u6301\u7684 provider: ${provider}`);
+  }
+}
+function buildLinkText(link) {
+  const parts = [`\u6807\u9898\uFF1A${link.title}`, `\u94FE\u63A5\uFF1A${link.url}`];
+  if (link.backup_url) {
+    parts.push(`\u5907\u7528\u94FE\u63A5\uFF1A${link.backup_url}`);
+  }
+  if (link.content) {
+    parts.push(`\u5185\u5BB9\uFF1A${link.content}`);
+  }
+  if (link.keywords) {
+    parts.push(`\u5173\u952E\u8BCD\uFF1A${link.keywords}`);
+  }
+  if (link.description) {
+    parts.push(`\u63CF\u8FF0\uFF1A${link.description}`);
+  }
+  return parts.join(`
+`);
+}
+async function getEmbeddings(texts, config2) {
+  const baseURL = getBaseURL(config2.provider);
+  const openai2 = createOpenAI({
+    baseURL,
+    apiKey: config2.api_key
+  });
+  const model = openai2.embedding(config2.model);
+  const { embeddings } = await embedMany({
+    model,
+    values: texts
+  });
+  return embeddings;
+}
+async function getChatConfig() {
+  const [setting] = await db.select().from(globalSettings).where(eq10(globalSettings.key, "ai_chat_setting")).limit(1);
+  if (!setting) {
+    return null;
+  }
+  return JSON.parse(setting.value);
+}
+async function getEmbedding(text5, config2) {
+  const baseURL = getBaseURL(config2.provider);
+  const openai2 = createOpenAI({
+    baseURL,
+    apiKey: config2.api_key
+  });
+  const model = openai2.embedding(config2.model);
+  const { embeddings } = await embedMany({
+    model,
+    values: [text5]
+  });
+  return embeddings[0];
+}
+async function searchBookmarks(keywords, uid) {
+  const embeddingConfig = await getEmbeddingConfig();
+  if (!embeddingConfig || !embeddingConfig.enabled) {
+    return [];
+  }
+  const queryText = keywords.join(" ");
+  const queryVector = await getEmbedding(queryText, embeddingConfig);
+  const lanceDb = await getLanceDB();
+  const tableNames = await lanceDb.tableNames();
+  if (!tableNames.includes("links_embeddings")) {
+    return [];
+  }
+  const table = await lanceDb.openTable("links_embeddings");
+  const results = await table.search(queryVector).where(`uid = ${uid}`).select(["link_id", "uid", "_distance"]).limit(10).toArray();
+  if (results.length > 0) {}
+  if (results.length === 0) {
+    return [];
+  }
+  const linkIds = results.map((r) => r.link_id);
+  const bookmarkResults = await db.select({
+    id: links.id,
+    title: links.title,
+    url: links.url,
+    description: links.description,
+    keywords: links.keywords
+  }).from(links).where(inArray4(links.id, linkIds));
+  return bookmarkResults;
+}
+async function chat(c3) {
+  if (!passGate()) {
+    return c3.json({
+      code: -1000,
+      msg: "ai.chat.unauthorized",
+      data: null
+    });
+  }
+  const uid = c3.get("uid");
+  if (!uid) {
+    return c3.json({
+      code: -1000,
+      msg: "user.login.required",
+      data: null
+    });
+  }
+  const body = await c3.req.json();
+  const { message } = body;
+  if (!message || typeof message !== "string" || message.trim() === "") {
+    return c3.json({
+      code: -1000,
+      msg: "ai.chat.message_required",
+      data: null
+    });
+  }
+  const chatConfig = await getChatConfig();
+  if (!chatConfig || !chatConfig.api_key) {
+    return c3.json({
+      code: -1000,
+      msg: "ai.chat.config_missing",
+      data: null
+    });
+  }
+  const openai2 = createOpenAI({
+    baseURL: chatConfig.base_url || "https://api.siliconflow.cn/v1",
+    apiKey: chatConfig.api_key
+  });
+  const model = openai2.chat(chatConfig.model);
+  const tools = {
+    searchBookmarks: tool({
+      description: "\u5F53\u7528\u6237\u60F3\u8981\u641C\u7D22\u3001\u67E5\u627E\u3001\u68C0\u7D22\u4E66\u7B7E\u3001\u94FE\u63A5\u6216\u5BFC\u822A\u65F6\u8C03\u7528\u6B64\u51FD\u6570\u3002\u4ECE\u7528\u6237\u6D88\u606F\u4E2D\u63D0\u53D6\u5173\u952E\u8BCD\u8FDB\u884C\u8BED\u4E49\u641C\u7D22\u3002",
+      inputSchema: exports_external.object({
+        keywords: exports_external.array(exports_external.string()).describe("\u4ECE\u7528\u6237\u6D88\u606F\u4E2D\u63D0\u53D6\u7684\u641C\u7D22\u5173\u952E\u8BCD\u6570\u7EC4\uFF0C\u7528\u4E8E\u8BED\u4E49\u641C\u7D22\u4E66\u7B7E")
+      }),
+      execute: async (input) => {
+        try {
+          const results = await searchBookmarks(input.keywords, uid);
+          return JSON.stringify({
+            success: true,
+            count: results.length,
+            data: results
+          });
+        } catch (error48) {
+          return JSON.stringify({
+            success: false,
+            error: "\u4E66\u7B7E\u68C0\u7D22\u5931\u8D25",
+            data: []
+          });
+        }
+      }
+    })
+  };
+  const systemPrompt = `\u4F60\u662F\u4E00\u4E2A\u4E66\u7B7E\u68C0\u7D22\u52A9\u624B\u3002\u4F60\u7684\u804C\u8D23\u662F\u5E2E\u52A9\u7528\u6237\u641C\u7D22\u4ED6\u4EEC\u7684\u6D4F\u89C8\u5668\u4E66\u7B7E\u3002
+
+\u89C4\u5219\uFF1A
+1. \u53EA\u5904\u7406\u4E0E\u4E66\u7B7E\u68C0\u7D22\u76F8\u5173\u7684\u8BF7\u6C42
+2. \u5982\u679C\u7528\u6237\u7684\u95EE\u9898\u4E0E\u4E66\u7B7E\u68C0\u7D22\u65E0\u5173\uFF0C\u8BF7\u793C\u8C8C\u5730\u62D2\u7EDD\u5E76\u8BF4\u660E\u4F60\u53EA\u80FD\u5E2E\u52A9\u68C0\u7D22\u4E66\u7B7E
+3. \u5F53\u9700\u8981\u68C0\u7D22\u4E66\u7B7E\u65F6\uFF0C\u4F7F\u7528 searchBookmarks \u51FD\u6570
+4. \u68C0\u7D22\u5230\u7ED3\u679C\u540E\uFF0C\u4F7F\u7528 Markdown \u8868\u683C\u683C\u5F0F\u5C55\u793A\uFF0C\u5305\u542B\u4EE5\u4E0B\u5217\uFF1A\u6807\u9898\u3001\u94FE\u63A5\u3001\u63CF\u8FF0
+5. \u5982\u679C\u6CA1\u6709\u627E\u5230\u76F8\u5173\u4E66\u7B7E\uFF0C\u544A\u77E5\u7528\u6237\u672A\u627E\u5230\u5339\u914D\u7684\u7ED3\u679C
+
+\u793A\u4F8B\u8868\u683C\u683C\u5F0F\uFF1A
+| \u6807\u9898 | \u94FE\u63A5 | \u63CF\u8FF0 |
+|------|------|------|
+| \u793A\u4F8B\u6807\u9898 | https://example.com | \u793A\u4F8B\u63CF\u8FF0 |`;
+  const result = streamText({
+    model,
+    system: systemPrompt,
+    messages: [{ role: "user", content: message }],
+    tools,
+    stopWhen: stepCountIs(5)
+  });
+  return result.toUIMessageStreamResponse();
+}
+async function processLinksBatch() {
+  if (!passGate()) {
+    return 0;
+  }
+  const config2 = await getEmbeddingConfig();
+  if (!config2 || !config2.enabled) {
+    return 0;
+  }
+  const pendingLinks = await db.select().from(links).where(or4(eq10(links.vectorized, 0), isNull(links.vectorized))).limit(BATCH_SIZE);
+  if (pendingLinks.length === 0) {
+    return 0;
+  }
+  const ids = pendingLinks.map((l) => l.id);
+  await db.update(links).set({ vectorized: 1 }).where(inArray4(links.id, ids));
+  try {
+    const texts = pendingLinks.map(buildLinkText);
+    const vectors = await getEmbeddings(texts, config2);
+    const records = pendingLinks.map((link, i) => ({
+      link_id: link.id,
+      uid: link.uid,
+      vector: vectors[i]
+    }));
+    if (records.length > 0) {
+      const lanceDb = await getLanceDB();
+      const tableNames = await lanceDb.tableNames();
+      if (tableNames.includes("links_embeddings")) {
+        const table = await lanceDb.openTable("links_embeddings");
+        await table.add(records);
+      } else {
+        await lanceDb.createTable("links_embeddings", records);
+      }
+    }
+    await db.update(links).set({
+      vectorized: 2,
+      vectorized_at: new Date
+    }).where(inArray4(links.id, ids));
+    return pendingLinks.length;
+  } catch (error48) {
+    await db.update(links).set({ vectorized: 3 }).where(inArray4(links.id, ids));
+    throw error48;
+  }
+}
+async function deleteVectorsByLinkIds(linkIds) {
+  if (!linkIds || linkIds.length === 0) {
+    return;
+  }
+  try {
+    const lanceDb = await getLanceDB();
+    const tableNames = await lanceDb.tableNames();
+    if (!tableNames.includes("links_embeddings")) {
+      return;
+    }
+    const table = await lanceDb.openTable("links_embeddings");
+    const deleteCondition = `link_id IN (${linkIds.join(",")})`;
+    await table.delete(deleteCondition);
+  } catch {}
+}
+async function resetAllVectors(c3) {
+  try {
+    await db.update(links).set({
+      vectorized: 0,
+      vectorized_at: null
+    });
+    try {
+      const lanceDb = await getLanceDB();
+      const tableNames = await lanceDb.tableNames();
+      if (tableNames.includes("links_embeddings")) {
+        await lanceDb.dropTable("links_embeddings");
+      }
+    } catch {}
+    return c3.json({
+      code: 200,
+      msg: "ai.vectors.reset_success",
+      data: null
+    });
+  } catch {
+    return c3.json({
+      code: -1000,
+      msg: "ai.vectors.reset_failed",
+      data: null
+    });
+  }
+}
+async function optimizeLanceDBTable() {
+  try {
+    const lanceDb = await getLanceDB();
+    const tableNames = await lanceDb.tableNames();
+    if (!tableNames.includes("links_embeddings")) {
+      return;
+    }
+    const table = await lanceDb.openTable("links_embeddings");
+    const olderThan = new Date;
+    olderThan.setDate(olderThan.getDate() - 1);
+    await table.optimize({ cleanupOlderThan: olderThan });
+    console.log("[LanceDB] \u8868\u4F18\u5316\u5B8C\u6210\uFF0C\u5DF2\u6E05\u74061\u5929\u524D\u7684\u5DF2\u5220\u9664\u6570\u636E");
+  } catch (error48) {
+    console.error("[LanceDB] \u8868\u4F18\u5316\u5931\u8D25:", error48);
+  }
+}
+async function getAIStatus(c3) {
+  if (!passGate()) {
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: { enabled: false }
+    });
+  }
+  const embeddingConfig = await getEmbeddingConfig();
+  if (!embeddingConfig || !embeddingConfig.enabled) {
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: { enabled: false }
+    });
+  }
+  const chatConfig = await getChatConfig();
+  if (!chatConfig || !chatConfig.api_key) {
+    return c3.json({
+      code: 200,
+      msg: "success",
+      data: { enabled: false }
+    });
+  }
+  return c3.json({
+    code: 200,
+    msg: "success",
+    data: { enabled: true }
+  });
+}
+
+// src/api/link.ts
+import { and as and5, asc as asc5, desc as desc6, eq as eq11, inArray as inArray5, like as like2, ne as ne2, or as or5, sql as sql4 } from "drizzle-orm";
 var MAX_LINK_ICON_SIZE = 100 * 1024;
 var HTML_CHARSET_SNIFF_BYTES = 8 * 1024;
 var normalizeHtmlCharset = (charset) => {
@@ -39228,7 +62337,7 @@ var findDuplicateUserLinkByUrl = async (uid, url2, excludeId) => {
     columns: {
       id: true
     },
-    where: typeof excludeId === "number" ? and5(eq10(links.uid, uid), eq10(links.url, url2), ne2(links.id, excludeId)) : and5(eq10(links.uid, uid), eq10(links.url, url2))
+    where: typeof excludeId === "number" ? and5(eq11(links.uid, uid), eq11(links.url, url2), ne2(links.id, excludeId)) : and5(eq11(links.uid, uid), eq11(links.url, url2))
   });
 };
 var validateBatchLinkIds = async (ids, uid) => {
@@ -39252,7 +62361,7 @@ var validateBatchLinkIds = async (ids, uid) => {
     };
   }
   const rows = await db.query.links.findMany({
-    where: inArray4(links.id, uniqueIds),
+    where: inArray5(links.id, uniqueIds),
     columns: {
       id: true,
       uid: true,
@@ -39443,7 +62552,7 @@ var updateLink = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq10(links.id, id)
+    where: eq11(links.id, id)
   });
   if (!currentLink) {
     return c3.json({
@@ -39504,7 +62613,10 @@ var updateLink = async (c3) => {
   if (hasOptionalField("http_code")) {
     updateData.http_code = body.http_code;
   }
-  const [row] = await db.update(links).set(updateData).where(and5(eq10(links.id, id), eq10(links.uid, uid))).returning();
+  await deleteVectorsByLinkIds([id]);
+  updateData.vectorized = 0;
+  updateData.vectorized_at = null;
+  const [row] = await db.update(links).set(updateData).where(and5(eq11(links.id, id), eq11(links.uid, uid))).returning();
   return c3.json({
     code: 200,
     msg: "success",
@@ -39537,7 +62649,7 @@ var updateLinkIcon = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq10(links.id, id),
+    where: eq11(links.id, id),
     columns: {
       id: true,
       uid: true,
@@ -39578,8 +62690,8 @@ var updateLinkIcon = async (c3) => {
       data: null
     });
   }
-  const now = new Date;
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const now2 = new Date;
+  const yearMonth = `${now2.getFullYear()}${String(now2.getMonth() + 1).padStart(2, "0")}`;
   const relativeIconPath = `/images/${uid}/${yearMonth}/${id}.${ext}`;
   const savePath = join7(process.cwd(), "data", relativeIconPath.replace(/^\//, ""));
   await mkdir4(dirname5(savePath), { recursive: true });
@@ -39587,7 +62699,7 @@ var updateLinkIcon = async (c3) => {
   const [row] = await db.update(links).set({
     icon: relativeIconPath,
     updated_at: new Date
-  }).where(and5(eq10(links.id, id), eq10(links.uid, uid))).returning({
+  }).where(and5(eq11(links.id, id), eq11(links.uid, uid))).returning({
     id: links.id,
     icon: links.icon
   });
@@ -39609,7 +62721,7 @@ var deleteLinkIcon = async (c3) => {
     });
   }
   const currentLink = await db.query.links.findFirst({
-    where: eq10(links.id, id),
+    where: eq11(links.id, id),
     columns: {
       id: true,
       uid: true,
@@ -39638,7 +62750,7 @@ var deleteLinkIcon = async (c3) => {
   const [row] = await db.update(links).set({
     icon: "",
     updated_at: new Date
-  }).where(and5(eq10(links.id, id), eq10(links.uid, uid))).returning({
+  }).where(and5(eq11(links.id, id), eq11(links.uid, uid))).returning({
     id: links.id,
     icon: links.icon
   });
@@ -39693,7 +62805,7 @@ var updateLinksCategory = async (c3) => {
     category_type,
     category_id,
     updated_at: new Date
-  }).where(and5(eq10(links.uid, uid), inArray4(links.id, validatedIds.ids)));
+  }).where(and5(eq11(links.uid, uid), inArray5(links.id, validatedIds.ids)));
   return c3.json({
     code: 200,
     msg: "success",
@@ -39718,7 +62830,8 @@ var deleteLinks = async (c3) => {
     });
   }
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
-  await db.delete(links).where(and5(eq10(links.uid, uid), inArray4(links.id, validatedIds.ids)));
+  await db.delete(links).where(and5(eq11(links.uid, uid), inArray5(links.id, validatedIds.ids)));
+  await deleteVectorsByLinkIds(validatedIds.ids);
   await Promise.allSettled(iconPaths.map((iconPath) => {
     const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
     return rm6(filePath, { force: true });
@@ -39735,7 +62848,7 @@ var deleteLinks = async (c3) => {
 var removeDuplicateUserLinks = async (c3) => {
   const uid = c3.get("uid");
   const rows = await db.query.links.findMany({
-    where: eq10(links.uid, uid),
+    where: eq11(links.uid, uid),
     columns: {
       id: true,
       url: true,
@@ -39761,7 +62874,8 @@ var removeDuplicateUserLinks = async (c3) => {
     }
   }
   if (duplicateIds.length > 0) {
-    await db.delete(links).where(and5(eq10(links.uid, uid), inArray4(links.id, duplicateIds)));
+    await db.delete(links).where(and5(eq11(links.uid, uid), inArray5(links.id, duplicateIds)));
+    await deleteVectorsByLinkIds(duplicateIds);
     await Promise.allSettled(duplicateIconPaths.map((iconPath) => {
       const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
       return rm6(filePath, { force: true });
@@ -39789,7 +62903,8 @@ var adminDeleteLinks = async (c3) => {
     });
   }
   const iconPaths = validatedIds.rows.map((row) => row.icon?.trim() || "").filter((icon) => icon.startsWith("/images/"));
-  await db.delete(links).where(inArray4(links.id, validatedIds.ids));
+  await db.delete(links).where(inArray5(links.id, validatedIds.ids));
+  await deleteVectorsByLinkIds(validatedIds.ids);
   await Promise.allSettled(iconPaths.map((iconPath) => {
     const filePath = join7(process.cwd(), "data", iconPath.replace(/^\//, ""));
     return rm6(filePath, { force: true });
@@ -39850,7 +62965,7 @@ var sortLinks = async (c3) => {
   }
   const ids = items.map((item) => item.id);
   const rows = await db.query.links.findMany({
-    where: inArray4(links.id, ids),
+    where: inArray5(links.id, ids),
     columns: {
       id: true,
       uid: true
@@ -39878,7 +62993,7 @@ var sortLinks = async (c3) => {
         const [row] = await tx.update(links).set({
           sort_order: item.sort_order,
           updated_at: updatedAt
-        }).where(and5(eq10(links.id, item.id), eq10(links.uid, uid))).returning({
+        }).where(and5(eq11(links.id, item.id), eq11(links.uid, uid))).returning({
           id: links.id
         });
         if (!row) {
@@ -39942,7 +63057,7 @@ var listLinksByAdmin = async (c3) => {
     last_checked_at: links.last_checked_at,
     created_at: links.created_at,
     updated_at: links.updated_at
-  }).from(links).leftJoin(users, eq10(links.uid, users.id)).orderBy(desc6(links.id)).limit(limit).offset(offset);
+  }).from(links).leftJoin(users, eq11(links.uid, users.id)).orderBy(desc6(links.id)).limit(limit).offset(offset);
   return c3.json({
     code: 200,
     msg: "success",
@@ -39974,8 +63089,8 @@ var searchLinks = async (c3) => {
     });
   }
   const keywordPattern = `%${normalizedKeyword}%`;
-  const userLinksSubquery = db.select().from(links).where(eq10(links.uid, uid)).as("user_links");
-  const links2 = await db.select().from(userLinksSubquery).where(or4(like2(userLinksSubquery.title, keywordPattern), like2(userLinksSubquery.url, keywordPattern), like2(userLinksSubquery.backup_url, keywordPattern), like2(userLinksSubquery.description, keywordPattern))).orderBy(desc6(userLinksSubquery.updated_at), desc6(userLinksSubquery.created_at), desc6(sql4`${userLinksSubquery.id}`)).limit(20);
+  const userLinksSubquery = db.select().from(links).where(eq11(links.uid, uid)).as("user_links");
+  const links2 = await db.select().from(userLinksSubquery).where(or5(like2(userLinksSubquery.title, keywordPattern), like2(userLinksSubquery.url, keywordPattern), like2(userLinksSubquery.backup_url, keywordPattern), like2(userLinksSubquery.description, keywordPattern))).orderBy(desc6(userLinksSubquery.updated_at), desc6(userLinksSubquery.created_at), desc6(sql4`${userLinksSubquery.id}`)).limit(20);
   return c3.json({
     code: 200,
     msg: "success",
@@ -40016,7 +63131,7 @@ var getCategoryLinks = async (c3) => {
     });
   }
   const links2 = await db.query.links.findMany({
-    where: and5(eq10(links.uid, uid), eq10(links.category_type, categoryType), eq10(links.category_id, categoryId)),
+    where: and5(eq11(links.uid, uid), eq11(links.category_type, categoryType), eq11(links.category_id, categoryId)),
     orderBy: [asc5(links.sort_order), desc6(links.created_at)]
   });
   return c3.json({
@@ -40095,7 +63210,7 @@ import { mkdir as mkdir5, writeFile as writeFile5 } from "fs/promises";
 import { dirname as dirname6, join as join8 } from "path";
 
 // src/utils/jobs.ts
-import { and as and6, asc as asc6, desc as desc7, eq as eq11, isNotNull, isNull, lt } from "drizzle-orm";
+import { and as and6, asc as asc6, desc as desc7, eq as eq12, isNotNull, isNull as isNull2, lt } from "drizzle-orm";
 
 // node_modules/croner/dist/croner.js
 function T(s) {
@@ -40879,7 +63994,7 @@ var HTTP_CHECK_BATCH_DELAY_MS = 5000;
 var HTTP_CHECK_EXPIRED_MS = 7 * 24 * 60 * 60 * 1000;
 var CHROME_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 var cronJobs = [];
-var sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+var sleep = (ms) => new Promise((resolve2) => setTimeout(resolve2, ms));
 function startCronJobs() {
   const licenseRefreshMinute = Math.floor(Math.random() * 60);
   const licenseRefreshHour = 2 + Math.floor(Math.random() * 4);
@@ -40902,6 +64017,19 @@ function startCronJobs() {
   }));
   cronJobs.push(new E("0 0 4 * * 0", { timezone: "Asia/Shanghai", protect: true }, async () => {
     await cleanupExpiredSessions();
+  }));
+  cronJobs.push(new E("* * * * * *", { interval: 30, protect: true }, async () => {
+    try {
+      const count2 = await processLinksBatch();
+      if (count2 > 0) {
+        console.log(`[\u5411\u91CF\u5316] \u5904\u7406\u4E86 ${count2} \u6761\u94FE\u63A5`);
+      }
+    } catch (error48) {
+      console.error("[\u5411\u91CF\u5316] \u4EFB\u52A1\u5931\u8D25:", error48);
+    }
+  }));
+  cronJobs.push(new E("0 0 3 * * *", { timezone: "Asia/Shanghai", protect: true }, async () => {
+    await optimizeLanceDBTable();
   }));
   console.log("\u2705 All cron jobs started.");
 }
@@ -40961,7 +64089,7 @@ var updateNavLinkCheckResults = async (results) => {
       await tx.update(nav_links).set({
         http_code: item.httpCode,
         last_checked_at: checkedAt
-      }).where(eq11(nav_links.id, item.id));
+      }).where(eq12(nav_links.id, item.id));
     }
   });
 };
@@ -40975,7 +64103,7 @@ var updateLinkCheckResults = async (results) => {
       await tx.update(links).set({
         http_code: item.httpCode,
         last_checked_at: checkedAt
-      }).where(eq11(links.id, item.id));
+      }).where(eq12(links.id, item.id));
     }
   });
 };
@@ -40991,7 +64119,7 @@ var checkUncheckedNavLinkHttpCodes = async () => {
       id: true,
       url: true
     },
-    where: isNull(nav_links.last_checked_at),
+    where: isNull2(nav_links.last_checked_at),
     orderBy: desc7(nav_links.id),
     limit: HTTP_CHECK_MAX_COUNT
   });
@@ -41026,7 +64154,7 @@ var checkUncheckedLinkHttpCodes = async () => {
       id: true,
       url: true
     },
-    where: isNull(links.last_checked_at),
+    where: isNull2(links.last_checked_at),
     orderBy: desc7(links.id),
     limit: HTTP_CHECK_MAX_COUNT
   });
@@ -41155,14 +64283,14 @@ var fetchUpdateManifest = async () => {
   if (!res.ok) {
     throw new Error("manifest_request_failed");
   }
-  const json2 = await res.json();
-  if (!json2 || typeof json2.version !== "string" || typeof json2.readme !== "string" || typeof json2.url !== "string" || !isValidVersion(json2.version)) {
+  const json3 = await res.json();
+  if (!json3 || typeof json3.version !== "string" || typeof json3.readme !== "string" || typeof json3.url !== "string" || !isValidVersion(json3.version)) {
     throw new Error("manifest_invalid");
   }
   return {
-    version: json2.version.trim(),
-    readme: json2.readme.trim(),
-    url: json2.url.trim()
+    version: json3.version.trim(),
+    readme: json3.readme.trim(),
+    url: json3.url.trim()
   };
 };
 var fetchReadmeContent = async (url2) => {
@@ -41174,11 +64302,11 @@ var fetchReadmeContent = async (url2) => {
   if (contentLength && parseInt(contentLength, 10) > README_MAX_SIZE) {
     return "";
   }
-  const text4 = await res.text();
-  if (Buffer.byteLength(text4, "utf-8") > README_MAX_SIZE) {
+  const text5 = await res.text();
+  if (Buffer.byteLength(text5, "utf-8") > README_MAX_SIZE) {
     return "";
   }
-  return text4;
+  return text5;
 };
 var getUpdateErrorMessage = (error48) => {
   if (error48 instanceof Error && error48.name === "AbortError") {
@@ -41189,7 +64317,7 @@ var getUpdateErrorMessage = (error48) => {
   }
   return "update.check.failed";
 };
-var sleep2 = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+var sleep2 = (ms) => new Promise((resolve2) => setTimeout(resolve2, ms));
 var scheduleProcessExit = () => {
   (async () => {
     try {
@@ -41379,7 +64507,7 @@ var compareVersions2 = (currentVersion, targetVersion) => {
   }
   return 0;
 };
-var sleep3 = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+var sleep3 = (ms) => new Promise((resolve2) => setTimeout(resolve2, ms));
 var scheduleRollbackProcessExit = () => {
   (async () => {
     try {
@@ -41762,7 +64890,7 @@ var listBackups = async (c3) => {
 };
 
 // src/api/token.ts
-import { eq as eq12 } from "drizzle-orm";
+import { eq as eq13 } from "drizzle-orm";
 var tokenFields = {
   token: apiTokens.token,
   status: apiTokens.status,
@@ -41779,7 +64907,7 @@ var createUserToken = (uid) => {
   }).returning(tokenFields).get();
 };
 var getUserToken = (uid) => {
-  return db.select(tokenFields).from(apiTokens).where(eq12(apiTokens.uid, uid)).get();
+  return db.select(tokenFields).from(apiTokens).where(eq13(apiTokens.uid, uid)).get();
 };
 var getToken = async (c3) => {
   const uid = c3.get("uid");
@@ -41814,7 +64942,7 @@ var updateTokenStatus = async (c3) => {
     const updatedToken2 = db.update(apiTokens).set({
       status,
       updated_at: new Date
-    }).where(eq12(apiTokens.uid, uid)).returning(tokenFields).get();
+    }).where(eq13(apiTokens.uid, uid)).returning(tokenFields).get();
     return c3.json({
       code: 200,
       msg: "success",
@@ -41824,7 +64952,7 @@ var updateTokenStatus = async (c3) => {
   const updatedToken = db.update(apiTokens).set({
     status,
     updated_at: new Date
-  }).where(eq12(apiTokens.uid, uid)).returning(tokenFields).get();
+  }).where(eq13(apiTokens.uid, uid)).returning(tokenFields).get();
   return c3.json({
     code: 200,
     msg: "success",
@@ -41846,7 +64974,7 @@ var regenerateToken = async (c3) => {
     token: createTokenValue(),
     status: "active",
     updated_at: new Date
-  }).where(eq12(apiTokens.uid, uid)).returning(tokenFields).get();
+  }).where(eq13(apiTokens.uid, uid)).returning(tokenFields).get();
   return c3.json({
     code: 200,
     msg: "success",
@@ -41993,18 +65121,18 @@ var bearerAuth = (options2) => {
 };
 
 // src/middleware/auth.ts
-import { and as and7, eq as eq13 } from "drizzle-orm";
+import { and as and7, eq as eq14 } from "drizzle-orm";
 var verifyApiToken = async (token, c3, role = "user") => {
   if (!token || token.length < 32) {
     return false;
   }
   try {
-    const session = db.select().from(sessions).where(and7(eq13(sessions.token, token), eq13(sessions.status, "active"))).get();
+    const session = db.select().from(sessions).where(and7(eq14(sessions.token, token), eq14(sessions.status, "active"))).get();
     if (!session) {
       return false;
     }
     if (session.expires_at.getTime() <= Date.now()) {
-      db.update(sessions).set({ status: "expired" }).where(eq13(sessions.id, session.id)).run();
+      db.update(sessions).set({ status: "expired" }).where(eq14(sessions.id, session.id)).run();
       return false;
     }
     if (role === "admin" && session.role !== "admin") {
@@ -42013,7 +65141,7 @@ var verifyApiToken = async (token, c3, role = "user") => {
     const userInfo2 = db.select({
       id: users.id,
       username: users.username
-    }).from(users).where(and7(eq13(users.id, session.uid), eq13(users.status, "active"))).get();
+    }).from(users).where(and7(eq14(users.id, session.uid), eq14(users.status, "active"))).get();
     if (!userInfo2) {
       return false;
     }
@@ -42042,7 +65170,7 @@ var verifyV1ApiToken = async (token, c3) => {
       role: users.role,
       userStatus: users.status,
       tokenStatus: apiTokens.status
-    }).from(apiTokens).innerJoin(users, eq13(users.id, apiTokens.uid)).where(eq13(apiTokens.token, token)).get();
+    }).from(apiTokens).innerJoin(users, eq14(users.id, apiTokens.uid)).where(eq14(apiTokens.token, token)).get();
     if (!result) {
       return false;
     }
@@ -42213,6 +65341,7 @@ userRouter.post("/get_link_info", getLinkInfo);
 userRouter.get("/check_login", checkLogin);
 userRouter.post("/set_user_setting", setUserSetting);
 userRouter.get("/get_user_setting", getUserSetting);
+userRouter.post("/chat", chat);
 apiV1Router.get("/categories", listCategories);
 apiV1Router.post("/add_link", addLink);
 apiV1Router.post("/update_link", updateLink);
@@ -42257,6 +65386,7 @@ publicRouter.get("/api/nav_links", getNavCategoryLinks);
 publicRouter.get("/api/nav_link", getNavLinkDetail);
 publicRouter.post("/api/search_nav_links", searchNavLinks);
 publicRouter.get("/api/public_setting", getPublicSettings);
+publicRouter.get("/api/ai_status", getAIStatus);
 adminRouter.get("/app_info", getAppInfo);
 adminRouter.get("/check_update", checkUpdate);
 adminRouter.post("/download_update", downloadUpdate);
@@ -42267,6 +65397,7 @@ adminRouter.get("/download_backup", downloadBackup);
 adminRouter.post("/delete_backup", deleteBackup);
 adminRouter.post("/rollback_backup", rollbackBackup);
 adminRouter.get("/ping", ping);
+adminRouter.post("/reset_vectors", resetAllVectors);
 
 // src/index.ts
 var app = new Hono2;
