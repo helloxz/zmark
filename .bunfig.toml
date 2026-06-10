@@ -1,9 +1,2 @@
-[install.supportedArchitectures]
-# 允许的操作系统：linux（容器），darwin（Mac本地，如果你用Mac的话），win32（Windows本地）
-os = ["linux"]
-
-# 允许的CPU架构：x64（服务器/Intel Mac），arm64（M系列Mac/ARM服务器）
-cpu = ["x64", "arm64"]
-
-# 关键：libc 只保留 gnu，彻底干掉 musl
-libc = ["gnu"]
+[install]
+optional = false
