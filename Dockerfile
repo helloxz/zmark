@@ -4,7 +4,8 @@ WORKDIR /opt/zmark
 # 合并所有 COPY 操作
 COPY . ./
 # 3. 安装依赖
-RUN bun install --production
+RUN bun install --production && \
+    rm -rf node_modules/@lancedb/lancedb-linux-x64-musl
 # 暴露挂载路径为/opt/zmark/data
 VOLUME /opt/zmark/data
 # 暴露暴露端口为3080
