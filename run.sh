@@ -29,7 +29,7 @@ update() {
 
     echo "Update package detected, extracting files..."
     tar -xzf "$update_file" -C "$SCRIPT_DIR" --overwrite
-    bun install --production --registry https://registry.npmmirror.com && rm -rf node_modules/@lancedb/lancedb-linux-x64-musl
+    bun install --production --registry https://registry.npmmirror.com
     echo "Update extracted successfully, removing package..."
     rm -f "$update_file"
     echo "Update completed."

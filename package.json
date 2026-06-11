@@ -6,7 +6,6 @@
   },
   "dependencies": {
     "@lancedb/lancedb": "^0.30.0",
-    "@lancedb/lancedb-linux-x64-gnu": "^0.30.0",
     "@libsql/client": "^0.15.15",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2"
@@ -20,5 +19,9 @@
     "hono": "^4.12.9",
     "lru-cache": "^11.2.7",
     "zod": "^4.3.6"
+  },
+  "overrides": {
+    "@lancedb/lancedb-linux-x64-musl": "0.0.0-empty",
+    "@libsql/linux-x64-musl": "0.0.0-empty"
   }
 }
