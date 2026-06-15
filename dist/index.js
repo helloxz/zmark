@@ -24047,8 +24047,8 @@ var getUserSetting = async (c) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "1.0.0";
-var APP_DATE = "2026061007";
+var APP_VERSION = "1.1.0";
+var APP_DATE = "2026061502";
 var getAppInfo = async (c) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -62941,13 +62941,6 @@ async function searchBookmarks(keywords, uid) {
   return bookmarkResults;
 }
 async function chat(c) {
-  if (!passGate()) {
-    return c.json({
-      code: -1000,
-      msg: "ai.chat.unauthorized",
-      data: null
-    });
-  }
   const uid = c.get("uid");
   if (!uid) {
     return c.json({
@@ -63008,13 +63001,13 @@ async function chat(c) {
 1. \u53EA\u5904\u7406\u4E0E\u4E66\u7B7E\u68C0\u7D22\u76F8\u5173\u7684\u8BF7\u6C42
 2. \u5982\u679C\u7528\u6237\u7684\u95EE\u9898\u4E0E\u4E66\u7B7E\u68C0\u7D22\u65E0\u5173\uFF0C\u8BF7\u793C\u8C8C\u5730\u62D2\u7EDD\u5E76\u8BF4\u660E\u4F60\u53EA\u80FD\u5E2E\u52A9\u68C0\u7D22\u4E66\u7B7E
 3. \u5F53\u9700\u8981\u68C0\u7D22\u4E66\u7B7E\u65F6\uFF0C\u4F7F\u7528 searchBookmarks \u51FD\u6570
-4. \u68C0\u7D22\u5230\u7ED3\u679C\u540E\uFF0C\u4F7F\u7528 Markdown \u8868\u683C\u683C\u5F0F\u5C55\u793A\uFF0C\u5305\u542B\u4EE5\u4E0B\u5217\uFF1A\u6807\u9898\u3001\u94FE\u63A5\u3001\u63CF\u8FF0
+4. \u68C0\u7D22\u5230\u7ED3\u679C\u540E\uFF0C\u4F7F\u7528 Markdown \u8868\u683C\u683C\u5F0F\u5C55\u793A\uFF0C\u5305\u542B\u4E24\u5217\uFF1A\u6807\u9898\u94FE\u63A5\u3001\u63CF\u8FF0\u3002\u6807\u9898\u94FE\u63A5\u5217\u4F7F\u7528 Markdown \u8D85\u94FE\u63A5\u683C\u5F0F [\u6807\u9898](\u94FE\u63A5)
 5. \u5982\u679C\u6CA1\u6709\u627E\u5230\u76F8\u5173\u4E66\u7B7E\uFF0C\u544A\u77E5\u7528\u6237\u672A\u627E\u5230\u5339\u914D\u7684\u7ED3\u679C
 
 \u793A\u4F8B\u8868\u683C\u683C\u5F0F\uFF1A
-| \u6807\u9898 | \u94FE\u63A5 | \u63CF\u8FF0 |
-|------|------|------|
-| \u793A\u4F8B\u6807\u9898 | https://example.com | \u793A\u4F8B\u63CF\u8FF0 |`;
+| \u6807\u9898\u94FE\u63A5 | \u63CF\u8FF0 |
+|----------|------|
+| [\u793A\u4F8B\u6807\u9898](https://example.com) | \u793A\u4F8B\u63CF\u8FF0 |`;
   const result = streamText({
     model,
     system: systemPrompt,
@@ -63473,14 +63466,6 @@ var updateLink = async (c) => {
     return c.json({
       code: -1000,
       msg: validated.msg,
-      data: null
-    });
-  }
-  const duplicateLink = await findDuplicateUserLinkByUrl(uid, validated.data.url, id);
-  if (duplicateLink) {
-    return c.json({
-      code: -1000,
-      msg: "link.url.duplicate",
       data: null
     });
   }
@@ -64038,6 +64023,32 @@ var getCategoryLinks = async (c) => {
     code: 200,
     msg: "success",
     data: links2
+  });
+};
+var getLinkDetail = async (c) => {
+  const id = Number(c.req.query("id"));
+  const uid = c.get("uid");
+  if (!Number.isInteger(id) || id <= 0) {
+    return c.json({
+      code: -1000,
+      msg: "link.id.invalid",
+      data: null
+    });
+  }
+  const link = await db.query.links.findFirst({
+    where: and5(eq11(links.id, id), eq11(links.uid, uid))
+  });
+  if (!link) {
+    return c.json({
+      code: -1000,
+      msg: "link.id.not_found",
+      data: null
+    });
+  }
+  return c.json({
+    code: 200,
+    msg: "success",
+    data: link
   });
 };
 var getLinkInfo = async (c) => {
@@ -66220,6 +66231,7 @@ userRouter.post("/delete_links", deleteLinks);
 userRouter.post("/remove_duplicate_links", removeDuplicateUserLinks);
 userRouter.post("/search_links", searchLinks);
 userRouter.get("/category_links", getCategoryLinks);
+userRouter.get("/get_link", getLinkDetail);
 userRouter.get("/info", userInfo);
 userRouter.get("/token", getToken);
 userRouter.post("/token/status", updateTokenStatus);
@@ -66240,6 +66252,7 @@ apiV1Router.get("/categories", listCategories);
 apiV1Router.post("/add_link", addLink);
 apiV1Router.post("/update_link", updateLink);
 apiV1Router.post("/update_link_icon", updateLinkIcon);
+apiV1Router.get("/get_link", getLinkDetail);
 apiV1Router.post("/delete_link_icon", deleteLinkIcon);
 apiV1Router.post("/sort_links", sortLinks);
 apiV1Router.post("/delete_links", deleteLinks);
@@ -66249,6 +66262,7 @@ apiV1Router.get("/category_links", getCategoryLinks);
 apiV1Router.get("/info", userInfo);
 apiV1Router.post("/import_json", importJSON);
 apiV1Router.post("/get_link_info", getLinkInfo);
+apiV1Router.post("/chat", chat);
 adminRouter.post("/set_setting", setGlobalSetting);
 adminRouter.post("/save_license", saveLicense);
 adminRouter.post("/remove_license", removeLicense);
@@ -66301,6 +66315,7 @@ app.route("/", publicRouter);
 app.route("/", userRouter);
 app.route("/", adminRouter);
 app.route("/", apiV1Router);
+app.notFound(index2);
 var src_default = {
   port: 3080,
   fetch: app.fetch,
