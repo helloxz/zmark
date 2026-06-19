@@ -62895,6 +62895,7 @@ function dropCollection() {
 
 // src/api/ai.ts
 import { existsSync as existsSync3, rmSync as rmSync2 } from "fs";
+var VECTOR_DIMENSIONS = 1024;
 var BATCH_SIZE = 20;
 async function getEmbeddingConfig() {
   const [setting] = await db.select().from(globalSettings).where(eq10(globalSettings.key, "ai_embedding_setting")).limit(1);
@@ -62937,7 +62938,12 @@ async function getEmbeddings(texts, config2) {
   const model = openai2.embedding(config2.model);
   const { embeddings } = await embedMany({
     model,
-    values: texts
+    values: texts,
+    providerOptions: {
+      openai: {
+        dimensions: VECTOR_DIMENSIONS
+      }
+    }
   });
   return embeddings;
 }
@@ -62957,7 +62963,12 @@ async function getEmbedding(text5, config2) {
   const model = openai2.embedding(config2.model);
   const { embeddings } = await embedMany({
     model,
-    values: [text5]
+    values: [text5],
+    providerOptions: {
+      openai: {
+        dimensions: VECTOR_DIMENSIONS
+      }
+    }
   });
   return embeddings[0];
 }
