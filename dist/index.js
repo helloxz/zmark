@@ -24579,7 +24579,8 @@ var DEFAULT_USER_SETTINGS = {
   icon_type: "online",
   home_entry: "bookmark",
   login_redirect: "bookmark",
-  bookmark_subtitle: "hostname"
+  bookmark_subtitle: "hostname",
+  sort_order: "weight_desc"
 };
 var getUserSettingValue = (uid) => {
   const setting = db.select().from(userSettings).where(eq(userSettings.uid, uid)).get();
@@ -24652,8 +24653,8 @@ var getUserSetting = async (c) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "1.1.2";
-var APP_DATE = "2026062214";
+var APP_VERSION = "1.1.3";
+var APP_DATE = "2026072009";
 var getAppInfo = async (c) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);
   const navCategoryL2Count = await db.select({ count: count() }).from(nav_categories_l2);
@@ -74376,10 +74377,11 @@ async function getEmbeddings(texts, config2) {
     apiKey: config2.api_key
   });
   const model = openai2.embedding(config2.model);
+  const isBgeModel = config2.model.toLowerCase().includes("bge");
   const { embeddings } = await embedMany({
     model,
     values: texts,
-    providerOptions: {
+    providerOptions: isBgeModel ? {} : {
       openai: {
         dimensions: VECTOR_DIMENSIONS
       }
@@ -74401,10 +74403,11 @@ async function getEmbedding(text5, config2) {
     apiKey: config2.api_key
   });
   const model = openai2.embedding(config2.model);
+  const isBgeModel = config2.model.toLowerCase().includes("bge");
   const { embeddings } = await embedMany({
     model,
     values: [text5],
-    providerOptions: {
+    providerOptions: isBgeModel ? {} : {
       openai: {
         dimensions: VECTOR_DIMENSIONS
       }
@@ -75517,9 +75520,14 @@ var getCategoryLinks = async (c) => {
       data: null
     });
   }
+  const userSetting = getUserSettingValue(uid);
+  const sortOrder = userSetting.sort_order || "weight_desc";
   const links2 = await db.query.links.findMany({
     where: and5(eq11(links.uid, uid), eq11(links.category_type, categoryType), eq11(links.category_id, categoryId)),
-    orderBy: [asc5(links.sort_order), desc6(links.created_at)]
+    orderBy: [
+      asc5(links.sort_order),
+      sortOrder === "weight_asc" ? asc5(links.created_at) : desc6(links.created_at)
+    ]
   });
   return c.json({
     code: 200,
