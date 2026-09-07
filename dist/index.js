@@ -1780,7 +1780,7 @@ var require_dbcs_codec = __commonJS((exports) => {
           if (resCode !== undefined) {
             dbcsCode = resCode;
             nextChar = uCode;
-          } else {}
+          }
         }
         seqObj = undefined;
       } else if (uCode >= 0) {
@@ -1841,7 +1841,7 @@ var require_dbcs_codec = __commonJS((exports) => {
           newBuf[j2++] = dbcsCode >> 8;
           newBuf[j2++] = dbcsCode & 255;
         }
-      } else {}
+      }
       this.seqObj = undefined;
     }
     if (this.leadSurrogate !== -1) {
@@ -5970,7 +5970,7 @@ var require_tracestate_impl = __commonJS((exports) => {
           const value = listMember.slice(i + 1, part.length);
           if ((0, tracestate_validators_1.validateKey)(key) && (0, tracestate_validators_1.validateValue)(value)) {
             agg.set(key, value);
-          } else {}
+          }
         }
         return agg;
       }, new Map);
@@ -21280,7 +21280,7 @@ function finalize(ctx, schema) {
     result.$schema = "http://json-schema.org/draft-07/schema#";
   } else if (ctx.target === "draft-04") {
     result.$schema = "http://json-schema.org/draft-04/schema#";
-  } else if (ctx.target === "openapi-3.0") {} else {}
+  } else if (ctx.target === "openapi-3.0") {}
   if (ctx.external?.uri) {
     const id = ctx.external.registry.get(schema)?.id;
     if (!id)
@@ -21524,7 +21524,7 @@ var literalProcessor = (schema, ctx, json, _params) => {
     if (val === undefined) {
       if (ctx.unrepresentable === "throw") {
         throw new Error("Literal `undefined` cannot be represented in JSON Schema");
-      } else {}
+      }
     } else if (typeof val === "bigint") {
       if (ctx.unrepresentable === "throw") {
         throw new Error("BigInt literals cannot be represented in JSON Schema");
@@ -24653,7 +24653,7 @@ var getUserSetting = async (c) => {
 
 // src/api/info.ts
 import { count } from "drizzle-orm";
-var APP_VERSION = "1.1.3";
+var APP_VERSION = "1.1.4";
 var APP_DATE = "2026072009";
 var getAppInfo = async (c) => {
   const navCategoryL1Count = await db.select({ count: count() }).from(nav_categories_l1);

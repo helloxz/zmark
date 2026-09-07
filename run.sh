@@ -24,10 +24,16 @@ update() {
         return 0
     fi
     
-    # 删除已经存在的前端静态文件
-    rm -rf public/static/assets/*
-
     echo "Update package detected, extracting files..."
+
+    # 检查压缩包内是否包含 data 目录：若包含则保留旧的前端静态文件（说明是回滚备份数据），否则删除旧文件避免残留
+    if tar -tzf "$update_file" | grep -qE '^data(/|$)'; then
+        echo "Update package contains 'data' directory, keeping existing static files."
+    else
+        # 删除已经存在的前端静态文件
+        rm -rf public/static/assets/*
+        echo "Removed old static files under public/static/assets."
+    fi
     tar -xzf "$update_file" -C "$SCRIPT_DIR" --overwrite
     bun install --production --registry https://registry.npmmirror.com
     echo "Update extracted successfully, removing package..."
